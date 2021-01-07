@@ -1,5 +1,7 @@
 # Monki Prrojects API
 
+![Swift](https://github.com/MonkiProjects/monki-projects-api/workflows/Swift/badge.svg)
+
 ## How To Contribute
 
 1. **Clone the repository**
