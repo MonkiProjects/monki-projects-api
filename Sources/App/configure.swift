@@ -11,11 +11,9 @@ import FluentPostgresDriver
 import FluentSQLiteDriver
 import Vapor
 
-// configures your application
+/// Configures your application
 public func configure(_ app: Application) throws {
-	// uncomment to serve files from /Public folder
-	// app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
-	
+	// Register database
 	if app.environment == .testing {
 		app.databases.use(.sqlite(.memory), as: .sqlite)
 	} else {
@@ -28,10 +26,10 @@ public func configure(_ app: Application) throws {
 		), as: .psql)
 	}
 	
+	// Migrate database
 	app.migrations.add(User.Migrations.all)
-	
 	try app.autoMigrate().wait()
 	
-	// register routes
+	// Register routes
 	try routes(app)
 }
