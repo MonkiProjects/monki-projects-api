@@ -19,6 +19,8 @@ func routes(_ app: Application) throws {
 		return "Hello, world!"
 	}
 	
-	try app.register(collection: UserController())
+	let v1 = app.routes.grouped("v1")
+	
+	try v1.register(collection: UserController())
 	
 }
