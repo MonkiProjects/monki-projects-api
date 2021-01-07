@@ -1,3 +1,11 @@
+//
+//  UserController.swift
+//  AppTests
+//
+//  Created by Rémi Bardon on 07/01/2021.
+//  Copyright © 2020 Monki Projects. All rights reserved.
+//
+
 @testable import App
 import XCTVapor
 
