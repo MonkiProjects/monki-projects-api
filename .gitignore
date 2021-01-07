@@ -1,9 +1,14 @@
-Packages
-.build
-xcuserdata
-*.xcodeproj
-DerivedData/
+### macOS ###
+# General
 .DS_Store
-db.sqlite
+
+### Swift Package Manager ###
+Packages
+.build/
+xcuserdata
+DerivedData/
+*.xcodeproj
 .swiftpm
 
+### Databases ###
+db.sqlite
