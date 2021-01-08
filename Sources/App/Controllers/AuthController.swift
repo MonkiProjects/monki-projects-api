@@ -14,8 +14,8 @@ struct AuthController: RouteCollection {
 	func boot(routes: RoutesBuilder) throws {
 		let auth = routes.grouped("auth")
 		
-		/// `POST /login`
 		let passwordProtected = auth.grouped(User.authenticator())
+		/// `POST /auth/login`
 		passwordProtected.post("login", use: login)
 	}
 	
