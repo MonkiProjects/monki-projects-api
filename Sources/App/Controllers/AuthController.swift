@@ -15,7 +15,7 @@ struct AuthController: RouteCollection {
 		let auth = routes.grouped("auth")
 		
 		let passwordProtected = auth.grouped(User.authenticator())
-		/// `POST /auth/login`
+		// POST /auth/login
 		passwordProtected.post("login", use: login)
 	}
 	

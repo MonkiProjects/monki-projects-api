@@ -14,15 +14,15 @@ struct UserController: RouteCollection {
 	func boot(routes: RoutesBuilder) throws {
 		let users = routes.grouped("users")
 		
-		/// `GET /users`
+		// GET /users
 		users.get(use: listUsers)
-		/// `POST /users`
+		// POST /users
 		users.post(use: createUser)
 		users.group(":userId") { user in
 			user.get(use: getUser)
 			
 			let tokenProtected = user.grouped(User.Token.authenticator())
-			/// `DELETE /users/{userId}`
+			// DELETE /users/{userId}
 			tokenProtected.delete(use: deleteUser)
 		}
 	}
