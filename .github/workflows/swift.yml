@@ -12,10 +12,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build
-      run: swift build -v
+      # Build everything, with optimizations and test discovery
+      run: swift build -c release --enable-test-discovery
   test:
     runs-on: macos-latest
     needs: build
     steps:
     - name: Run tests
-      run: swift test -v
+      run: swift test --skip-build --parallel
