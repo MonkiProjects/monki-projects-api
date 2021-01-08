@@ -18,8 +18,8 @@ struct UserController: RouteCollection {
 		users.group(":userId") { user in
 			user.get(use: getUser)
 			
-			let passwordProtected = user.grouped(User.authenticator())
-			passwordProtected.delete(use: deleteUser)
+			let tokenProtected = user.grouped(User.Token.authenticator())
+			tokenProtected.delete(use: deleteUser)
 		}
 	}
 	
