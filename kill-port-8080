@@ -1,2 +1,0 @@
-#!/bin/sh
-lsof -t -i tcp:8080 | xargs kill
