@@ -11,4 +11,4 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Run tests
-      run: swift test --enable-test-discovery --parallel
+      run: swift test --parallel
