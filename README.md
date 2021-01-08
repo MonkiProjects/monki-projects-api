@@ -2,6 +2,10 @@
 
 ![Test workflow badge](https://github.com/MonkiProjects/monki-projects-api/workflows/Test/badge.svg)
 
+## Overview
+
+All of Monki Projects' [APIs](https://en.wikipedia.org/wiki/API) specifications (including this one's) are available in the [mp-api-specs](https://github.com/MonkiProjects/mp-api-specs) repository.
+
 ## How To Contribute
 
 ### Run the project
