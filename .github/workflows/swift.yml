@@ -7,16 +7,8 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  build:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      # Build everything, with optimizations and test discovery
-      run: swift build -c release --enable-test-discovery
   test:
     runs-on: macos-latest
-    needs: build
     steps:
     - name: Run tests
-      run: swift test --skip-build --parallel
+      run: swift test --enable-test-discovery --parallel
