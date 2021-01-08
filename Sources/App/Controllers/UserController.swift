@@ -32,7 +32,7 @@ struct UserController: RouteCollection {
 	}
 	
 	func createUser(req: Request) throws -> EventLoopFuture<User> {
-		// Validate and decode datado {
+		// Validate and decode data
 		do {
 			try User.Create.validate(content: req)
 		} catch {
