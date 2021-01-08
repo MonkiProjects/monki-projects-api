@@ -157,6 +157,83 @@ class UserControllerTests: XCTestCase {
 		)
 	}
 	
+	/// Test if `DELETE` actually deletes the user and its tokens.
+	///
+	/// - GIVEN:
+	///     - A user
+	/// - WHEN:
+	///     - Deleting a user
+	/// - THEN:
+	///     - `HTTP` status should be `200 OK`
+	///     - `body` should be empty
+	///     - user tokens should all be deleted from database
+	///     - user should be deleted from database
+	func testDeleteUser() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		// Create user
+		let userId = UUID()
+		let user = User(
+			id: userId,
+			username: "temp_username",
+			email: "temp@email.com",
+			passwordHash: try Bcrypt.hash("password")
+		)
+		try user.create(on: app.db).wait()
+		addTeardownBlock {
+			do {
+				try user.delete(force: true, on: app.db).wait()
+			} catch {
+				XCTFail(error.localizedDescription)
+			}
+		}
+		
+		// Create new token
+		let token = try user.generateToken()
+		try token.create(on: app.db).wait()
+		addTeardownBlock {
+			do {
+				try token.delete(force: true, on: app.db).wait()
+			} catch {
+				XCTFail(error.localizedDescription)
+			}
+		}
+		
+		// Test deletion
+		try app.test(.DELETE, "v1/users/\(userId)",
+			beforeRequest: { req in
+				let bearerAuth = BearerAuthorization(token: token.value)
+				req.headers.bearerAuthorization = bearerAuth
+			},
+			afterResponse: { res in
+				// Test HTTP status
+				XCTAssertEqual(res.status, .ok)
+				
+				if res.status == .ok {
+					// Test data
+					XCTAssertEqual(res.body.string, "")
+					
+					// Test if user is really deleted
+					let userId = try user.requireID()
+					let storedUser = try User.find(userId, on: app.db).wait()
+					XCTAssertNil(storedUser)
+					
+					// Test if user tokens are deleted
+					let tokens = try User.Token.query(on: app.db)
+						.with(\.$user)					// Load user to filter on its `id` field
+						.filter(\.$user.$id == userId)	// Filter only the user's tokens
+						.all() 							// Get all results
+						.wait()
+					XCTAssertTrue(tokens.isEmpty)
+				} else {
+					// Log error
+					let error = try res.content.decode(ResponseError.self)
+					XCTFail(error.reason)
+				}
+			}
+		)
+	}
+	
 	// MARK: - Invalid Domain
 	
 	/// Tries to create a user with two different passwords.
@@ -441,6 +518,98 @@ class UserControllerTests: XCTestCase {
 					XCTAssertEqual(error.reason, "username contains 'T' (allowed: a-z, 0-9, '.', '_')")
 				} else if res.status != .ok {
 					// Log error
+					XCTFail(error.reason)
+				}
+			}
+		)
+	}
+	
+	/// Test if `DELETE` aborts if invalid `Basic` token.
+	///
+	/// - GIVEN:
+	///     - A user
+	/// - WHEN:
+	///     - Deleting a user with invalid `Bearer` token
+	/// - THEN:
+	///     - `HTTP` status should be `401 Unauthorized`
+	///     - `body` should be `"Unauthorized"`
+	func testDeleteUserWithInvalidBearerToken() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		// Create user
+		let userId = UUID()
+		let user = User(
+			id: UUID(),
+			username: "test_username",
+			email: "test@email.com",
+			passwordHash: "password" // Do not hash for speed purposes
+		)
+		try user.create(on: app.db).wait()
+		deleteUserAfterTestFinishes(user)
+		
+		try app.test(.DELETE, "v1/users/\(userId)",
+			beforeRequest: { req in
+				let invalidToken = [UInt8].random(count: 16).base64
+				let bearerAuth = BearerAuthorization(token: invalidToken)
+				req.headers.bearerAuthorization = bearerAuth
+			},
+			afterResponse: { res in
+				// Test HTTP status
+				XCTAssertEqual(res.status, .unauthorized)
+				
+				if res.status == .unauthorized {
+					// Test data
+					let error = try res.content.decode(ResponseError.self)
+					XCTAssertEqual(error.reason, "Unauthorized")
+				} else if res.status != .ok {
+					// Log error
+					let error = try res.content.decode(ResponseError.self)
+					XCTFail(error.reason)
+				}
+			}
+		)
+	}
+	
+	/// Test if `DELETE` aborts if `Basic` auth.
+	///
+	/// - GIVEN:
+	///     - A user
+	/// - WHEN:
+	///     - Deleting a user with `Basic` auth
+	/// - THEN:
+	///     - `HTTP` status should be `401 Unauthorized`
+	///     - `body` should be `"Unauthorized"`
+	func testDeleteUserWithBasicAuth() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		// Create user
+		let userId = UUID()
+		let password = "password"
+		let user = User(
+			id: UUID(),
+			username: "test_username",
+			email: "test@email.com",
+			passwordHash: password // Do not hash for speed purposes
+		)
+		try user.create(on: app.db).wait()
+		deleteUserAfterTestFinishes(user)
+		
+		try app.test(.DELETE, "v1/users/\(userId)",
+			beforeRequest: { req in
+				let basicAuth = BasicAuthorization(username: user.username, password: password)
+				req.headers.basicAuthorization = basicAuth
+			},
+			afterResponse: { res in
+				// Test HTTP status
+				XCTAssertEqual(res.status, .unauthorized)
+				
+				if res.status == .unauthorized {
+					// Test data
+					let error = try res.content.decode(ResponseError.self)
+					XCTAssertEqual(error.reason, "Unauthorized")
+				} else if res.status != .ok {
+					// Log error
+					let error = try res.content.decode(ResponseError.self)
 					XCTFail(error.reason)
 				}
 			}
