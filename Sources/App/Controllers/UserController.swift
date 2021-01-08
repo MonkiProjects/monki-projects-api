@@ -15,9 +15,11 @@ struct UserController: RouteCollection {
 		let users = routes.grouped("users")
 		users.get(use: listUsers)
 		users.post(use: createUser)
-		users.group(":userID") { user in
+		users.group(":userId") { user in
 			user.get(use: getUser)
-			user.delete(use: deleteUser)
+			
+			let passwordProtected = user.grouped(User.authenticator())
+			passwordProtected.delete(use: deleteUser)
 		}
 	}
 	
@@ -80,15 +82,33 @@ struct UserController: RouteCollection {
 	}
 	
 	func getUser(req: Request) throws -> EventLoopFuture<User> {
-		return User.find(req.parameters.get("userID"), on: req.db)
+		let userId = try req.parameters.require("userId", as: UUID.self)
+		return User.find(userId, on: req.db)
 			.unwrap(or: Abort(.notFound))
 	}
 	
 	func deleteUser(req: Request) throws -> EventLoopFuture<HTTPStatus> {
-		return User.find(req.parameters.get("userID"), on: req.db)
-			.unwrap(or: Abort(.notFound))
+		let user = try req.auth.require(User.self)
+		let userId = try req.parameters.require("userId", as: UUID.self)
+		
+		// Do additional validations
+		guard user.id == userId else {
+			throw Abort(.badRequest, reason: "User ids from path and header are different")
+		}
+		
+		let deleteTokensFuture = User.Token.query(on: req.db)
+			.with(\.$user)
+			.filter(\.$user.$id == userId)
+			.all()
 			.flatMap { $0.delete(on: req.db) }
-			.transform(to: .ok)
+		
+		let deleteUserFuture = deleteTokensFuture.flatMap {
+			User.find(userId, on: req.db)
+				.unwrap(or: Abort(.notFound))
+				.flatMap { $0.delete(on: req.db) }
+		}
+		
+		return deleteUserFuture.transform(to: .ok)
 	}
 	
 }
