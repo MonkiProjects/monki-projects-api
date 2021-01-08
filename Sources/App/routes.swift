@@ -22,5 +22,6 @@ func routes(_ app: Application) throws {
 	let v1 = app.routes.grouped("v1")
 	
 	try v1.register(collection: UserController())
+	try v1.register(collection: AuthController())
 	
 }

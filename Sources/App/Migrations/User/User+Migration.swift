@@ -14,6 +14,7 @@ extension User {
 		
 		static var all: [Migration] {
 			return [CreateUser()]
+				+ Token.Migrations.all
 		}
 		
 	}
