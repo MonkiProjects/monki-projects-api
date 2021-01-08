@@ -1,6 +1,6 @@
 # Monki Projects API
 
-![Test workflow badge](https://github.com/MonkiProjects/monki-projects-api/workflows/Swift/badge.svg)
+![Test workflow badge](https://github.com/MonkiProjects/monki-projects-api/workflows/Test/badge.svg)
 
 ## How To Contribute
 
