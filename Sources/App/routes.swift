@@ -11,12 +11,8 @@ import Vapor
 
 func routes(_ app: Application) throws {
 	
-	app.get { _ in
-		return "It works!"
-	}
-	
-	app.get("hello") { _ -> String in
-		return "Hello, world!"
+	app.get { req in
+		return req.redirect(to: "https://github.com/MonkiProjects/mp-api-specs")
 	}
 	
 	let v1 = app.routes.grouped("v1")
