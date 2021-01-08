@@ -1,4 +1,4 @@
-# Monki Prrojects API
+# Monki Projects API
 
 ![Swift](https://github.com/MonkiProjects/monki-projects-api/workflows/Swift/badge.svg)
 
