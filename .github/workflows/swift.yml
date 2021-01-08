@@ -7,16 +7,10 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Lint
-      run: swiftlint
-  build:
-    runs-on: ubuntu-latest
-    needs: [lint]
-    steps:
     - name: Build
       # Build everything, with test discovery
       run: swift build --enable-test-discovery
