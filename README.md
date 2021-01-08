@@ -26,3 +26,13 @@
    - Open your `monki-projects-api.xcodeproj`, go to `Product > Scheme` and select the `Run` scheme
 
    From there, you will be able to run the project.
+
+## Tips
+
+### Fix port `8080` still open after stopping the app
+
+For some reason, stopping the app causes an error preventing port `8080` to be closed, here is a command that kills it (tested on macOS):
+
+```sh
+lsof -t -i tcp:8080 | xargs kill
+```
