@@ -13,18 +13,19 @@ struct UserController: RouteCollection {
 	
 	func boot(routes: RoutesBuilder) throws {
 		let users = routes.grouped("users")
-		users.get(use: index)
-		users.post(use: create)
+		users.get(use: listUsers)
+		users.post(use: createUser)
 		users.group(":userID") { user in
-			user.delete(use: delete)
+			user.get(use: getUser)
+			user.delete(use: deleteUser)
 		}
 	}
 	
-	func index(req: Request) throws -> EventLoopFuture<[User]> {
+	func listUsers(req: Request) throws -> EventLoopFuture<[User]> {
 		return User.query(on: req.db).all()
 	}
 	
-	func create(req: Request) throws -> EventLoopFuture<User> {
+	func createUser(req: Request) throws -> EventLoopFuture<User> {
 		// Validate and decode datado {
 		do {
 			try User.Create.validate(content: req)
@@ -78,7 +79,12 @@ struct UserController: RouteCollection {
 		}
 	}
 	
-	func delete(req: Request) throws -> EventLoopFuture<HTTPStatus> {
+	func getUser(req: Request) throws -> EventLoopFuture<User> {
+		return User.find(req.parameters.get("userID"), on: req.db)
+			.unwrap(or: Abort(.notFound))
+	}
+	
+	func deleteUser(req: Request) throws -> EventLoopFuture<HTTPStatus> {
 		return User.find(req.parameters.get("userID"), on: req.db)
 			.unwrap(or: Abort(.notFound))
 			.flatMap { $0.delete(on: req.db) }
