@@ -7,15 +7,10 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: swift build --enable-test-discovery
   test:
     runs-on: ubuntu-latest
-    needs: [build]
     steps:
-    - name: Run tests
-      run: swift test --enable-test-discovery --parallel
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Run tests with Thread Sanitizer
+      run: swift test --enable-test-discovery --sanitize=thread
