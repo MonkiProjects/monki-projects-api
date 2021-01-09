@@ -27,11 +27,12 @@ struct UserController: RouteCollection {
 		}
 	}
 	
-	func listUsers(req: Request) throws -> EventLoopFuture<[User]> {
+	func listUsers(req: Request) throws -> EventLoopFuture<[User.Public]> {
 		return User.query(on: req.db).all()
+			.flatMapEachThrowing { try $0.asPublic() }
 	}
 	
-	func createUser(req: Request) throws -> EventLoopFuture<User> {
+	func createUser(req: Request) throws -> EventLoopFuture<User.Private> {
 		// Validate and decode data
 		do {
 			try User.Create.validate(content: req)
@@ -81,14 +82,15 @@ struct UserController: RouteCollection {
 		// Save User in database
 		return newUserFuture.flatMap { user in
 			user.create(on: req.db)
-				.map { user }
+				.flatMapThrowing { try user.asPrivate() }
 		}
 	}
 	
-	func getUser(req: Request) throws -> EventLoopFuture<User> {
+	func getUser(req: Request) throws -> EventLoopFuture<User.Public> {
 		let userId = try req.parameters.require("userId", as: UUID.self)
 		return User.find(userId, on: req.db)
 			.unwrap(or: Abort(.notFound))
+			.flatMapThrowing { try $0.asPublic() }
 	}
 	
 	func deleteUser(req: Request) throws -> EventLoopFuture<HTTPStatus> {

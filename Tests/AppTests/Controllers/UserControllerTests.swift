@@ -93,7 +93,7 @@ class UserControllerTests: XCTestCase {
 			
 			if res.status == .ok {
 				// Test data
-				let users = try res.content.decode([User].self)
+				let users = try res.content.decode([User.Public].self)
 				
 				XCTAssertEqual(users.count, 1)
 				let userResponse = try XCTUnwrap(users.first)
@@ -120,12 +120,14 @@ class UserControllerTests: XCTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		// Create user
+		let username = "test_username"
 		let user = User.Create(
-			username: "test_username",
+			username: username,
 			email: "test@email.com",
 			password: "password",
 			confirmPassword: "password"
 		)
+		deletePossiblyCreatedUserAfterTestFinishes(username: username)
 		
 		// Test response
 		try app.test(.POST, "v1/users",
@@ -138,7 +140,7 @@ class UserControllerTests: XCTestCase {
 				
 				if res.status == .ok {
 					// Test data
-					let createdUser = try res.content.decode(User.self)
+					let createdUser = try res.content.decode(User.Private.self)
 					
 					XCTAssertEqual(createdUser.username, user.username)
 					XCTAssertEqual(createdUser.email, user.email)
@@ -146,9 +148,6 @@ class UserControllerTests: XCTestCase {
 					// Test creation on DB
 					let storedUser = try User.find(createdUser.id, on: app.db).wait()
 					XCTAssertNotNil(storedUser)
-					
-					// Delete user
-					deleteUserAfterTestFinishes(storedUser)
 				} else {
 					// Log error
 					XCTFail(res.body.string)
