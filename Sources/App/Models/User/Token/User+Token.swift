@@ -12,7 +12,7 @@ import Fluent
 /// Comes from https://docs.vapor.codes/4.0/authentication/#user-token
 extension User {
 	
-	final class Token: Model, Content {
+	final class Token: Model {
 		
 		static let schema = "user_tokens"
 		

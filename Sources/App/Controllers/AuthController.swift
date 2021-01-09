@@ -19,12 +19,13 @@ struct AuthController: RouteCollection {
 		passwordProtected.post("login", use: login)
 	}
 	
-	func login(req: Request) throws -> EventLoopFuture<User.Token> {
+	func login(req: Request) throws -> EventLoopFuture<User.Token.Private> {
 		let user = try req.auth.require(User.self)
 		let token = try user.generateToken()
 		
 		return token.save(on: req.db)
-			.map { token }
+			.flatMap { token.$user.load(on: req.db) }
+			.flatMapThrowing { try token.asPrivate() }
 	}
 	
 }
