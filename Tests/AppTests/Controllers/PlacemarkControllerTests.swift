@@ -10,6 +10,7 @@
 import XCTVapor
 import Fluent
 
+// swiftlint:disable:next type_body_length
 final class PlacemarkControllerTests: XCTestCase {
 	
 	private static var app: Application?
@@ -122,27 +123,29 @@ final class PlacemarkControllerTests: XCTestCase {
 		deletePlacemarkAfterTestFinishes(publishedPlacemark)
 		
 		// Test route
-		try app.test(.GET, "v1/placemarks") { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .ok)
-			
-			if res.status == .ok {
-				// Test data
-				let placemarks = try res.content.decode([Placemark.Public].self)
+		try app.test(.GET, "v1/placemarks",
+			afterResponse: { res in
+				// Test HTTP status
+				XCTAssertEqual(res.status, .ok)
 				
-				XCTAssertEqual(placemarks.count, 1)
-				guard let placemarkResponse = placemarks.first else {
-					XCTFail("Response does not contain a Placemark")
-					return
+				if res.status == .ok {
+					// Test data
+					let placemarks = try res.content.decode([Placemark.Public].self)
+					
+					XCTAssertEqual(placemarks.count, 1)
+					guard let placemarkResponse = placemarks.first else {
+						XCTFail("Response does not contain a Placemark")
+						return
+					}
+					
+					XCTAssertEqual(placemarkResponse.id, publishedPlacemark.id)
+				} else {
+					// Log error
+					let error = try res.content.decode(ResponseError.self)
+					XCTFail(error.reason)
 				}
-				
-				XCTAssertEqual(placemarkResponse.id, publishedPlacemark.id)
-			} else {
-				// Log error
-				let error = try res.content.decode(ResponseError.self)
-				XCTFail(error.reason)
 			}
-		}
+		)
 	}
 	
 	/// Tests `GET /v1/placemarks/submitted`.
@@ -188,33 +191,35 @@ final class PlacemarkControllerTests: XCTestCase {
 		deletePlacemarkAfterTestFinishes(publishedPlacemark)
 		
 		// Test route
-		try app.test(.GET, "v1/placemarks/submitted") { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .ok)
-			
-			if res.status == .ok {
-				// Test data
-				let placemarks = try res.content.decode([Placemark.Public].self)
+		try app.test(.GET, "v1/placemarks/submitted",
+			afterResponse: { res in
+				// Test HTTP status
+				XCTAssertEqual(res.status, .ok)
 				
-				XCTAssertEqual(placemarks.count, 1)
-				guard let placemarkResponse = placemarks.first else {
-					XCTFail("Response does not contain a Placemark")
-					return
+				if res.status == .ok {
+					// Test data
+					let placemarks = try res.content.decode([Placemark.Public].self)
+					
+					XCTAssertEqual(placemarks.count, 1)
+					guard let placemarkResponse = placemarks.first else {
+						XCTFail("Response does not contain a Placemark")
+						return
+					}
+					
+					XCTAssertEqual(placemarkResponse.id, submittedPlacemark.id)
+				} else {
+					// Log error
+					let error = try res.content.decode(ResponseError.self)
+					XCTFail(error.reason)
 				}
-				
-				XCTAssertEqual(placemarkResponse.id, submittedPlacemark.id)
-			} else {
-				// Log error
-				let error = try res.content.decode(ResponseError.self)
-				XCTFail(error.reason)
 			}
-		}
+		)
 	}
 	
 	/// Creates a new spot
 	/// Checks if status is 200 OK with placemark data
 	/// And then checks if spot is actually stored on DB by fetching it
-	func testPostSubmitsPlacemark() throws {
+	func testPostSubmitsPlacemark() throws { // swiftlint:disable:this function_body_length
 		let app = try XCTUnwrap(Self.app)
 		let user = try XCTUnwrap(Self.user)
 		let userToken = try XCTUnwrap(Self.userToken)
@@ -236,45 +241,51 @@ final class PlacemarkControllerTests: XCTestCase {
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name)
 		
 		// Test response
-		try app.test(.POST, "v1/placemarks", beforeRequest: { req in
-			let bearerAuth = BearerAuthorization(token: userToken.value)
-			req.headers.bearerAuthorization = bearerAuth
-			
-			try req.content.encode(create)
-		}) { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .ok)
-			
-			if res.status == .ok {
-				// Test data
-				let placemark = try res.content.decode(Placemark.Public.self)
+		try app.test(.POST, "v1/placemarks",
+			beforeRequest: { req in
+				let bearerAuth = BearerAuthorization(token: userToken.value)
+				req.headers.bearerAuthorization = bearerAuth
 				
-				XCTAssertEqual(placemark.name, create.name)
-				XCTAssertEqual(placemark.caption, create.caption)
-				XCTAssertEqual(placemark.latitude, create.latitude)
-				XCTAssertEqual(placemark.longitude, create.longitude)
-				XCTAssertEqual(placemark.creator, try user.requireID())
-				XCTAssertEqual(placemark.state, .submitted)
-				XCTAssertEqual(placemark.satelliteImage.absoluteString, "https://monkiprojects.com/images/satellite-view-placeholder.jpg")
-				XCTAssertEqual(placemark.type, "training_spot")
-				XCTAssertEqual(placemark.category, "spot")
-				XCTAssertEqual(placemark.images, [])
-				XCTAssertEqual(placemark.features, [])
-				XCTAssertEqual(placemark.goodForTraining, [])
-				XCTAssertEqual(placemark.benefits, [])
-				XCTAssertEqual(placemark.hazards, [])
-				XCTAssertNotNil(placemark.createdAt)
-				XCTAssertNotNil(placemark.updatedAt)
+				try req.content.encode(create)
+			},
+			afterResponse: { res in
+				// Test HTTP status
+				XCTAssertEqual(res.status, .ok)
 				
-				// Test creation on DB
-				let storedPlacemark = try Placemark.find(placemark.id, on: app.db).wait()
-				XCTAssertNotNil(storedPlacemark)
-			} else {
-				// Log error
-				let error = try res.content.decode(ResponseError.self)
-				XCTFail(error.reason)
+				if res.status == .ok {
+					// Test data
+					let placemark = try res.content.decode(Placemark.Public.self)
+					
+					XCTAssertEqual(placemark.name, create.name)
+					XCTAssertEqual(placemark.caption, create.caption)
+					XCTAssertEqual(placemark.latitude, create.latitude)
+					XCTAssertEqual(placemark.longitude, create.longitude)
+					XCTAssertEqual(placemark.creator, try user.requireID())
+					XCTAssertEqual(placemark.state, .submitted)
+					XCTAssertEqual(
+						placemark.satelliteImage.absoluteString,
+						"https://monkiprojects.com/images/satellite-view-placeholder.jpg"
+					)
+					XCTAssertEqual(placemark.type, "training_spot")
+					XCTAssertEqual(placemark.category, "spot")
+					XCTAssertEqual(placemark.images, [])
+					XCTAssertEqual(placemark.features, [])
+					XCTAssertEqual(placemark.goodForTraining, [])
+					XCTAssertEqual(placemark.benefits, [])
+					XCTAssertEqual(placemark.hazards, [])
+					XCTAssertNotNil(placemark.createdAt)
+					XCTAssertNotNil(placemark.updatedAt)
+					
+					// Test creation on DB
+					let storedPlacemark = try Placemark.find(placemark.id, on: app.db).wait()
+					XCTAssertNotNil(storedPlacemark)
+				} else {
+					// Log error
+					let error = try res.content.decode(ResponseError.self)
+					XCTFail(error.reason)
+				}
 			}
-		}
+		)
 	}
 	
 	/// Tests `GET /v1/placemarks/{placemarkId}`.
@@ -306,21 +317,23 @@ final class PlacemarkControllerTests: XCTestCase {
 		deletePlacemarkAfterTestFinishes(placemark)
 		
 		// Test route
-		try app.test(.GET, "v1/placemarks/\(placemarkId)") { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .ok)
-			
-			if res.status == .ok {
-				// Test data
-				let placemarkResponse = try res.content.decode(Placemark.Public.self)
+		try app.test(.GET, "v1/placemarks/\(placemarkId)",
+			afterResponse: { res in
+				// Test HTTP status
+				XCTAssertEqual(res.status, .ok)
 				
-				XCTAssertEqual(placemarkResponse.id, placemark.id)
-			} else {
-				// Log error
-				let error = try res.content.decode(ResponseError.self)
-				XCTFail(error.reason)
+				if res.status == .ok {
+					// Test data
+					let placemarkResponse = try res.content.decode(Placemark.Public.self)
+					
+					XCTAssertEqual(placemarkResponse.id, placemark.id)
+				} else {
+					// Log error
+					let error = try res.content.decode(ResponseError.self)
+					XCTFail(error.reason)
+				}
 			}
-		}
+		)
 	}
 	
 	/// Tests `DELETE /v1/placemarks/{placemarkId}`.
@@ -398,25 +411,28 @@ final class PlacemarkControllerTests: XCTestCase {
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name)
 		
 		// Test response
-		try app.test(.POST, "v1/placemarks", beforeRequest: { req in
-			let bearerAuth = BearerAuthorization(token: userToken.value)
-			req.headers.bearerAuthorization = bearerAuth
-			
-			try req.content.encode(create)
-		}) { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .badRequest)
-			
-			if res.status == .badRequest {
-				// Test error message
-				let error = try res.content.decode(ResponseError.self)
-				XCTAssertEqual(error.reason, "name is less than minimum of 3 character(s)")
-			} else if res.status != .ok {
-				// Log error
-				let error = try res.content.decode(ResponseError.self)
-				XCTFail(error.reason)
+		try app.test(.POST, "v1/placemarks",
+			beforeRequest: { req in
+				let bearerAuth = BearerAuthorization(token: userToken.value)
+				req.headers.bearerAuthorization = bearerAuth
+				
+				try req.content.encode(create)
+			},
+			afterResponse: { res in
+				// Test HTTP status
+				XCTAssertEqual(res.status, .badRequest)
+				
+				if res.status == .badRequest {
+					// Test error message
+					let error = try res.content.decode(ResponseError.self)
+					XCTAssertEqual(error.reason, "name is less than minimum of 3 character(s)")
+				} else if res.status != .ok {
+					// Log error
+					let error = try res.content.decode(ResponseError.self)
+					XCTFail(error.reason)
+				}
 			}
-		}
+		)
 	}
 	
 	/// Tries to get details for an inexistent placemark.
@@ -431,20 +447,22 @@ final class PlacemarkControllerTests: XCTestCase {
 	func testGetPlacemarkWithInexistentId() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "v1/placemarks/\(UUID())") { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .notFound)
-			
-			if res.status == .notFound {
-				// Test error message
-				let error = try res.content.decode(ResponseError.self)
-				XCTAssertEqual(error.reason, "Not Found")
-			} else if res.status != .ok {
-				// Log error
-				let error = try res.content.decode(ResponseError.self)
-				XCTFail(error.reason)
+		try app.test(.GET, "v1/placemarks/\(UUID())",
+			afterResponse: { res in
+				// Test HTTP status
+				XCTAssertEqual(res.status, .notFound)
+				
+				if res.status == .notFound {
+					// Test error message
+					let error = try res.content.decode(ResponseError.self)
+					XCTAssertEqual(error.reason, "Not Found")
+				} else if res.status != .ok {
+					// Log error
+					let error = try res.content.decode(ResponseError.self)
+					XCTFail(error.reason)
+				}
 			}
-		}
+		)
 	}
 	
 	/// Tries to create a placemark with an invalid `Bearer` token.
@@ -459,24 +477,27 @@ final class PlacemarkControllerTests: XCTestCase {
 	func testCreatePlacemarkInvalidBearerToken() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.POST, "v1/placemarks", beforeRequest: { req in
-			let invalidToken = [UInt8].random(count: 16).base64
-			let bearerAuth = BearerAuthorization(token: invalidToken)
-			req.headers.bearerAuthorization = bearerAuth
-		}) { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .unauthorized)
-			
-			if res.status == .unauthorized {
-				// Test data
-				let error = try res.content.decode(ResponseError.self)
-				XCTAssertEqual(error.reason, "Unauthorized")
-			} else if res.status != .ok {
-				// Log error
-				let error = try res.content.decode(ResponseError.self)
-				XCTFail(error.reason)
+		try app.test(.POST, "v1/placemarks",
+			beforeRequest: { req in
+				let invalidToken = [UInt8].random(count: 16).base64
+				let bearerAuth = BearerAuthorization(token: invalidToken)
+				req.headers.bearerAuthorization = bearerAuth
+			},
+			afterResponse: { res in
+				// Test HTTP status
+				XCTAssertEqual(res.status, .unauthorized)
+				
+				if res.status == .unauthorized {
+					// Test data
+					let error = try res.content.decode(ResponseError.self)
+					XCTAssertEqual(error.reason, "Unauthorized")
+				} else if res.status != .ok {
+					// Log error
+					let error = try res.content.decode(ResponseError.self)
+					XCTFail(error.reason)
+				}
 			}
-		}
+		)
 	}
 	
 	/// Tries to delete someone else's placemark.
@@ -616,8 +637,11 @@ final class PlacemarkControllerTests: XCTestCase {
 		}
 	}
 	
-	private func typeId(for humanId: String, on db: Database) -> EventLoopFuture<Placemark.PlacemarkType.IDValue> {
-		Placemark.PlacemarkType.query(on: db)
+	private func typeId(
+		for humanId: String,
+		on database: Database
+	) -> EventLoopFuture<Placemark.PlacemarkType.IDValue> {
+		Placemark.PlacemarkType.query(on: database)
 			.filter(\.$humanId == humanId)
 			.first()
 			.unwrap(or: Abort(.notFound, reason: "Type not found"))
@@ -625,3 +649,4 @@ final class PlacemarkControllerTests: XCTestCase {
 	}
 	
 }
+// swiftlint:disable:this file_length
