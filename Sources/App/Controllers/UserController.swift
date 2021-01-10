@@ -19,6 +19,7 @@ struct UserController: RouteCollection {
 		// POST /users
 		users.post(use: createUser)
 		users.group(":userId") { user in
+			// GET /users/{userId}
 			user.get(use: getUser)
 			
 			let tokenProtected = user.grouped(User.Token.authenticator())
