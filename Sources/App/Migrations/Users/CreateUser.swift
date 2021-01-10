@@ -20,6 +20,9 @@ extension User.Migrations {
 				.field("username", .string, .required)
 				.field("email", .string, .required)
 				.field("password_hash", .string, .required)
+				.field("created_at", .datetime, .required)
+				.field("updated_at", .datetime, .required)
+				.field("deleted_at", .datetime)
 				.create()
 		}
 		

@@ -14,13 +14,15 @@ extension User {
 		
 		let id: UUID
 		let username: String
+		let updatedAt: Date
 		
 	}
 	
 	func asPublic() throws -> Public {
 		return try Public(
 			id: self.requireID(),
-			username: self.username
+			username: self.username,
+			updatedAt: self.updatedAt.require()
 		)
 	}
 	
