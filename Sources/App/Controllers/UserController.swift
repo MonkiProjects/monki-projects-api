@@ -60,7 +60,7 @@ struct UserController: RouteCollection {
 			// Get User with same email
 			.filter(\.$email == create.email).first()
 			// Abort if existing email
-			.guard({ $0 == nil }, else: Abort(.badRequest, reason: "Email or username already taken"))
+			.guard({ $0 == nil }, else: Abort(.conflict, reason: "Email or username already taken"))
 		
 		// Check for existing username
 		let usernameCheckFuture = emailCheckFuture.flatMap { _ in
@@ -68,7 +68,7 @@ struct UserController: RouteCollection {
 				// Get User with same username
 				.filter(\.$username == create.username).first()
 				// Abort if existing username
-				.guard({ $0 == nil }, else: Abort(.badRequest, reason: "Email or username already taken"))
+				.guard({ $0 == nil }, else: Abort(.conflict, reason: "Email or username already taken"))
 		}
 		
 		// Create User object
