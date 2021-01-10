@@ -24,6 +24,7 @@ struct PlacemarkController: RouteCollection {
 		// POST /placemarks
 		tokenProtected.post(use: createPlacemark)
 		placemarks.group(":placemarkId") { placemark in
+			// GET /placemarks/{placemarkId}
 			placemark.get(use: getPlacemark)
 			
 			let tokenProtected = placemark.grouped(User.Token.authenticator())
@@ -38,6 +39,7 @@ struct PlacemarkController: RouteCollection {
 			.with(\.$type) { type in
 				type.with(\.$category)
 			}
+			.with(\.$creator)
 			.with(\.$properties)
 			.all()
 			.flatMapEachThrowing { try $0.asPublic() }
@@ -49,6 +51,7 @@ struct PlacemarkController: RouteCollection {
 			.with(\.$type) { type in
 				type.with(\.$category)
 			}
+			.with(\.$creator)
 			.with(\.$properties)
 			.all()
 			.flatMapEachThrowing { try $0.asPublic() }
@@ -89,6 +92,7 @@ struct PlacemarkController: RouteCollection {
 			placemark.create(on: req.db)
 				.flatMap { placemark.$type.load(on: req.db) }
 				.flatMap { placemark.type.$category.load(on: req.db) }
+				.flatMap { placemark.$creator.load(on: req.db) }
 				.flatMap { placemark.$properties.load(on: req.db) }
 				.flatMapThrowing { try placemark.asPublic() }
 		}
@@ -101,6 +105,7 @@ struct PlacemarkController: RouteCollection {
 			.flatMap { placemark in
 				placemark.$type.load(on: req.db)
 					.flatMap { placemark.type.$category.load(on: req.db) }
+					.flatMap { placemark.$creator.load(on: req.db) }
 					.flatMap { placemark.$properties.load(on: req.db) }
 					.transform(to: placemark)
 			}
