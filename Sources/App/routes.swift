@@ -19,5 +19,6 @@ func routes(_ app: Application) throws {
 	
 	try v1.register(collection: UserController())
 	try v1.register(collection: AuthController())
+	try v1.register(collection: PlacemarkController())
 	
 }

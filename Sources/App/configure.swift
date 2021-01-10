@@ -39,6 +39,7 @@ public func configure(_ app: Application) throws {
 	
 	// Migrate database
 	app.migrations.add(User.Migrations.all)
+	app.migrations.add(Placemark.Migrations.all)
 	try app.autoMigrate().wait()
 	
 	// Register routes
