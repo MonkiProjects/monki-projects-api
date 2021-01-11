@@ -19,7 +19,7 @@ extension Placemark.Property.Migrations {
 				.id()
 				.field("type", .string, .required)
 				.field("human_id", .string, .required)
-				.unique(on: "human_id")
+				.unique(on: "human_id", name: "placemark_properties_no_duplicate_human_id")
 				.create()
 		}
 		

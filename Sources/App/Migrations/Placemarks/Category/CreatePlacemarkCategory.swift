@@ -18,7 +18,7 @@ extension Placemark.Category.Migrations {
 			database.schema("placemark_categories")
 				.id()
 				.field("human_id", .string, .required)
-				.unique(on: "human_id")
+				.unique(on: "human_id", name: "placemark_categories_no_duplicate_human_id")
 				.create()
 		}
 		

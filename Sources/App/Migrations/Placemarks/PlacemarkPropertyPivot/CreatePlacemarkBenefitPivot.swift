@@ -17,8 +17,14 @@ extension PlacemarkPropertyPivot.Migrations {
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
 			database.schema("placemark+property")
 				.id()
-				.field("placemark_id", .uuid, .required, .references("placemarks", .id))
-				.field("property_id", .uuid, .required, .references("placemark_properties", .id))
+				.field(
+					"placemark_id", .uuid, .required,
+					.references("placemarks", .id, onDelete: .cascade)
+				)
+				.field(
+					"property_id", .uuid, .required,
+					.references("placemark_properties", .id, onDelete: .cascade)
+				)
 				.create()
 		}
 		

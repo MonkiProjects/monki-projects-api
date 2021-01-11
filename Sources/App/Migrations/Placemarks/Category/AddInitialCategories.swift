@@ -1,5 +1,5 @@
 //
-//  AddCategories.swift
+//  AddInitialCategories.swift
 //  App
 //
 //  Created by Rémi Bardon on 10/01/2021.
@@ -12,7 +12,7 @@ extension Placemark.Category.Migrations {
 	
 	struct AddCategories: Migration {
 		
-		var name: String { "AddCategories" }
+		var name: String { "AddInitialCategories" }
 		
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
 			database.eventLoop.makeSucceededFuture(["spot", "facility", "misc"])

@@ -1,5 +1,5 @@
 //
-//  AddTypes.swift
+//  AddInitialTypes.swift
 //  App
 //
 //  Created by Rémi Bardon on 10/01/2021.
@@ -13,7 +13,7 @@ extension Placemark.PlacemarkType.Migrations {
 	
 	struct AddTypes: Migration {
 		
-		var name: String { "AddTypes" }
+		var name: String { "AddInitialTypes" }
 		
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
 			database.eventLoop.makeSucceededFuture([

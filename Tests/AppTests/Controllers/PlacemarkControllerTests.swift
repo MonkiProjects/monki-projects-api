@@ -508,8 +508,8 @@ final class PlacemarkControllerTests: XCTestCase {
 	/// - WHEN:
 	///     - User 2 tries to delete the placemark
 	/// - THEN:
-	///     - `HTTP` status should be `401 Unauthorized`
-	///     - `body` should be `"You cannot delete someone else's placemark"`
+	///     - `HTTP` status should be `403 Forbidden`
+	///     - `body` should be `"You cannot delete someone else's placemark!"`
 	func testDeleteSomeoneElsesPlacemark() throws {
 		let app = try XCTUnwrap(Self.app)
 		let userToken = try XCTUnwrap(Self.userToken)
@@ -554,12 +554,12 @@ final class PlacemarkControllerTests: XCTestCase {
 			},
 			afterResponse: { res in
 				// Test HTTP status
-				XCTAssertEqual(res.status, .unauthorized)
+				XCTAssertEqual(res.status, .forbidden)
 				
-				if res.status == .unauthorized {
+				if res.status == .forbidden {
 					// Test data
 					let error = try res.content.decode(ResponseError.self)
-					XCTAssertEqual(error.reason, "You cannot delete someone else's placemark")
+					XCTAssertEqual(error.reason, "You cannot delete someone else's placemark!")
 				} else if res.status != .ok {
 					// Log error
 					let error = try res.content.decode(ResponseError.self)

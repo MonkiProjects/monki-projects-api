@@ -19,6 +19,7 @@ extension Placemark {
 				+ Location.Migrations.all
 				+ [CreatePlacemark()]
 				+ PlacemarkPropertyPivot.Migrations.all
+				+ Submission.Migrations.all
 		}
 		
 	}

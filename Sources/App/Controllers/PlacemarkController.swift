@@ -23,14 +23,26 @@ struct PlacemarkController: RouteCollection {
 		let tokenProtected = placemarks.grouped(User.Token.authenticator())
 		// POST /placemarks
 		tokenProtected.post(use: createPlacemark)
-		placemarks.group(":placemarkId") { placemark in
+		
+		try placemarks.group(":placemarkId") { placemark in
 			// GET /placemarks/{placemarkId}
 			placemark.get(use: getPlacemark)
 			
 			let tokenProtected = placemark.grouped(User.Token.authenticator())
 			// DELETE /placemarks/{placemarkId}
 			tokenProtected.delete(use: deletePlacemark)
+			
+			try placemark.register(collection: PlacemarkSubmissionController())
 		}
+		
+		// GET /placemarks/features
+		placemarks.get("features", use: listPlacemarkFeatures)
+		// GET /placemarks/techniques
+		placemarks.get("techniques", use: listPlacemarkTechniques)
+		// GET /placemarks/benefits
+		placemarks.get("benefits", use: listPlacemarkBenefits)
+		// GET /placemarks/hazards
+		placemarks.get("hazards", use: listPlacemarkHazards)
 	}
 	
 	func listPlacemarks(req: Request) throws -> EventLoopFuture<[Placemark.Public]> {
@@ -88,14 +100,25 @@ struct PlacemarkController: RouteCollection {
 		// FIXME: Add properties
 		
 		// Save Placemark in database
-		return placemarkFuture.flatMap { placemark in
+		let createPlacemarkFuture = placemarkFuture.flatMap { placemark in
 			placemark.create(on: req.db)
 				.flatMap { placemark.$type.load(on: req.db) }
 				.flatMap { placemark.type.$category.load(on: req.db) }
 				.flatMap { placemark.$creator.load(on: req.db) }
 				.flatMap { placemark.$properties.load(on: req.db) }
-				.flatMapThrowing { try placemark.asPublic() }
+				.transform(to: placemark)
 		}
+		
+		// Save Placemark.Submission in database
+		let createSubmissionFuture =  createPlacemarkFuture.flatMapThrowing { placemark in
+			try Placemark.Submission(placemarkId: placemark.requireID())
+				.create(on: req.db)
+				.transform(to: placemark)
+		}
+		
+		return createSubmissionFuture
+			.flatMap { $0 }
+			.flatMapThrowing { try $0.asPublic() }
 	}
 	
 	func getPlacemark(req: Request) throws -> EventLoopFuture<Placemark.Public> {
@@ -122,7 +145,7 @@ struct PlacemarkController: RouteCollection {
 		// Do additional validations
 		let guardAuthorizedFuture = placemarkFuture.guard({ placemark in
 			placemark.$creator.id == user.id
-		}, else: Abort(.unauthorized, reason: "You cannot delete someone else's placemark"))
+		}, else: Abort(.forbidden, reason: "You cannot delete someone else's placemark!"))
 		
 		let deletePropertiesFuture = guardAuthorizedFuture
 			.flatMap { placemark in
@@ -138,6 +161,30 @@ struct PlacemarkController: RouteCollection {
 			.transform(to: .ok)
 	}
 	
+	func listPlacemarkFeatures(req: Request) -> EventLoopFuture<[Placemark.Property.Public]> {
+		listProperties(ofType: .feature, in: req.db)
+	}
+	
+	func listPlacemarkTechniques(req: Request) -> EventLoopFuture<[Placemark.Property.Public]> {
+		listProperties(ofType: .technique, in: req.db)
+	}
+	
+	func listPlacemarkBenefits(req: Request) -> EventLoopFuture<[Placemark.Property.Public]> {
+		listProperties(ofType: .benefit, in: req.db)
+	}
+	
+	func listPlacemarkHazards(req: Request) -> EventLoopFuture<[Placemark.Property.Public]> {
+		listProperties(ofType: .hazard, in: req.db)
+	}
+	
+	private func listProperties(
+		ofType type: Placemark.Property.PropertyType,
+		in database: Database
+	) -> EventLoopFuture<[Placemark.Property.Public]> {
+		Placemark.Property.query(on: database)
+			.filter(\.$type == type)
+			.all()
+			.mapEach { $0.asPublic() }
+	}
+	
 }
-
-import Foundation
