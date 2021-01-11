@@ -23,6 +23,8 @@ extension User.Migrations {
 				.field("created_at", .datetime, .required)
 				.field("updated_at", .datetime, .required)
 				.field("deleted_at", .datetime)
+				.unique(on: "username", name: "users_no_duplicate_username")
+				.unique(on: "email", name: "users_no_duplicate_email")
 				.create()
 		}
 		

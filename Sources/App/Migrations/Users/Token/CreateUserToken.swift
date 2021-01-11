@@ -22,7 +22,7 @@ extension User.Token {
 				.field("user_id", .uuid, .required, .references("users", .id))
 				.field("created_at", .datetime, .required)
 				.field("expires_at", .datetime)
-				.unique(on: "value")
+				.unique(on: "value", name: "no_duplicate_user_tokens")
 				.create()
 		}
 		
