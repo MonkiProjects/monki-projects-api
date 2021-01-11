@@ -9,6 +9,7 @@
 @testable import App
 import XCTVapor
 import Fluent
+import FluentSQLiteDriver
 
 final class CurrentUserControllerTests: XCTestCase {
 	
@@ -23,6 +24,7 @@ final class CurrentUserControllerTests: XCTestCase {
 		
 		do {
 			let app = Application(.testing)
+			app.databases.use(.sqlite(.memory), as: .sqlite)
 			try configure(app)
 			self.app = app
 			

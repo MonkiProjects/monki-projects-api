@@ -9,6 +9,7 @@
 @testable import App
 import XCTVapor
 import Fluent
+import FluentSQLiteDriver
 
 // swiftlint:disable:next type_body_length
 final class PlacemarkControllerTests: XCTestCase {
@@ -22,6 +23,7 @@ final class PlacemarkControllerTests: XCTestCase {
 		
 		do {
 			let app = Application(.testing)
+			app.databases.use(.sqlite(.memory), as: .sqlite)
 			try configure(app)
 			self.app = app
 			

@@ -19,7 +19,6 @@ let package = Package(
 			dependencies: [
 				.product(name: "Fluent", package: "fluent"),
 				.product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
-				.product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
 				.product(name: "Vapor", package: "vapor"),
 			],
 			swiftSettings: [
@@ -33,6 +32,7 @@ let package = Package(
 		.testTarget(name: "AppTests", dependencies: [
 			.target(name: "App"),
 			.product(name: "XCTVapor", package: "vapor"),
+			.product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
 		]),
 	]
 )

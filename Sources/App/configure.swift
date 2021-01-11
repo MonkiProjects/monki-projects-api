@@ -8,7 +8,6 @@
 
 import Fluent
 import FluentPostgresDriver
-import FluentSQLiteDriver
 import Vapor
 
 /// Configures your application
@@ -25,9 +24,7 @@ public func configure(_ app: Application) throws {
 	ContentConfiguration.global.use(decoder: decoder, for: .json)
 	
 	// Register database
-	if app.environment == .testing {
-		app.databases.use(.sqlite(.memory), as: .sqlite)
-	} else {
+	if app.environment != .testing {
 		app.databases.use(.postgres(
 			hostname: Environment.get("DATABASE_HOST") ?? "localhost",
 			port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? PostgresConfiguration.ianaPortNumber,

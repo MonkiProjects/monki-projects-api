@@ -8,12 +8,14 @@
 
 @testable import App
 import XCTVapor
+import FluentSQLiteDriver
 
 final class AppTests: XCTestCase {
 	
 	func testRedirectToDoc() throws {
 		let app = Application(.testing)
 		defer { app.shutdown() }
+		app.databases.use(.sqlite(.memory), as: .sqlite)
 		try configure(app)
 		
 		try app.test(.GET, "/") { res in
