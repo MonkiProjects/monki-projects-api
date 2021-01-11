@@ -310,7 +310,7 @@ class UserControllerTests: XCTestCase {
 	/// - WHEN:
 	///     - Creating another user with the same email address
 	/// - THEN:
-	///     - `HTTP` status should be `409 Conflict`
+	///     - `HTTP` status should be `403 Forbidden`
 	///     - `body` should be `"Email or username already taken"`
 	func testCreateUserWithExistingEmail() throws {
 		let app = try XCTUnwrap(Self.app)
@@ -339,10 +339,10 @@ class UserControllerTests: XCTestCase {
 			},
 			afterResponse: { res in
 				// Test HTTP status
-				XCTAssertEqual(res.status, .conflict)
+				XCTAssertEqual(res.status, .forbidden)
 				
 				let error = try res.content.decode(ResponseError.self)
-				if res.status == .conflict {
+				if res.status == .forbidden {
 					// Test error message
 					XCTAssertEqual(error.reason, "Email or username already taken")
 				} else if res.status != .ok {
@@ -360,7 +360,7 @@ class UserControllerTests: XCTestCase {
 	/// - WHEN:
 	///     - Creating another user with the same username
 	/// - THEN:
-	///     - `HTTP` status should be `409 Conflict`
+	///     - `HTTP` status should be `403 Forbidden`
 	///     - `body` should be `"Email or username already taken"`
 	func testCreateUserWithExistingUsername() throws {
 		let app = try XCTUnwrap(Self.app)
@@ -389,10 +389,10 @@ class UserControllerTests: XCTestCase {
 			},
 			afterResponse: { res in
 				// Test HTTP status
-				XCTAssertEqual(res.status, .conflict)
+				XCTAssertEqual(res.status, .forbidden)
 				
 				let error = try res.content.decode(ResponseError.self)
-				if res.status == .conflict {
+				if res.status == .forbidden {
 					// Test error message
 					XCTAssertEqual(error.reason, "Email or username already taken")
 				} else if res.status != .ok {
