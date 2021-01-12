@@ -11,7 +11,6 @@ import XCTVapor
 import Fluent
 import FluentSQLiteDriver
 
-// swiftlint:disable:next type_body_length
 final class PlacemarkControllerTests: XCTestCase {
 	
 	private static var app: Application?
@@ -77,8 +76,9 @@ final class PlacemarkControllerTests: XCTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(.GET, "v1/placemarks") { res in
-			XCTAssertEqual(res.status, .ok)
-			XCTAssertEqual(res.body.string, "[]")
+			try res.assertStatus(.ok) {
+				XCTAssertEqual(res.body.string, "[]")
+			}
 		}
 	}
 	
@@ -124,14 +124,9 @@ final class PlacemarkControllerTests: XCTestCase {
 		try publishedPlacemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
-		// Test route
 		try app.test(.GET, "v1/placemarks",
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .ok)
-				
-				if res.status == .ok {
-					// Test data
+				try res.assertStatus(.ok) {
 					let placemarks = try res.content.decode([Placemark.Public].self)
 					
 					XCTAssertEqual(placemarks.count, 1)
@@ -141,10 +136,6 @@ final class PlacemarkControllerTests: XCTestCase {
 					}
 					
 					XCTAssertEqual(placemarkResponse.id, publishedPlacemark.id)
-				} else {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
 				}
 			}
 		)
@@ -192,14 +183,9 @@ final class PlacemarkControllerTests: XCTestCase {
 		try publishedPlacemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
-		// Test route
 		try app.test(.GET, "v1/placemarks/submitted",
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .ok)
-				
-				if res.status == .ok {
-					// Test data
+				try res.assertStatus(.ok) {
 					let placemarks = try res.content.decode([Placemark.Public].self)
 					
 					XCTAssertEqual(placemarks.count, 1)
@@ -209,10 +195,6 @@ final class PlacemarkControllerTests: XCTestCase {
 					}
 					
 					XCTAssertEqual(placemarkResponse.id, submittedPlacemark.id)
-				} else {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
 				}
 			}
 		)
@@ -242,7 +224,6 @@ final class PlacemarkControllerTests: XCTestCase {
 		// Delete possibly created placemark
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
 		
-		// Test response
 		try app.test(.POST, "v1/placemarks",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
@@ -251,11 +232,7 @@ final class PlacemarkControllerTests: XCTestCase {
 				try req.content.encode(create)
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .ok)
-				
-				if res.status == .ok {
-					// Test data
+				try res.assertStatus(.ok) {
 					let placemark = try res.content.decode(Placemark.Public.self)
 					
 					XCTAssertEqual(placemark.name, create.name)
@@ -281,10 +258,6 @@ final class PlacemarkControllerTests: XCTestCase {
 					// Test creation on DB
 					let storedPlacemark = try Placemark.find(placemark.id, on: app.db).wait()
 					XCTAssertNotNil(storedPlacemark)
-				} else {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
 				}
 			}
 		)
@@ -318,21 +291,11 @@ final class PlacemarkControllerTests: XCTestCase {
 		try placemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
-		// Test route
 		try app.test(.GET, "v1/placemarks/\(placemarkId)",
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .ok)
-				
-				if res.status == .ok {
-					// Test data
+				try res.assertStatus(.ok) {
 					let placemarkResponse = try res.content.decode(Placemark.Public.self)
-					
 					XCTAssertEqual(placemarkResponse.id, placemark.id)
-				} else {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
 				}
 			}
 		)
@@ -367,16 +330,15 @@ final class PlacemarkControllerTests: XCTestCase {
 		try placemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
-		// Test route
 		try app.test(.DELETE, "v1/placemarks/\(placemarkId)",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .ok)
-				XCTAssertEqual(res.body.string, "")
+				try res.assertStatus(.ok) {
+					XCTAssertEqual(res.body.string, "")
+				}
 			}
 		)
 	}
@@ -393,14 +355,12 @@ final class PlacemarkControllerTests: XCTestCase {
 	func testGetFeatures() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		// Test route
 		try app.test(.GET, "v1/placemarks/features") { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .ok)
-			let features = try res.content.decode([Placemark.Property.Public].self)
-			XCTAssertEqual(features.count, 31)
+			try res.assertStatus(.ok) {
+				let features = try res.content.decode([Placemark.Property.Public].self)
+				XCTAssertEqual(features.count, 31)
+			}
 		}
-		
 	}
 	
 	/// Tests `GET /v1/placemarks/techniques`.
@@ -415,14 +375,12 @@ final class PlacemarkControllerTests: XCTestCase {
 	func testGetTechniques() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		// Test route
 		try app.test(.GET, "v1/placemarks/techniques") { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .ok)
-			let features = try res.content.decode([Placemark.Property.Public].self)
-			XCTAssertEqual(features.count, 12)
+			try res.assertStatus(.ok) {
+				let features = try res.content.decode([Placemark.Property.Public].self)
+				XCTAssertEqual(features.count, 12)
+			}
 		}
-		
 	}
 	
 	/// Tests `GET /v1/placemarks/benefits`.
@@ -437,14 +395,12 @@ final class PlacemarkControllerTests: XCTestCase {
 	func testGetBenefits() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		// Test route
 		try app.test(.GET, "v1/placemarks/benefits") { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .ok)
-			let features = try res.content.decode([Placemark.Property.Public].self)
-			XCTAssertEqual(features.count, 8)
+			try res.assertStatus(.ok) {
+				let features = try res.content.decode([Placemark.Property.Public].self)
+				XCTAssertEqual(features.count, 8)
+			}
 		}
-		
 	}
 	
 	/// Tests `GET /v1/placemarks/hazards`.
@@ -459,14 +415,12 @@ final class PlacemarkControllerTests: XCTestCase {
 	func testGetHazards() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		// Test route
 		try app.test(.GET, "v1/placemarks/hazards") { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .ok)
-			let features = try res.content.decode([Placemark.Property.Public].self)
-			XCTAssertEqual(features.count, 8)
+			try res.assertStatus(.ok) {
+				let features = try res.content.decode([Placemark.Property.Public].self)
+				XCTAssertEqual(features.count, 8)
+			}
 		}
-		
 	}
 	
 	// MARK: - Invalid Domain
@@ -500,7 +454,6 @@ final class PlacemarkControllerTests: XCTestCase {
 		// Delete possibly created placemark
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
 		
-		// Test response
 		try app.test(.POST, "v1/placemarks",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
@@ -509,18 +462,10 @@ final class PlacemarkControllerTests: XCTestCase {
 				try req.content.encode(create)
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .badRequest)
-				
-				if res.status == .badRequest {
-					// Test error message
-					let error = try res.content.decode(ResponseError.self)
-					XCTAssertEqual(error.reason, "name is less than minimum of 3 character(s)")
-				} else if res.status != .ok {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
-				}
+				try res.assertError(
+					status: .badRequest,
+					reason: "name is less than minimum of 3 character(s)"
+				)
 			}
 		)
 	}
@@ -537,22 +482,9 @@ final class PlacemarkControllerTests: XCTestCase {
 	func testGetPlacemarkWithInexistentId() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "v1/placemarks/\(UUID())",
-			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .notFound)
-				
-				if res.status == .notFound {
-					// Test error message
-					let error = try res.content.decode(ResponseError.self)
-					XCTAssertEqual(error.reason, "Not Found")
-				} else if res.status != .ok {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
-				}
-			}
-		)
+		try app.test(.GET, "v1/placemarks/\(UUID())") { res in
+			try res.assertError(status: .notFound, reason: "Not Found")
+		}
 	}
 	
 	/// Tries to create a placemark with an invalid `Bearer` token.
@@ -574,18 +506,7 @@ final class PlacemarkControllerTests: XCTestCase {
 				req.headers.bearerAuthorization = bearerAuth
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .unauthorized)
-				
-				if res.status == .unauthorized {
-					// Test data
-					let error = try res.content.decode(ResponseError.self)
-					XCTAssertEqual(error.reason, "Unauthorized")
-				} else if res.status != .ok {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
-				}
+				try res.assertError(status: .unauthorized, reason: "Unauthorized")
 			}
 		)
 	}
@@ -636,25 +557,16 @@ final class PlacemarkControllerTests: XCTestCase {
 		try placemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
-		// Test route
 		try app.test(.DELETE, "v1/placemarks/\(placemarkId)",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .forbidden)
-				
-				if res.status == .forbidden {
-					// Test data
-					let error = try res.content.decode(ResponseError.self)
-					XCTAssertEqual(error.reason, "You cannot delete someone else's placemark!")
-				} else if res.status != .ok {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
-				}
+				try res.assertError(
+					status: .forbidden,
+					reason: "You cannot delete someone else's placemark!"
+				)
 			}
 		)
 	}

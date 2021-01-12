@@ -61,8 +61,9 @@ class UserControllerTests: XCTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(.GET, "v1/users") { res in
-			XCTAssertEqual(res.status, .ok)
-			XCTAssertEqual(res.body.string, "[]")
+			try res.assertStatus(.ok) {
+				XCTAssertEqual(res.body.string, "[]")
+			}
 		}
 	}
 	
@@ -88,22 +89,14 @@ class UserControllerTests: XCTestCase {
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
-		// Test route
 		try app.test(.GET, "v1/users") { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .ok)
-			
-			if res.status == .ok {
-				// Test data
+			try res.assertStatus(.ok) {
 				let users = try res.content.decode([User.Public].self)
 				
 				XCTAssertEqual(users.count, 1)
 				let userResponse = try XCTUnwrap(users.first)
 				
 				XCTAssertEqual(userResponse.id, user.id)
-			} else {
-				// Log error
-				XCTFail(res.body.string)
 			}
 		}
 	}
@@ -131,17 +124,12 @@ class UserControllerTests: XCTestCase {
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: username, on: app.db)
 		
-		// Test response
 		try app.test(.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user)
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .ok)
-				
-				if res.status == .ok {
-					// Test data
+				try res.assertStatus(.ok) {
 					let createdUser = try res.content.decode(User.Private.self)
 					
 					XCTAssertEqual(createdUser.username, user.username)
@@ -150,9 +138,6 @@ class UserControllerTests: XCTestCase {
 					// Test creation on DB
 					let storedUser = try User.find(createdUser.id, on: app.db).wait()
 					XCTAssertNotNil(storedUser)
-				} else {
-					// Log error
-					XCTFail(res.body.string)
 				}
 			}
 		)
@@ -200,18 +185,13 @@ class UserControllerTests: XCTestCase {
 			}
 		}
 		
-		// Test deletion
 		try app.test(.DELETE, "v1/users/\(userId)",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: token.value)
 				req.headers.bearerAuthorization = bearerAuth
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .ok)
-				
-				if res.status == .ok {
-					// Test data
+				try res.assertStatus(.ok) {
 					XCTAssertEqual(res.body.string, "")
 					
 					// Test if user is really deleted
@@ -226,10 +206,6 @@ class UserControllerTests: XCTestCase {
 						.all() 							// Get all results
 						.wait()
 					XCTAssertTrue(tokens.isEmpty)
-				} else {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
 				}
 			}
 		)
@@ -249,7 +225,6 @@ class UserControllerTests: XCTestCase {
 	func testCreateUserWithMismatchingPassword() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		// Test response
 		let user = User.Create(
 			username: "test_username",
 			email: "test@email.com",
@@ -257,22 +232,13 @@ class UserControllerTests: XCTestCase {
 			confirmPassword: "password2"
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
+		
 		try app.test(.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user)
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .badRequest)
-				
-				let error = try res.content.decode(ResponseError.self)
-				if res.status == .badRequest {
-					// Test error message
-					XCTAssertEqual(error.reason, "Passwords do not match")
-				} else if res.status != .ok {
-					// Log error
-					XCTFail(error.reason)
-				}
+				try res.assertError(status: .badRequest, reason: "Passwords do not match")
 			}
 		)
 	}
@@ -291,17 +257,7 @@ class UserControllerTests: XCTestCase {
 		
 		// Test response
 		try app.test(.GET, "v1/users/\(UUID())") { res in
-			// Test HTTP status
-			XCTAssertEqual(res.status, .notFound)
-			
-			let error = try res.content.decode(ResponseError.self)
-			if res.status == .notFound {
-				// Test error message
-				XCTAssertEqual(error.reason, "Not Found")
-			} else if res.status != .ok {
-				// Log error
-				XCTFail(error.reason)
-			}
+			try res.assertError(status: .notFound, reason: "Not Found")
 		}
 	}
 	
@@ -340,17 +296,7 @@ class UserControllerTests: XCTestCase {
 				try req.content.encode(user2)
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .forbidden)
-				
-				let error = try res.content.decode(ResponseError.self)
-				if res.status == .forbidden {
-					// Test error message
-					XCTAssertEqual(error.reason, "Email or username already taken")
-				} else if res.status != .ok {
-					// Log error
-					XCTFail(error.reason)
-				}
+				try res.assertError(status: .forbidden, reason: "Email or username already taken")
 			}
 		)
 	}
@@ -390,17 +336,7 @@ class UserControllerTests: XCTestCase {
 				try req.content.encode(user2)
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .forbidden)
-				
-				let error = try res.content.decode(ResponseError.self)
-				if res.status == .forbidden {
-					// Test error message
-					XCTAssertEqual(error.reason, "Email or username already taken")
-				} else if res.status != .ok {
-					// Log error
-					XCTFail(error.reason)
-				}
+				try res.assertError(status: .forbidden, reason: "Email or username already taken")
 			}
 		)
 	}
@@ -430,17 +366,10 @@ class UserControllerTests: XCTestCase {
 				try req.content.encode(user)
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .badRequest)
-				
-				let error = try res.content.decode(ResponseError.self)
-				if res.status == .badRequest {
-					// Test error message
-					XCTAssertEqual(error.reason, "password is less than minimum of 8 character(s)")
-				} else if res.status != .ok {
-					// Log error
-					XCTFail(error.reason)
-				}
+				try res.assertError(
+					status: .badRequest,
+					reason: "password is less than minimum of 8 character(s)"
+				)
 			}
 		)
 	}
@@ -470,17 +399,7 @@ class UserControllerTests: XCTestCase {
 				try req.content.encode(user)
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .badRequest)
-				
-				let error = try res.content.decode(ResponseError.self)
-				if res.status == .badRequest {
-					// Test error message
-					XCTAssertEqual(error.reason, "email is not a valid email address")
-				} else if res.status != .ok {
-					// Log error
-					XCTFail(error.reason)
-				}
+				try res.assertError(status: .badRequest, reason: "email is not a valid email address")
 			}
 		)
 	}
@@ -510,17 +429,10 @@ class UserControllerTests: XCTestCase {
 				try req.content.encode(user)
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .badRequest)
-				
-				let error = try res.content.decode(ResponseError.self)
-				if res.status == .badRequest {
-					// Test error message
-					XCTAssertEqual(error.reason, "username contains 'T' (allowed: a-z, 0-9, '.', '_')")
-				} else if res.status != .ok {
-					// Log error
-					XCTFail(error.reason)
-				}
+				try res.assertError(
+					status: .badRequest,
+					reason: "username contains 'T' (allowed: a-z, 0-9, '.', '_')"
+				)
 			}
 		)
 	}
@@ -555,18 +467,7 @@ class UserControllerTests: XCTestCase {
 				req.headers.bearerAuthorization = bearerAuth
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .unauthorized)
-				
-				if res.status == .unauthorized {
-					// Test data
-					let error = try res.content.decode(ResponseError.self)
-					XCTAssertEqual(error.reason, "Unauthorized")
-				} else if res.status != .ok {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
-				}
+				try res.assertError(status: .unauthorized, reason: "Unauthorized")
 			}
 		)
 	}
@@ -601,18 +502,7 @@ class UserControllerTests: XCTestCase {
 				req.headers.basicAuthorization = basicAuth
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .unauthorized)
-				
-				if res.status == .unauthorized {
-					// Test data
-					let error = try res.content.decode(ResponseError.self)
-					XCTAssertEqual(error.reason, "Unauthorized")
-				} else if res.status != .ok {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
-				}
+				try res.assertError(status: .unauthorized, reason: "Unauthorized")
 			}
 		)
 	}

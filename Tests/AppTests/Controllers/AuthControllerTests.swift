@@ -71,10 +71,7 @@ final class CurrentUserControllerTests: XCTestCase {
 				req.headers.basicAuthorization = basicAuth
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .ok)
-				
-				if res.status == .ok {
+				try res.assertStatus(.ok) {
 					// Test user value in token
 					do {
 						let token = try res.content.decode(User.Token.self)
@@ -82,10 +79,6 @@ final class CurrentUserControllerTests: XCTestCase {
 					} catch {
 						XCTFail(error.localizedDescription)
 					}
-				} else {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
 				}
 			}
 		)
@@ -103,18 +96,7 @@ final class CurrentUserControllerTests: XCTestCase {
 				req.headers.basicAuthorization = basicAuth
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .unauthorized)
-				
-				if res.status == .unauthorized {
-					// Test data
-					let error = try res.content.decode(ResponseError.self)
-					XCTAssertEqual(error.reason, "Unauthorized")
-				} else if res.status != .ok {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
-				}
+				try res.assertError(status: .unauthorized, reason: "Unauthorized")
 			}
 		)
 	}
@@ -128,18 +110,7 @@ final class CurrentUserControllerTests: XCTestCase {
 				req.headers.basicAuthorization = basicAuth
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .unauthorized)
-				
-				if res.status == .unauthorized {
-					// Test data
-					let error = try res.content.decode(ResponseError.self)
-					XCTAssertEqual(error.reason, "Unauthorized")
-				} else if res.status != .ok {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
-				}
+				try res.assertError(status: .unauthorized, reason: "Unauthorized")
 			}
 		)
 	}
@@ -154,18 +125,7 @@ final class CurrentUserControllerTests: XCTestCase {
 				req.headers.bearerAuthorization = bearerAuth
 			},
 			afterResponse: { res in
-				// Test HTTP status
-				XCTAssertEqual(res.status, .unauthorized)
-				
-				if res.status == .unauthorized {
-					// Test data
-					let error = try res.content.decode(ResponseError.self)
-					XCTAssertEqual(error.reason, "Unauthorized")
-				} else if res.status != .ok {
-					// Log error
-					let error = try res.content.decode(ResponseError.self)
-					XCTFail(error.reason)
-				}
+				try res.assertError(status: .unauthorized, reason: "Unauthorized")
 			}
 		)
 	}
