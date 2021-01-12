@@ -381,6 +381,94 @@ final class PlacemarkControllerTests: XCTestCase {
 		)
 	}
 	
+	/// Tests `GET /v1/placemarks/features`.
+	///
+	/// - GIVEN:
+	///     - Nothing
+	/// - WHEN:
+	///     - Listing all placemark features
+	/// - THEN:
+	///     - `HTTP` status should be `200 OK`
+	///     - `body` should be an array containing all possible placemark features
+	func testGetFeatures() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		// Test route
+		try app.test(.GET, "v1/placemarks/features") { res in
+			// Test HTTP status
+			XCTAssertEqual(res.status, .ok)
+			let features = try res.content.decode([Placemark.Property.Public].self)
+			XCTAssertEqual(features.count, 31)
+		}
+		
+	}
+	
+	/// Tests `GET /v1/placemarks/techniques`.
+	///
+	/// - GIVEN:
+	///     - Nothing
+	/// - WHEN:
+	///     - Listing all placemark techniques
+	/// - THEN:
+	///     - `HTTP` status should be `200 OK`
+	///     - `body` should be an array containing all possible placemark techniques
+	func testGetTechniques() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		// Test route
+		try app.test(.GET, "v1/placemarks/techniques") { res in
+			// Test HTTP status
+			XCTAssertEqual(res.status, .ok)
+			let features = try res.content.decode([Placemark.Property.Public].self)
+			XCTAssertEqual(features.count, 12)
+		}
+		
+	}
+	
+	/// Tests `GET /v1/placemarks/benefits`.
+	///
+	/// - GIVEN:
+	///     - Nothing
+	/// - WHEN:
+	///     - Listing all placemark benefits
+	/// - THEN:
+	///     - `HTTP` status should be `200 OK`
+	///     - `body` should be an array containing all possible placemark benefits
+	func testGetBenefits() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		// Test route
+		try app.test(.GET, "v1/placemarks/benefits") { res in
+			// Test HTTP status
+			XCTAssertEqual(res.status, .ok)
+			let features = try res.content.decode([Placemark.Property.Public].self)
+			XCTAssertEqual(features.count, 8)
+		}
+		
+	}
+	
+	/// Tests `GET /v1/placemarks/hazards`.
+	///
+	/// - GIVEN:
+	///     - Nothing
+	/// - WHEN:
+	///     - Listing all placemark hazards
+	/// - THEN:
+	///     - `HTTP` status should be `200 OK`
+	///     - `body` should be an array containing all possible placemark hazards
+	func testGetHazards() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		// Test route
+		try app.test(.GET, "v1/placemarks/hazards") { res in
+			// Test HTTP status
+			XCTAssertEqual(res.status, .ok)
+			let features = try res.content.decode([Placemark.Property.Public].self)
+			XCTAssertEqual(features.count, 8)
+		}
+		
+	}
+	
 	// MARK: - Invalid Domain
 	
 	/// Tries to create a placemark with a name of less than 3 characters.

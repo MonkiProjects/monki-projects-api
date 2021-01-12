@@ -13,7 +13,7 @@ extension Placemark.Property {
 	enum Migrations {
 		
 		static var all: [Migration] {
-			return [CreatePlacemarkProperty()]
+			return [CreatePlacemarkProperty(), AddInitialProperties()]
 		}
 		
 	}

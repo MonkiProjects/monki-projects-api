@@ -13,7 +13,7 @@ extension Placemark.Category {
 	enum Migrations {
 		
 		static var all: [Migration] {
-			return [CreatePlacemarkCategory(), AddCategories()]
+			return [CreatePlacemarkCategory(), AddInitialCategories()]
 		}
 		
 	}

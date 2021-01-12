@@ -1,8 +1,9 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.3
 import PackageDescription
 
 let package = Package(
 	name: "monki-projects-api",
+	defaultLocalization: "en",
 	platforms: [
 		.macOS(.v10_15),
 	],
@@ -20,6 +21,9 @@ let package = Package(
 				.product(name: "Fluent", package: "fluent"),
 				.product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
 				.product(name: "Vapor", package: "vapor"),
+			],
+			resources: [
+				.process("Resources"),
 			],
 			swiftSettings: [
 				// Enable better optimizations when building in Release configuration. Despite the use of

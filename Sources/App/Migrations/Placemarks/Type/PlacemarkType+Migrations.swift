@@ -13,7 +13,7 @@ extension Placemark.PlacemarkType {
 	enum Migrations {
 		
 		static var all: [Migration] {
-			return [CreatePlacemarkType(), AddTypes()]
+			return [CreatePlacemarkType(), AddInitialTypes()]
 		}
 		
 	}
