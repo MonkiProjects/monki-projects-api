@@ -24,18 +24,13 @@ final class CurrentUserControllerTests: AppTestCase {
 			let app = try XCTUnwrap(self.app)
 			
 			// Create user
-			let user = User(
-				id: userId,
-				username: "test_username",
-				email: "test@email.com",
-				passwordHash: try Bcrypt.hash(password)
-			)
+			let user = User.dummy(id: userId, passwordHash: try Bcrypt.hash(password))
 			try user.create(on: app.db).wait()
 			self.user = user
 			
 			// Create user token
 			let userToken = try user.generateToken()
-			try userToken.save(on: app.db).wait()
+			try userToken.create(on: app.db).wait()
 			self.userToken = userToken
 		} catch {
 			XCTFail(error.localizedDescription)

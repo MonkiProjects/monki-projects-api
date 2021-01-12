@@ -22,12 +22,7 @@ final class PlacemarkControllerTests: AppTestCase {
 			let app = try XCTUnwrap(self.app)
 			
 			// Create user
-			let user = User(
-				id: UUID(),
-				username: "test_username",
-				email: "test@email.com",
-				passwordHash: "password" // Do not hash for speed purposes
-			)
+			let user = User.dummy()
 			try user.create(on: app.db).wait()
 			self.user = user
 			
@@ -80,48 +75,35 @@ final class PlacemarkControllerTests: AppTestCase {
 		let user = try XCTUnwrap(Self.user)
 		
 		// Create submitted placemark
-		let submittedPlacemark = try Placemark(
-			id: UUID(),
-			name: "Test name 1",
-			latitude: Double.random(in: -90...90),
-			longitude: Double.random(in: -180...180),
+		let submittedPlacemark = try Placemark.dummy(
 			typeId: typeId(for: "training_spot", on: app.db).wait(),
-			state: .submitted,
-			creatorId: user.requireID(),
-			caption: "Test caption"
+			creatorId: user.requireID()
 		)
 		try submittedPlacemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(submittedPlacemark, on: app.db)
 		
 		// Create published placemark
-		let publishedPlacemark = try Placemark(
-			id: UUID(),
-			name: "Test name 2",
-			latitude: Double.random(in: -90...90),
-			longitude: Double.random(in: -180...180),
+		let publishedPlacemark = try Placemark.dummy(
 			typeId: typeId(for: "training_spot", on: app.db).wait(),
 			state: .published,
-			creatorId: user.requireID(),
-			caption: "Test caption"
+			creatorId: user.requireID()
 		)
 		try publishedPlacemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
-		try app.test(.GET, "v1/placemarks",
-			afterResponse: { res in
-				try res.assertStatus(.ok) {
-					let placemarks = try res.content.decode([Placemark.Public].self)
-					
-					XCTAssertEqual(placemarks.count, 1)
-					guard let placemarkResponse = placemarks.first else {
-						XCTFail("Response does not contain a Placemark")
-						return
-					}
-					
-					XCTAssertEqual(placemarkResponse.id, publishedPlacemark.id)
+		try app.test(.GET, "v1/placemarks") { res in
+			try res.assertStatus(.ok) {
+				let placemarks = try res.content.decode([Placemark.Public].self)
+				
+				XCTAssertEqual(placemarks.count, 1)
+				guard let placemarkResponse = placemarks.first else {
+					XCTFail("Response does not contain a Placemark")
+					return
 				}
+				
+				XCTAssertEqual(placemarkResponse.id, publishedPlacemark.id)
 			}
-		)
+		}
 	}
 	
 	/// Tests `GET /v1/placemarks/submitted`.
@@ -139,48 +121,35 @@ final class PlacemarkControllerTests: AppTestCase {
 		let user = try XCTUnwrap(Self.user)
 		
 		// Create submitted placemark
-		let submittedPlacemark = try Placemark(
-			id: UUID(),
-			name: "Test name 1",
-			latitude: Double.random(in: -90...90),
-			longitude: Double.random(in: -180...180),
+		let submittedPlacemark = try Placemark.dummy(
 			typeId: typeId(for: "training_spot", on: app.db).wait(),
-			state: .submitted,
-			creatorId: user.requireID(),
-			caption: "Test caption"
+			creatorId: user.requireID()
 		)
 		try submittedPlacemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(submittedPlacemark, on: app.db)
 		
 		// Create published placemark
-		let publishedPlacemark = try Placemark(
-			id: UUID(),
-			name: "Test name 2",
-			latitude: Double.random(in: -90...90),
-			longitude: Double.random(in: -180...180),
+		let publishedPlacemark = try Placemark.dummy(
 			typeId: typeId(for: "training_spot", on: app.db).wait(),
 			state: .published,
-			creatorId: user.requireID(),
-			caption: "Test caption"
+			creatorId: user.requireID()
 		)
 		try publishedPlacemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
-		try app.test(.GET, "v1/placemarks/submitted",
-			afterResponse: { res in
-				try res.assertStatus(.ok) {
-					let placemarks = try res.content.decode([Placemark.Public].self)
-					
-					XCTAssertEqual(placemarks.count, 1)
-					guard let placemarkResponse = placemarks.first else {
-						XCTFail("Response does not contain a Placemark")
-						return
-					}
-					
-					XCTAssertEqual(placemarkResponse.id, submittedPlacemark.id)
+		try app.test(.GET, "v1/placemarks/submitted") { res in
+			try res.assertStatus(.ok) {
+				let placemarks = try res.content.decode([Placemark.Public].self)
+				
+				XCTAssertEqual(placemarks.count, 1)
+				guard let placemarkResponse = placemarks.first else {
+					XCTFail("Response does not contain a Placemark")
+					return
 				}
+				
+				XCTAssertEqual(placemarkResponse.id, submittedPlacemark.id)
 			}
-		)
+		}
 	}
 	
 	/// Creates a new spot
@@ -261,27 +230,20 @@ final class PlacemarkControllerTests: AppTestCase {
 		
 		// Create submitted placemark
 		let placemarkId = UUID()
-		let placemark = try Placemark(
+		let placemark = try Placemark.dummy(
 			id: placemarkId,
-			name: "Test name",
-			latitude: Double.random(in: -90...90),
-			longitude: Double.random(in: -180...180),
 			typeId: typeId(for: "training_spot", on: app.db).wait(),
-			state: .submitted,
-			creatorId: user.requireID(),
-			caption: "Test caption"
+			creatorId: user.requireID()
 		)
 		try placemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
-		try app.test(.GET, "v1/placemarks/\(placemarkId)",
-			afterResponse: { res in
-				try res.assertStatus(.ok) {
-					let placemarkResponse = try res.content.decode(Placemark.Public.self)
-					XCTAssertEqual(placemarkResponse.id, placemark.id)
-				}
+		try app.test(.GET, "v1/placemarks/\(placemarkId)") { res in
+			try res.assertStatus(.ok) {
+				let placemarkResponse = try res.content.decode(Placemark.Public.self)
+				XCTAssertEqual(placemarkResponse.id, placemark.id)
 			}
-		)
+		}
 	}
 	
 	/// Tests `DELETE /v1/placemarks/{placemarkId}`.
@@ -300,15 +262,10 @@ final class PlacemarkControllerTests: AppTestCase {
 		
 		// Create submitted placemark
 		let placemarkId = UUID()
-		let placemark = try Placemark(
+		let placemark = try Placemark.dummy(
 			id: placemarkId,
-			name: "Test name",
-			latitude: Double.random(in: -90...90),
-			longitude: Double.random(in: -180...180),
 			typeId: typeId(for: "training_spot", on: app.db).wait(),
-			state: .submitted,
-			creatorId: user.requireID(),
-			caption: "Test caption"
+			creatorId: user.requireID()
 		)
 		try placemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
@@ -509,33 +466,16 @@ final class PlacemarkControllerTests: AppTestCase {
 		let userToken = try XCTUnwrap(Self.userToken)
 		
 		// Create other user
-		let otherUser = User(
-			id: UUID(),
-			username: "other_user",
-			email: "other@email.com",
-			passwordHash: "password" // Do not hash for speed purposes
-		)
+		let otherUser = User.dummy()
 		try otherUser.create(on: app.db).wait()
-		// Delete other user after test finishes
-		addTeardownBlock {
-			do {
-				try otherUser.delete(force: true, on: app.db).wait()
-			} catch {
-				XCTFail(error.localizedDescription)
-			}
-		}
+		deleteUserAfterTestFinishes(otherUser, on: app.db)
 		
 		// Create placemark
 		let placemarkId = UUID()
-		let placemark = try Placemark(
+		let placemark = try Placemark.dummy(
 			id: placemarkId,
-			name: "Test name",
-			latitude: Double.random(in: -90...90),
-			longitude: Double.random(in: -180...180),
 			typeId: typeId(for: "training_spot", on: app.db).wait(),
-			state: .submitted,
-			creatorId: otherUser.requireID(),
-			caption: "Test caption"
+			creatorId: otherUser.requireID()
 		)
 		try placemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
@@ -555,4 +495,3 @@ final class PlacemarkControllerTests: AppTestCase {
 	}
 	
 }
-// swiftlint:disable:this file_length

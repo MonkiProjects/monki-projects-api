@@ -50,12 +50,7 @@ class UserControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		// Create user
-		let user = User(
-			id: UUID(),
-			username: "test_username",
-			email: "test@email.com",
-			passwordHash: "password" // Do not hash for speed purposes
-		)
+		let user = User.dummy()
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
@@ -93,7 +88,6 @@ class UserControllerTests: AppTestCase {
 			confirmPassword: "password"
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: username, on: app.db)
-		
 		try app.test(.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user)
@@ -129,20 +123,9 @@ class UserControllerTests: AppTestCase {
 		
 		// Create user
 		let userId = UUID()
-		let user = User(
-			id: userId,
-			username: "temp_username",
-			email: "temp@email.com",
-			passwordHash: try Bcrypt.hash("password")
-		)
+		let user = User.dummy(id: userId)
 		try user.create(on: app.db).wait()
-		addTeardownBlock {
-			do {
-				try user.delete(force: true, on: app.db).wait()
-			} catch {
-				XCTFail(error.localizedDescription)
-			}
-		}
+		deleteUserAfterTestFinishes(user, on: app.db)
 		
 		// Create new token
 		let token = try user.generateToken()
@@ -225,7 +208,6 @@ class UserControllerTests: AppTestCase {
 	func testGetUserWithInexistentId() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		// Test response
 		try app.test(.GET, "v1/users/\(UUID())") { res in
 			try res.assertError(status: .notFound, reason: "Not Found")
 		}
@@ -243,20 +225,17 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithExistingEmail() throws {
 		let app = try XCTUnwrap(Self.app)
 		
+		let sameEmail = "test@email.com"
+		
 		// Create user
-		let user1 = User(
-			id: UUID(),
-			username: "test_username1",
-			email: "test@email.com",
-			passwordHash: "password1" // Do not hash for speed purposes
-		)
+		let user1 = User.dummy(email: sameEmail)
 		try user1.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user1, on: app.db)
 		
-		// Test response
+		// Try to create other user
 		let user2 = User.Create(
 			username: "test_username2",
-			email: "test@email.com",
+			email: sameEmail,
 			password: "password2",
 			confirmPassword: "password2"
 		)
@@ -283,19 +262,16 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithExistingUsername() throws {
 		let app = try XCTUnwrap(Self.app)
 		
+		let sameUsername = "test_username"
+		
 		// Create user
-		let user1 = User(
-			id: UUID(),
-			username: "test_username",
-			email: "test1@email.com",
-			passwordHash: "password1" // Do not hash for speed purposes
-		)
+		let user1 = User.dummy(username: sameUsername)
 		try user1.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user1, on: app.db)
 		
-		// Test response
+		// Try to create other user
 		let user2 = User.Create(
-			username: "test_username",
+			username: sameUsername,
 			email: "test2@email.com",
 			password: "password2",
 			confirmPassword: "password2"
@@ -323,7 +299,6 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithTooShortPassword() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		// Test response
 		let user = User.Create(
 			username: "test_username",
 			email: "test@email.com",
@@ -356,7 +331,6 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithInvalidEmail() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		// Test response
 		let user = User.Create(
 			username: "test_username",
 			email: "test@email",
@@ -386,7 +360,6 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithInvalidUsername() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		// Test response
 		let user = User.Create(
 			username: "Test_username",
 			email: "test@email.com",
@@ -421,12 +394,7 @@ class UserControllerTests: AppTestCase {
 		
 		// Create user
 		let userId = UUID()
-		let user = User(
-			id: UUID(),
-			username: "test_username",
-			email: "test@email.com",
-			passwordHash: "password" // Do not hash for speed purposes
-		)
+		let user = User.dummy()
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
@@ -457,10 +425,7 @@ class UserControllerTests: AppTestCase {
 		// Create user
 		let userId = UUID()
 		let password = "password"
-		let user = User(
-			id: UUID(),
-			username: "test_username",
-			email: "test@email.com",
+		let user = User.dummy(
 			passwordHash: password // Do not hash for speed purposes
 		)
 		try user.create(on: app.db).wait()
@@ -478,4 +443,3 @@ class UserControllerTests: AppTestCase {
 	}
 	
 }
-// swiftlint:disable:this file_length
