@@ -130,13 +130,7 @@ class UserControllerTests: AppTestCase {
 		// Create new token
 		let token = try user.generateToken()
 		try token.create(on: app.db).wait()
-		addTeardownBlock {
-			do {
-				try token.delete(force: true, on: app.db).wait()
-			} catch {
-				XCTFail(error.localizedDescription)
-			}
-		}
+		deleteUserTokenAfterTestFinishes(token, on: app.db)
 		
 		try app.test(.DELETE, "v1/users/\(userId)",
 			beforeRequest: { req in

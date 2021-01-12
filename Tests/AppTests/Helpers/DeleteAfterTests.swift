@@ -22,21 +22,36 @@ extension XCTestCase {
 	///
 	/// # Example #
 	/// ```
-	/// // Create user
-	/// let user = User(
-	/// 	id: UUID(),
-	/// 	email: "test@email.com",
-	/// 	username: "test_username",
-	/// 	displayName: "Test User",
-	/// 	passwordHash: try BCrypt.hash("password")
-	/// )
-	/// try user.create(on: Self.app.db).wait()
+	/// try user.create(on: app.db).wait()
 	/// deleteUserAfterTestFinishes(user, on: app.db)
 	/// ```
 	func deleteUserAfterTestFinishes(_ user: User?, on database: Database) {
 		addTeardownBlock {
 			do {
 				try user?.delete(force: true, on: database).wait()
+			} catch {
+				XCTFail(error.localizedDescription)
+			}
+		}
+	}
+	
+	/// Adds a `tearDown` block that deletes the given `User.Token` after the current test finishes.
+	///
+	/// - Parameters:
+	///   - userToken: The `User.Token` to delete
+	///
+	/// # Notes: #
+	/// 1. Forces deletion
+	///
+	/// # Example #
+	/// ```
+	/// try userToken.create(on: app.db).wait()
+	/// deleteUserTokenAfterTestFinishes(userToken, on: app.db)
+	/// ```
+	func deleteUserTokenAfterTestFinishes(_ userToken: User.Token?, on database: Database) {
+		addTeardownBlock {
+			do {
+				try userToken?.delete(force: true, on: database).wait()
 			} catch {
 				XCTFail(error.localizedDescription)
 			}
