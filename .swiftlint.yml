@@ -28,6 +28,7 @@ identifier_name:
     - en
     - fr
     - v1
+    - n
 trailing_whitespace:
   ignores_empty_lines: true
 trailing_comma:

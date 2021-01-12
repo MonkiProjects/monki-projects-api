@@ -86,7 +86,7 @@ class UserControllerTests: XCTestCase {
 			passwordHash: "password" // Do not hash for speed purposes
 		)
 		try user.create(on: app.db).wait()
-		deleteUserAfterTestFinishes(user)
+		deleteUserAfterTestFinishes(user, on: app.db)
 		
 		// Test route
 		try app.test(.GET, "v1/users") { res in
@@ -129,7 +129,7 @@ class UserControllerTests: XCTestCase {
 			password: "password",
 			confirmPassword: "password"
 		)
-		deletePossiblyCreatedUserAfterTestFinishes(username: username)
+		deletePossiblyCreatedUserAfterTestFinishes(username: username, on: app.db)
 		
 		// Test response
 		try app.test(.POST, "v1/users",
@@ -256,7 +256,7 @@ class UserControllerTests: XCTestCase {
 			password: "password1",
 			confirmPassword: "password2"
 		)
-		deletePossiblyCreatedUserAfterTestFinishes(username: user.username)
+		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
 		try app.test(.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user)
@@ -325,7 +325,7 @@ class UserControllerTests: XCTestCase {
 			passwordHash: "password1" // Do not hash for speed purposes
 		)
 		try user1.create(on: app.db).wait()
-		deleteUserAfterTestFinishes(user1)
+		deleteUserAfterTestFinishes(user1, on: app.db)
 		
 		// Test response
 		let user2 = User.Create(
@@ -334,7 +334,7 @@ class UserControllerTests: XCTestCase {
 			password: "password2",
 			confirmPassword: "password2"
 		)
-		deletePossiblyCreatedUserAfterTestFinishes(username: user2.username)
+		deletePossiblyCreatedUserAfterTestFinishes(username: user2.username, on: app.db)
 		try app.test(.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user2)
@@ -375,7 +375,7 @@ class UserControllerTests: XCTestCase {
 			passwordHash: "password1" // Do not hash for speed purposes
 		)
 		try user1.create(on: app.db).wait()
-		deleteUserAfterTestFinishes(user1)
+		deleteUserAfterTestFinishes(user1, on: app.db)
 		
 		// Test response
 		let user2 = User.Create(
@@ -384,7 +384,7 @@ class UserControllerTests: XCTestCase {
 			password: "password2",
 			confirmPassword: "password2"
 		)
-		deletePossiblyCreatedUserAfterTestFinishes(username: user2.username)
+		deletePossiblyCreatedUserAfterTestFinishes(username: user2.username, on: app.db)
 		try app.test(.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user2)
@@ -424,7 +424,7 @@ class UserControllerTests: XCTestCase {
 			password: "1234567",
 			confirmPassword: "1234567"
 		)
-		deletePossiblyCreatedUserAfterTestFinishes(username: user.username)
+		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
 		try app.test(.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user)
@@ -464,7 +464,7 @@ class UserControllerTests: XCTestCase {
 			password: "password",
 			confirmPassword: "password"
 		)
-		deletePossiblyCreatedUserAfterTestFinishes(username: user.username)
+		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
 		try app.test(.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user)
@@ -504,7 +504,7 @@ class UserControllerTests: XCTestCase {
 			password: "password",
 			confirmPassword: "password"
 		)
-		deletePossiblyCreatedUserAfterTestFinishes(username: user.username)
+		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
 		try app.test(.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user)
@@ -546,7 +546,7 @@ class UserControllerTests: XCTestCase {
 			passwordHash: "password" // Do not hash for speed purposes
 		)
 		try user.create(on: app.db).wait()
-		deleteUserAfterTestFinishes(user)
+		deleteUserAfterTestFinishes(user, on: app.db)
 		
 		try app.test(.DELETE, "v1/users/\(userId)",
 			beforeRequest: { req in
@@ -593,7 +593,7 @@ class UserControllerTests: XCTestCase {
 			passwordHash: password // Do not hash for speed purposes
 		)
 		try user.create(on: app.db).wait()
-		deleteUserAfterTestFinishes(user)
+		deleteUserAfterTestFinishes(user, on: app.db)
 		
 		try app.test(.DELETE, "v1/users/\(userId)",
 			beforeRequest: { req in
@@ -615,70 +615,6 @@ class UserControllerTests: XCTestCase {
 				}
 			}
 		)
-	}
-	
-	/// Adds a `tearDown` block that deletes the given `User` after the current test finishes.
-	///
-	/// - Parameters:
-	///   - user: The `User` to delete
-	///
-	/// # Notes: #
-	/// 1. Forces deletion
-	///
-	/// # Example #
-	/// ```
-	/// // Create user
-	/// let user = User(
-	/// 	id: UUID(),
-	/// 	email: "test@email.com",
-	/// 	username: "test_username",
-	/// 	displayName: "Test User",
-	/// 	passwordHash: try BCrypt.hash("password")
-	/// )
-	/// try user.create(on: Self.app.db).wait()
-	/// deleteUserAfterTestFinishes(user)
-	/// ```
-	private func deleteUserAfterTestFinishes(_ user: User?) {
-		addTeardownBlock {
-			do {
-				let app = try XCTUnwrap(Self.app)
-				
-				try user?.delete(force: true, on: app.db).wait()
-			} catch {
-				XCTFail(error.localizedDescription)
-			}
-		}
-	}
-	
-	/// Adds a `tearDown` block that deletes the `User` with the given `username`
-	/// after the current test finishes.
-	///
-	/// Does nothing if no `User` has the given `username`.
-	///
-	/// - Parameters:
-	///   - username: The user's `username`
-	///
-	/// # Notes: #
-	/// 1. Forces deletion
-	///
-	/// # Example #
-	/// ```
-	/// // Delete possibly created user
-	/// deletePossiblyCreatedUserAfterTestFinishes(username: user.username)
-	/// ```
-	private func deletePossiblyCreatedUserAfterTestFinishes(username: String) {
-		addTeardownBlock {
-			do {
-				let app = try XCTUnwrap(Self.app)
-				
-				let storedUser = try User.query(on: app.db)
-					.filter(\.$username == username).first()
-					.wait()
-				try storedUser?.delete(force: true, on: app.db).wait()
-			} catch {
-				XCTFail(error.localizedDescription)
-			}
-		}
 	}
 	
 }

@@ -108,7 +108,7 @@ final class PlacemarkControllerTests: XCTestCase {
 			caption: "Test caption"
 		)
 		try submittedPlacemark.create(on: app.db).wait()
-		deletePlacemarkAfterTestFinishes(submittedPlacemark)
+		deletePlacemarkAfterTestFinishes(submittedPlacemark, on: app.db)
 		
 		// Create published placemark
 		let publishedPlacemark = try Placemark(
@@ -122,7 +122,7 @@ final class PlacemarkControllerTests: XCTestCase {
 			caption: "Test caption"
 		)
 		try publishedPlacemark.create(on: app.db).wait()
-		deletePlacemarkAfterTestFinishes(publishedPlacemark)
+		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
 		// Test route
 		try app.test(.GET, "v1/placemarks",
@@ -176,7 +176,7 @@ final class PlacemarkControllerTests: XCTestCase {
 			caption: "Test caption"
 		)
 		try submittedPlacemark.create(on: app.db).wait()
-		deletePlacemarkAfterTestFinishes(submittedPlacemark)
+		deletePlacemarkAfterTestFinishes(submittedPlacemark, on: app.db)
 		
 		// Create published placemark
 		let publishedPlacemark = try Placemark(
@@ -190,7 +190,7 @@ final class PlacemarkControllerTests: XCTestCase {
 			caption: "Test caption"
 		)
 		try publishedPlacemark.create(on: app.db).wait()
-		deletePlacemarkAfterTestFinishes(publishedPlacemark)
+		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
 		// Test route
 		try app.test(.GET, "v1/placemarks/submitted",
@@ -240,7 +240,7 @@ final class PlacemarkControllerTests: XCTestCase {
 			hazards: nil
 		)
 		// Delete possibly created placemark
-		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name)
+		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
 		
 		// Test response
 		try app.test(.POST, "v1/placemarks",
@@ -316,7 +316,7 @@ final class PlacemarkControllerTests: XCTestCase {
 			caption: "Test caption"
 		)
 		try placemark.create(on: app.db).wait()
-		deletePlacemarkAfterTestFinishes(placemark)
+		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
 		// Test route
 		try app.test(.GET, "v1/placemarks/\(placemarkId)",
@@ -365,7 +365,7 @@ final class PlacemarkControllerTests: XCTestCase {
 			caption: "Test caption"
 		)
 		try placemark.create(on: app.db).wait()
-		deletePlacemarkAfterTestFinishes(placemark)
+		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
 		// Test route
 		try app.test(.DELETE, "v1/placemarks/\(placemarkId)",
@@ -498,7 +498,7 @@ final class PlacemarkControllerTests: XCTestCase {
 			hazards: nil
 		)
 		// Delete possibly created placemark
-		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name)
+		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
 		
 		// Test response
 		try app.test(.POST, "v1/placemarks",
@@ -634,7 +634,7 @@ final class PlacemarkControllerTests: XCTestCase {
 			caption: "Test caption"
 		)
 		try placemark.create(on: app.db).wait()
-		deletePlacemarkAfterTestFinishes(placemark)
+		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
 		// Test route
 		try app.test(.DELETE, "v1/placemarks/\(placemarkId)",
@@ -657,85 +657,6 @@ final class PlacemarkControllerTests: XCTestCase {
 				}
 			}
 		)
-	}
-	
-	// MARK: - Helpers
-	
-	/// Adds a `tearDown` block that deletes the given `Placemark` after the current test finishes.
-	///
-	/// - Parameters:
-	///   - placemark: The `Placemark` to delete
-	///
-	/// # Notes: #
-	/// 1. Forces deletion
-	///
-	/// # Example #
-	/// ```
-	/// // Create placemark
-	/// let placemark = try Placemark(
-	/// name: "test_title",
-	/// 	latitude: Double.random(in: -90...90),
-	/// 	longitude: Double.random(in: -180...180),
-	/// 	typeId: typeId(for: "training_spot", on: app.db).wait(),
-	/// 	creatorId: user.requireID(),
-	/// 	caption: "Test caption"
-	/// )
-	/// try placemark.create(on: app.db).wait()
-	/// deletePlacemarkAfterTestFinishes(placemark)
-	/// ```
-	private func deletePlacemarkAfterTestFinishes(_ placemark: Placemark?) {
-		addTeardownBlock {
-			do {
-				let app = try XCTUnwrap(Self.app)
-				try placemark?.delete(force: true, on: app.db).wait()
-			} catch {
-				XCTFail(error.localizedDescription)
-			}
-		}
-	}
-	
-	/// Adds a `tearDown` block that deletes the `Placemark` with the given `name`
-	/// after the current test finishes.
-	///
-	/// Does nothing if no `Placemark` has the given `username`.
-	///
-	/// - Parameters:
-	///   - name: The placemarks's `name`
-	///
-	/// # Notes: #
-	/// 1. Forces deletion
-	///
-	/// # Example #
-	/// ```
-	/// // Delete possibly created placemark
-	/// deletePossiblyCreatedPlacemarkAfterTestFinishes(name: placemark.name)
-	/// ```
-	private func deletePossiblyCreatedPlacemarkAfterTestFinishes(name: String) {
-		addTeardownBlock {
-			do {
-				let app = try XCTUnwrap(Self.app)
-				
-				try Placemark.query(on: app.db)
-					.filter(\.$name == name)
-					.first()
-					.optionalMap { $0.delete(force: true, on: app.db) }
-					.transform(to: ())
-					.wait()
-			} catch {
-				XCTFail(error.localizedDescription)
-			}
-		}
-	}
-	
-	private func typeId(
-		for humanId: String,
-		on database: Database
-	) -> EventLoopFuture<Placemark.PlacemarkType.IDValue> {
-		Placemark.PlacemarkType.query(on: database)
-			.filter(\.$humanId == humanId)
-			.first()
-			.unwrap(or: Abort(.notFound, reason: "Type not found"))
-			.flatMapThrowing { try $0.requireID() }
 	}
 	
 }
