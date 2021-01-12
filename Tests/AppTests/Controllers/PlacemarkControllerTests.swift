@@ -9,11 +9,9 @@
 @testable import App
 import XCTVapor
 import Fluent
-import FluentSQLiteDriver
 
-final class PlacemarkControllerTests: XCTestCase {
+final class PlacemarkControllerTests: AppTestCase {
 	
-	private static var app: Application?
 	private static var user: User?
 	private static var userToken: User.Token?
 	
@@ -21,10 +19,7 @@ final class PlacemarkControllerTests: XCTestCase {
 		super.setUp()
 		
 		do {
-			let app = Application(.testing)
-			app.databases.use(.sqlite(.memory), as: .sqlite)
-			try configure(app)
-			self.app = app
+			let app = try XCTUnwrap(self.app)
 			
 			// Create user
 			let user = User(
@@ -43,18 +38,6 @@ final class PlacemarkControllerTests: XCTestCase {
 		} catch {
 			XCTFail(error.localizedDescription)
 		}
-	}
-	
-	override class func tearDown() {
-		do {
-			let app = try XCTUnwrap(self.app)
-			app.databases.reinitialize()
-			app.shutdown()
-		} catch {
-			XCTFail(error.localizedDescription)
-		}
-		
-		super.tearDown()
 	}
 	
 	// MARK: - Valid Domain
