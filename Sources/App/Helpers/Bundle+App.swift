@@ -12,9 +12,9 @@ extension Bundle {
 	
 	static var app: Bundle {
 		#if os(Linux)
-		Bundle(for: Self.self)
+		return Bundle(for: Self.self)
 		#else
-		Bundle.module
+		return Bundle.module
 		#endif
 	}
 	
