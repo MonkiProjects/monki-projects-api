@@ -15,9 +15,13 @@ extension Placemark.Category {
 		let id, title: String
 		
 		static func all() throws -> [Self] {
-			let url = try Bundle.app.url(forResource: "PlacemarkCategories", withExtension: "plist").require()
+			let url = try Bundle.module.url(forResource: "PlacemarkCategories", withExtension: "plist").require()
+			print("[DEBUG][PACKAGE_RESOURCES] Did find 'PlacemarkCategories' file at \(url)")
 			let data = try Data(contentsOf: url)
-			return try PropertyListDecoder().decode([Self].self, from: data)
+			print("[DEBUG][PACKAGE_RESOURCES] Did find data")
+			let result = try PropertyListDecoder().decode([Self].self, from: data)
+			print("[DEBUG][PACKAGE_RESOURCES] Did decode \(result)")
+			return result
 		}
 		
 	}
