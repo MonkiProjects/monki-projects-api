@@ -15,7 +15,7 @@ extension Placemark.PlacemarkType {
 		let id, title, category: String
 		
 		static func all() throws -> [Self] {
-			let url = try Bundle.module.url(forResource: "PlacemarkTypes", withExtension: "plist").require()
+			let url = try Bundle.app.url(forResource: "PlacemarkTypes", withExtension: "plist").require()
 			let data = try Data(contentsOf: url)
 			return try PropertyListDecoder().decode([Self].self, from: data)
 		}

@@ -16,7 +16,7 @@ extension Placemark.Property {
 		let type: Placemark.Property.PropertyType
 		
 		static func all() throws -> [Self] {
-			let url = try Bundle.module.url(forResource: "PlacemarkProperties", withExtension: "plist").require()
+			let url = try Bundle.app.url(forResource: "PlacemarkProperties", withExtension: "plist").require()
 			let data = try Data(contentsOf: url)
 			return try PropertyListDecoder().decode([Self].self, from: data)
 		}
