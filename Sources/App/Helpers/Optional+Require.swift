@@ -3,7 +3,7 @@
 //  App
 //
 //  Created by Rémi Bardon on 14/10/2020.
-//  Copyright © 2020 Rémi Bardon. All rights reserved.
+//  Copyright © 2020 Monki Projects. All rights reserved.
 //
 
 import Foundation

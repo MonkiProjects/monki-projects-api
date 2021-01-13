@@ -4,13 +4,23 @@ disabled_rules:
   nesting
 opt_in_rules:
   - trailing_comma
-  
+  - file_header
+
 included:
   - .
 excluded:
-  - .gitignore
   - .build
-  - .swiftlint.yml
+  - Package.swift
+
+file_header:
+  required_pattern: |
+    \/\/
+    \/\/  .*?\.swift
+    \/\/  (App|AppTests|Run)
+    \/\/
+    \/\/  Created by .*? on \d{2}\/\d{2}\/\d{4}\.
+    \/\/  Copyright (©|\(c\)) \d{4} Monki Projects\. All rights reserved\.
+    \/\/
 
 line_length: 110
 type_body_length:
