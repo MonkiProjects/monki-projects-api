@@ -12,7 +12,7 @@ extension Bundle {
 	
 	static var app: Bundle {
 		#if os(Linux)
-		return Bundle(for: Self.self)
+		return Bundle(for: Placemark.self)
 		#else
 		return Bundle.module
 		#endif
