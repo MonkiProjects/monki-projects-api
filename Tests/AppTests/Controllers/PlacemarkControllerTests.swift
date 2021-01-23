@@ -123,6 +123,7 @@ final class PlacemarkControllerTests: AppTestCase {
 		// Create submitted placemark
 		let submittedPlacemark = try Placemark.dummy(
 			typeId: typeId(for: "training_spot", on: app.db).wait(),
+			state: .submitted,
 			creatorId: user.requireID()
 		)
 		try submittedPlacemark.create(on: app.db).wait()
@@ -192,7 +193,7 @@ final class PlacemarkControllerTests: AppTestCase {
 					XCTAssertEqual(placemark.latitude, create.latitude)
 					XCTAssertEqual(placemark.longitude, create.longitude)
 					XCTAssertEqual(placemark.creator, try user.requireID())
-					XCTAssertEqual(placemark.state, .submitted)
+					XCTAssertEqual(placemark.state, .private)
 					XCTAssertEqual(
 						placemark.satelliteImage.absoluteString,
 						"https://monkiprojects.com/images/satellite-view-placeholder.jpg"

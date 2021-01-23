@@ -13,6 +13,7 @@ extension Placemark.Submission.Review {
 	struct Public: Content {
 		
 		let id: UUID
+		let submission: UUID
 		let placemark: UUID
 		let reviewer: UUID
 		let opinion: Opinion
@@ -26,6 +27,7 @@ extension Placemark.Submission.Review {
 	func asPublic() throws -> Public {
 		try Public(
 			id: self.requireID(),
+			submission: self.$submission.id,
 			placemark: self.submission.$placemark.id,
 			reviewer: self.$reviewer.id,
 			opinion: opinion,

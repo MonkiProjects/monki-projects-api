@@ -22,10 +22,15 @@ extension Placemark.Submission.Migrations {
 					.references("placemarks", .id, onDelete: .cascade)
 				)
 				.field("state", .string, .required)
+				.field("positive_reviews_count", .uint8, .required)
+				.field("negative_reviews_count", .uint8, .required)
+				.field(
+					"child_submission_id", .uuid,
+					.references("placemark_submissions", .id, onDelete: .cascade)
+				)
 				.field("created_at", .datetime, .required)
 				.field("updated_at", .datetime, .required)
 				.field("deleted_at", .datetime)
-				.unique(on: "placemark_id", name: "no_duplicate_placemark_submissions")
 				.create()
 		}
 		

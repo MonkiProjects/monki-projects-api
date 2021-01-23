@@ -16,6 +16,8 @@ extension Placemark.Submission {
 		let placemark: UUID
 		let state: State
 		let reviews: [Review.Public]
+		let positiveReviews: UInt8
+		let negativeReviews: UInt8
 		let createdAt: Date
 		let updatedAt: Date
 		
@@ -27,6 +29,8 @@ extension Placemark.Submission {
 			placemark: self.$placemark.id,
 			state: self.state,
 			reviews: self.reviews.map { try $0.asPublic() },
+			positiveReviews: self.positiveReviews,
+			negativeReviews: self.negativeReviews,
 			createdAt: self.createdAt.require(),
 			updatedAt: self.updatedAt.require()
 		)

@@ -11,7 +11,7 @@ import Vapor
 extension Placemark {
 	
 	enum State: String, Content {
-		case draft, local, submitted, published, rejected
+		case `private`, submitted, published, rejected
 	}
 	
 }

@@ -30,7 +30,7 @@ extension Placemark {
 		latitude: Double = Double.random(in: -90...90),
 		longitude: Double = Double.random(in: -180...180),
 		typeId: PlacemarkType.IDValue,
-		state: State = .submitted,
+		state: State = .private,
 		creatorId: User.IDValue,
 		caption: String = UUID().uuidString,
 		images: [String] = []

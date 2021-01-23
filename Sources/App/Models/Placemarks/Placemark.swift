@@ -66,7 +66,7 @@ final class Placemark: Model {
 		latitude: Double,
 		longitude: Double,
 		typeId: PlacemarkType.IDValue,
-		state: State = .submitted,
+		state: State = .private,
 		creatorId: User.IDValue,
 		caption: String,
 		images: [String] = []

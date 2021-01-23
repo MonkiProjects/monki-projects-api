@@ -90,7 +90,7 @@ struct PlacemarkController: RouteCollection {
 				latitude: create.latitude,
 				longitude: create.longitude,
 				typeId: type.requireID(),
-				state: .submitted,
+				state: .private,
 				creatorId: user.requireID(),
 				caption: create.caption,
 				images: (create.images ?? []).map { $0.absoluteString }
@@ -109,15 +109,7 @@ struct PlacemarkController: RouteCollection {
 				.transform(to: placemark)
 		}
 		
-		// Save Placemark.Submission in database
-		let createSubmissionFuture =  createPlacemarkFuture.flatMapThrowing { placemark in
-			try Placemark.Submission(placemarkId: placemark.requireID())
-				.create(on: req.db)
-				.transform(to: placemark)
-		}
-		
-		return createSubmissionFuture
-			.flatMap { $0 }
+		return createPlacemarkFuture
 			.flatMapThrowing { try $0.asPublic() }
 	}
 	

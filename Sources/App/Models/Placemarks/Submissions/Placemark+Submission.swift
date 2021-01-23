@@ -11,6 +11,11 @@ import Vapor
 
 extension Placemark {
 	
+	/// When a `Placemark` is submitted, a `Submission` is created.
+	/// When a submission needs changes, a new `Submission` is created.
+	/// It is stored in the `childSubmission` field of the last `Submission`.
+	/// This allows a user to review every submission while not reviewing twice the same.
+	/// It also keeps track of reviews while not interfeering with last submission.
 	final class Submission: Model {
 		
 		static let schema = "placemark_submissions"
@@ -27,6 +32,15 @@ extension Placemark {
 		@Children(for: \.$submission)
 		var reviews: [Review]
 		
+		@Field(key: "positive_reviews_count")
+		var positiveReviews: UInt8
+		
+		@Field(key: "negative_reviews_count")
+		var negativeReviews: UInt8
+		
+		@OptionalParent(key: "child_submission_id")
+		var childSubmission: Submission?
+		
 		@Timestamp(key: "created_at", on: .create)
 		var createdAt: Date?
 		
@@ -41,11 +55,13 @@ extension Placemark {
 		init(
 			id: UUID? = nil,
 			placemarkId: Placemark.IDValue,
-			state: State = .submitted
+			state: State = .waitingForReviews
 		) {
 			self.id = id
 			self.$placemark.id = placemarkId
 			self.state = state
+			self.positiveReviews = 0
+			self.negativeReviews = 0
 		}
 		
 	}

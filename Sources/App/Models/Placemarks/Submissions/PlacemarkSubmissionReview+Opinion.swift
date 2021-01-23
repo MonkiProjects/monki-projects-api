@@ -11,7 +11,7 @@ import Vapor
 extension Placemark.Submission.Review {
 	
 	enum Opinion: String, Content, CaseIterable {
-		case positive, needsChanges, negative, accepted, rejected
+		case positive, needsChanges, negative
 	}
 	
 }
