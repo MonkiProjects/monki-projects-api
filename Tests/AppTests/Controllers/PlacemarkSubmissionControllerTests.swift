@@ -76,7 +76,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 	/// - WHEN:
 	///     - The creator of the placemark submits it
 	/// - THEN:
-	///     - `HTTP` status should be `200 OK`
+	///     - `HTTP` status should be `201 Created`
 	///     - `body` should be the newly created `Submission`
 	///     - The `Placemark` state should be `.submitted`
 	///     - A `Submission` should be created with the state `.waitingForReviews`
@@ -92,7 +92,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 				req.headers.bearerAuthorization = bearerAuth
 			},
 			afterResponse: { res in
-				try res.assertStatus(.ok) {
+				try res.assertStatus(.created) {
 					let submission = try res.content.decode(Submission.Public.self)
 					
 					XCTAssertEqual(submission.placemark, Self.placemarkId)

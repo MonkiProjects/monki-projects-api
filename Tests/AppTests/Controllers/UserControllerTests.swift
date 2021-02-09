@@ -73,7 +73,7 @@ class UserControllerTests: AppTestCase {
 	/// - WHEN:
 	///     - Creating a user
 	/// - THEN:
-	///     - `HTTP` status should be `200 OK`
+	///     - `HTTP` status should be `201 Created`
 	///     - `body` should be the user's data
 	///     - user should be stored on database
 	func testPostCreatesUser() throws {
@@ -93,7 +93,7 @@ class UserControllerTests: AppTestCase {
 				try req.content.encode(user)
 			},
 			afterResponse: { res in
-				try res.assertStatus(.ok) {
+				try res.assertStatus(.created) {
 					let createdUser = try res.content.decode(User.Private.self)
 					
 					XCTAssertEqual(createdUser.username, user.username)

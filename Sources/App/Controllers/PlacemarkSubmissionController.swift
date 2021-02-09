@@ -40,7 +40,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 	
 	// MARK: - Route functions
 	
-	func submitPlacemark(req: Request) throws -> EventLoopFuture<Submission.Public> {
+	func submitPlacemark(req: Request) throws -> EventLoopFuture<Response> {
 		let userId = try req.auth.require(User.self).requireID()
 		let placemarkId = try req.parameters.require("placemarkId", as: Placemark.IDValue.self)
 		
@@ -76,6 +76,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 		
 		return createSubmissionFuture
 			.flatMapThrowing { try $0.asPublic() }
+			.flatMap { $0.encodeResponse(status: .created, for: req) }
 	}
 	
 	func getPlacemarkSubmissionReport(req: Request) throws -> EventLoopFuture<Submission.Public> {

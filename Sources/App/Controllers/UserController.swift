@@ -33,7 +33,7 @@ struct UserController: RouteCollection {
 			.flatMapEachThrowing { try $0.asPublic() }
 	}
 	
-	func createUser(req: Request) throws -> EventLoopFuture<User.Private> {
+	func createUser(req: Request) throws -> EventLoopFuture<Response> {
 		// Validate and decode data
 		do {
 			try User.Create.validate(content: req)
@@ -84,6 +84,7 @@ struct UserController: RouteCollection {
 		return newUserFuture.flatMap { user in
 			user.create(on: req.db)
 				.flatMapThrowing { try user.asPrivate() }
+				.flatMap { $0.encodeResponse(status: .created, for: req) }
 		}
 	}
 	
