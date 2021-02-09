@@ -65,6 +65,24 @@
         }
       },
       {
+        "package": "monki-map-model",
+        "repositoryURL": "https://github.com/MonkiProjects/monki-map-model-swift.git",
+        "state": {
+          "branch": "main",
+          "revision": "d66663f9e26914b086e3855ccff0a6885f8656ae",
+          "version": null
+        }
+      },
+      {
+        "package": "monki-projects-model",
+        "repositoryURL": "https://github.com/MonkiProjects/monki-projects-model-swift.git",
+        "state": {
+          "branch": "main",
+          "revision": "13c23e577de405f32b7c5ac6a4dc1359b2542f00",
+          "version": null
+        }
+      },
+      {
         "package": "postgres-kit",
         "repositoryURL": "https://github.com/vapor/postgres-kit.git",
         "state": {
