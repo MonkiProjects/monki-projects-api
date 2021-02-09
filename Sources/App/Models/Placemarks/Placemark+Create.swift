@@ -30,6 +30,7 @@ extension Placemark.Create: Validatable {
 		validations.add("type", as: String.self)
 		validations.add("caption", as: String.self)
 		validations.add("images", as: [URL].self, required: false)
+		// FIXME: Validate format
 		validations.add("features", as: [String].self, required: false)
 		validations.add("goodForTraining", as: [String].self, required: false)
 		validations.add("benefits", as: [String].self, required: false)
