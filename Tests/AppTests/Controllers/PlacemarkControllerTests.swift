@@ -106,7 +106,7 @@ final class PlacemarkControllerTests: AppTestCase {
 		}
 	}
 	
-	/// Tests `GET /v1/placemarks/submitted`.
+	/// Tests `GET /v1/placemarks?state=submitted`.
 	///
 	/// - GIVEN:
 	///     - A submitted placemark
@@ -138,7 +138,7 @@ final class PlacemarkControllerTests: AppTestCase {
 		try publishedPlacemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
-		try app.test(.GET, "v1/placemarks/submitted") { res in
+		try app.test(.GET, "v1/placemarks?state=submitted") { res in
 			try res.assertStatus(.ok) {
 				let placemarks = try res.content.decode([Placemark.Public].self)
 				
@@ -185,7 +185,7 @@ final class PlacemarkControllerTests: AppTestCase {
 				try req.content.encode(create)
 			},
 			afterResponse: { res in
-				try res.assertStatus(.ok) {
+				try res.assertStatus(.created) {
 					let placemark = try res.content.decode(Placemark.Public.self)
 					
 					XCTAssertEqual(placemark.name, create.name)
@@ -424,7 +424,7 @@ final class PlacemarkControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(.GET, "v1/placemarks/\(UUID())") { res in
-			try res.assertError(status: .notFound, reason: "Not Found")
+			try res.assertError(status: .notFound, reason: "Placemark not found")
 		}
 	}
 	
