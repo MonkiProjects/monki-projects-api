@@ -14,7 +14,7 @@ struct PlacemarkController: RouteCollection {
 	func boot(routes: RoutesBuilder) throws {
 		let placemarks = routes.grouped("placemarks")
 		
-		let tokenProtected = placemarks.grouped(User.Token.authenticator())
+		let tokenProtected = placemarks.grouped(UserModel.Token.authenticator())
 		// POST /placemarks
 		tokenProtected.post(use: createPlacemark)
 		
@@ -25,7 +25,7 @@ struct PlacemarkController: RouteCollection {
 			// GET /placemarks/{placemarkId}
 			placemark.get(use: getPlacemark)
 			
-			let tokenProtected = placemark.grouped(User.Token.authenticator())
+			let tokenProtected = placemark.grouped(UserModel.Token.authenticator())
 			// DELETE /placemarks/{placemarkId}
 			tokenProtected.delete(use: deletePlacemark)
 			
@@ -70,7 +70,7 @@ struct PlacemarkController: RouteCollection {
 	}
 	
 	func createPlacemark(req: Request) throws -> EventLoopFuture<Response> {
-		let user = try req.auth.require(User.self)
+		let user = try req.auth.require(UserModel.self)
 		// Validate and decode data
 		try Placemark.Create.validate(content: req)
 		let create = try req.content.decode(Placemark.Create.self)
@@ -129,7 +129,7 @@ struct PlacemarkController: RouteCollection {
 	}
 	
 	func deletePlacemark(req: Request) throws -> EventLoopFuture<HTTPStatus> {
-		let user = try req.auth.require(User.self)
+		let user = try req.auth.require(UserModel.self)
 		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
 		
 		let placemarkFuture = Placemark.find(placemarkId, on: req.db)

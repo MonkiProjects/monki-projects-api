@@ -12,8 +12,8 @@ import Fluent
 
 final class PlacemarkControllerTests: AppTestCase {
 	
-	private static var user: User?
-	private static var userToken: User.Token?
+	private static var user: UserModel?
+	private static var userToken: UserModel.Token?
 	
 	override class func setUp() {
 		super.setUp()
@@ -22,7 +22,7 @@ final class PlacemarkControllerTests: AppTestCase {
 			let app = try XCTUnwrap(self.app)
 			
 			// Create user
-			let user = User.dummy()
+			let user = UserModel.dummy()
 			try user.create(on: app.db).wait()
 			self.user = user
 			
@@ -467,7 +467,7 @@ final class PlacemarkControllerTests: AppTestCase {
 		let userToken = try XCTUnwrap(Self.userToken)
 		
 		// Create other user
-		let otherUser = User.dummy()
+		let otherUser = UserModel.dummy()
 		try otherUser.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(otherUser, on: app.db)
 		

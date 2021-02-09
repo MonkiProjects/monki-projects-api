@@ -14,13 +14,13 @@ struct AuthController: RouteCollection {
 	func boot(routes: RoutesBuilder) throws {
 		let auth = routes.grouped("auth")
 		
-		let passwordProtected = auth.grouped(User.authenticator())
+		let passwordProtected = auth.grouped(UserModel.authenticator())
 		// POST /auth/login
 		passwordProtected.post("login", use: login)
 	}
 	
-	func login(req: Request) throws -> EventLoopFuture<User.Token.Private> {
-		let user = try req.auth.require(User.self)
+	func login(req: Request) throws -> EventLoopFuture<UserModel.Token.Private> {
+		let user = try req.auth.require(UserModel.self)
 		let token = try user.generateToken()
 		
 		return token.save(on: req.db)

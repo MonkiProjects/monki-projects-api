@@ -7,13 +7,14 @@
 //
 
 import Vapor
+import MonkiProjectsModel
 
-extension User.Token {
+extension UserModel.Token {
 	
 	struct Private: Content {
 		
 		let value: String
-		let user: User.Public
+		let user: MonkiProjectsModel.User.Public.Full
 		let expiresAt: Date?
 		let createdAt: Date
 		
@@ -22,7 +23,7 @@ extension User.Token {
 	func asPrivate() throws -> Private {
 		return try Private(
 			value: self.value,
-			user: self.user.asPublic(),
+			user: self.user.asPublicFull(),
 			expiresAt: self.expiresAt,
 			createdAt: self.createdAt.require()
 		)

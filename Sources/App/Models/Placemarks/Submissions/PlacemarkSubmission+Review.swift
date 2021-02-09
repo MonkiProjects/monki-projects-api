@@ -22,7 +22,7 @@ extension Placemark.Submission {
 		var submission: Placemark.Submission
 		
 		@Parent(key: "reviewer_id")
-		var reviewer: User
+		var reviewer: UserModel
 		
 		@Field(key: "opinion")
 		var opinion: Opinion
@@ -50,7 +50,7 @@ extension Placemark.Submission {
 		init(
 			id: UUID? = nil,
 			submissionId: Placemark.Submission.IDValue,
-			reviewerId: User.IDValue,
+			reviewerId: UserModel.IDValue,
 			opinion: Opinion,
 			comment: String,
 			moderated: Bool = false

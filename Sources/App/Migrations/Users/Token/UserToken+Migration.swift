@@ -8,7 +8,7 @@
 
 import Fluent
 
-extension User.Token {
+extension UserModel.Token {
 	
 	enum Migrations {
 		

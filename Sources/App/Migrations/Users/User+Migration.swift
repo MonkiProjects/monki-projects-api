@@ -8,7 +8,7 @@
 
 import Fluent
 
-extension User {
+extension UserModel {
 	
 	enum Migrations {
 		

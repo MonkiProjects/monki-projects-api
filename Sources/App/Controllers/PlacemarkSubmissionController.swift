@@ -18,7 +18,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 	
 	/// Routes start at `/placemarks/{placemarkId}`
 	func boot(routes: RoutesBuilder) throws {
-		let tokenProtected = routes.grouped(User.Token.authenticator())
+		let tokenProtected = routes.grouped(UserModel.Token.authenticator())
 		
 		// GET /placemarks/{placemarkId}/submit
 		tokenProtected.get("submit", use: submitPlacemark)
@@ -33,7 +33,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 		// GET /placemarks/{placemarkId}/submission/reviews
 		reviews.get(use: listPlacemarkSubmissionReviews)
 		
-		let tokenProtectedReviews = reviews.grouped(User.Token.authenticator())
+		let tokenProtectedReviews = reviews.grouped(UserModel.Token.authenticator())
 		// POST /placemarks/{placemarkId}/submission/reviews
 		tokenProtectedReviews.post(use: addPlacemarkSubmissionReview)
 	}
@@ -41,7 +41,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 	// MARK: - Route functions
 	
 	func submitPlacemark(req: Request) throws -> EventLoopFuture<Response> {
-		let userId = try req.auth.require(User.self).requireID()
+		let userId = try req.auth.require(UserModel.self).requireID()
 		let placemarkId = try req.parameters.require("placemarkId", as: Placemark.IDValue.self)
 		
 		let guardIsCreator = guardCreator(
@@ -95,7 +95,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 	}
 	
 	func addPlacemarkSubmissionReview(req: Request) throws -> EventLoopFuture<Review.Public> {
-		let userId = try req.auth.require(User.self).requireID()
+		let userId = try req.auth.require(UserModel.self).requireID()
 		let placemarkId = try req.parameters.require("placemarkId", as: Placemark.IDValue.self)
 		
 		// Validate and decode data
@@ -179,7 +179,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 	}
 	
 	private func guardCreator(
-		userId: User.IDValue,
+		userId: UserModel.IDValue,
 		placemarkId: Placemark.IDValue,
 		otherwise message: String,
 		in database: Database
@@ -192,7 +192,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 	
 	/// Prevent user from reviewing his own submission
 	private func guardNotCreator(
-		userId: User.IDValue,
+		userId: UserModel.IDValue,
 		placemarkId: Placemark.IDValue,
 		otherwise message: String,
 		in database: Database
@@ -205,7 +205,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 	
 	/// Prevent user from reviewing twice the same submission
 	private func guardNoDoubleReview(
-		by userId: User.IDValue,
+		by userId: UserModel.IDValue,
 		for placemarkId: Placemark.IDValue,
 		in database: Database
 	) -> EventLoopFuture<Void> {

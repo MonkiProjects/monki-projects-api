@@ -8,6 +8,7 @@
 
 import Fluent
 import Vapor
+import MonkiProjectsModel
 
 struct UserController: RouteCollection {
 	
@@ -22,21 +23,21 @@ struct UserController: RouteCollection {
 			// GET /users/{userId}
 			user.get(use: getUser)
 			
-			let tokenProtected = user.grouped(User.Token.authenticator())
+			let tokenProtected = user.grouped(UserModel.Token.authenticator())
 			// DELETE /users/{userId}
 			tokenProtected.delete(use: deleteUser)
 		}
 	}
 	
-	func listUsers(req: Request) throws -> EventLoopFuture<[User.Public]> {
-		return User.query(on: req.db).all()
-			.flatMapEachThrowing { try $0.asPublic() }
+	func listUsers(req: Request) throws -> EventLoopFuture<[User.Public.Small]> {
+		return UserModel.query(on: req.db).all()
+			.flatMapEachThrowing { try $0.asPublicSmall() }
 	}
 	
 	func createUser(req: Request) throws -> EventLoopFuture<Response> {
 		// Validate and decode data
 		do {
-			try User.Create.validate(content: req)
+			try UserModel.Create.validate(content: req)
 		} catch {
 			// Fix error message not showing '.' and '_' for some reason
 			var message = String(describing: error)
@@ -48,7 +49,7 @@ struct UserController: RouteCollection {
 			}
 			throw error
 		}
-		let create = try req.content.decode(User.Create.self)
+		let create = try req.content.decode(UserModel.Create.self)
 		
 		// Do additional validations
 		guard create.password == create.confirmPassword else {
@@ -56,7 +57,7 @@ struct UserController: RouteCollection {
 		}
 		
 		// Check for existing email
-		let emailCheckFuture = User.query(on: req.db)
+		let emailCheckFuture = UserModel.query(on: req.db)
 			// Get User with same email
 			.filter(\.$email == create.email).first()
 			// Abort if existing email
@@ -64,7 +65,7 @@ struct UserController: RouteCollection {
 		
 		// Check for existing username
 		let usernameCheckFuture = emailCheckFuture.flatMap { _ in
-			User.query(on: req.db)
+			UserModel.query(on: req.db)
 				// Get User with same username
 				.filter(\.$username == create.username).first()
 				// Abort if existing username
@@ -73,7 +74,7 @@ struct UserController: RouteCollection {
 		
 		// Create User object
 		let newUserFuture = usernameCheckFuture.flatMapThrowing { _ in
-			try User(
+			try UserModel(
 				username: create.username,
 				email: create.email,
 				passwordHash: Bcrypt.hash(create.password)
@@ -88,15 +89,15 @@ struct UserController: RouteCollection {
 		}
 	}
 	
-	func getUser(req: Request) throws -> EventLoopFuture<User.Public> {
+	func getUser(req: Request) throws -> EventLoopFuture<User.Public.Full> {
 		let userId = try req.parameters.require("userId", as: UUID.self)
-		return User.find(userId, on: req.db)
+		return UserModel.find(userId, on: req.db)
 			.unwrap(or: Abort(.notFound))
-			.flatMapThrowing { try $0.asPublic() }
+			.flatMapThrowing { try $0.asPublicFull() }
 	}
 	
 	func deleteUser(req: Request) throws -> EventLoopFuture<HTTPStatus> {
-		let user = try req.auth.require(User.self)
+		let user = try req.auth.require(UserModel.self)
 		let userId = try req.parameters.require("userId", as: UUID.self)
 		
 		// Do additional validations
@@ -104,14 +105,14 @@ struct UserController: RouteCollection {
 			throw Abort(.forbidden, reason: "You cannot delete someone else's account!")
 		}
 		
-		let deleteTokensFuture = User.Token.query(on: req.db)
+		let deleteTokensFuture = UserModel.Token.query(on: req.db)
 			.with(\.$user)
 			.filter(\.$user.$id == userId)
 			.all()
 			.flatMap { $0.delete(on: req.db) }
 		
 		let deleteUserFuture = deleteTokensFuture.flatMap {
-			User.find(userId, on: req.db)
+			UserModel.find(userId, on: req.db)
 				.unwrap(or: Abort(.notFound))
 				.flatMap { $0.delete(on: req.db) }
 		}

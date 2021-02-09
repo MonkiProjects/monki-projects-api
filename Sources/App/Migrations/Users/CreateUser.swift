@@ -8,7 +8,7 @@
 
 import Fluent
 
-extension User.Migrations {
+extension UserModel.Migrations {
 	
 	struct CreateUser: Migration {
 		

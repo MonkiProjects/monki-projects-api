@@ -10,7 +10,7 @@ import Vapor
 import Fluent
 
 /// Comes from https://docs.vapor.codes/4.0/authentication/#user-token
-extension User {
+extension UserModel {
 	
 	final class Token: Model {
 		
@@ -23,7 +23,7 @@ extension User {
 		var value: String
 		
 		@Parent(key: "user_id")
-		var user: User
+		var user: UserModel
 		
 		@Field(key: "expires_at")
 		var expiresAt: Date?
@@ -33,7 +33,7 @@ extension User {
 		
 		init() {}
 		
-		init(id: UUID? = nil, value: String, userId: User.IDValue, expiresAt: Date? = nil) {
+		init(id: UUID? = nil, value: String, userId: UserModel.IDValue, expiresAt: Date? = nil) {
 			self.id = id
 			self.value = value
 			self.$user.id = userId
@@ -44,7 +44,7 @@ extension User {
 	
 }
 
-extension User {
+extension UserModel {
 	
 	/// Comes from https://docs.vapor.codes/4.0/authentication/#user-token
 	func generateToken() throws -> Token {

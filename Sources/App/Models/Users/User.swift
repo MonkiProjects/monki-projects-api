@@ -8,39 +8,46 @@
 
 import Fluent
 import Vapor
+import MonkiProjectsModel
 
-final class User: Model {
+typealias UserModel = User.Model
+
+extension User {
 	
-	static let schema = "users"
-	
-	@ID(key: .id)
-	var id: UUID?
-	
-	@Field(key: "username")
-	var username: String
-	
-	@Field(key: "email")
-	var email: String
-	
-	@Field(key: "password_hash")
-	var passwordHash: String
-	
-	@Timestamp(key: "created_at", on: .create)
-	var createdAt: Date?
-	
-	@Timestamp(key: "updated_at", on: .update)
-	var updatedAt: Date?
-	
-	@Timestamp(key: "deleted_at", on: .delete)
-	var deletedAt: Date?
-	
-	init() {}
-	
-	init(id: UUID? = nil, username: String, email: String, passwordHash: String) {
-		self.id = id
-		self.username = username
-		self.email = email
-		self.passwordHash = passwordHash
+	final class Model: Fluent.Model {
+		
+		static let schema = "users"
+		
+		@ID(key: .id)
+		var id: UUID?
+		
+		@Field(key: "username")
+		var username: String
+		
+		@Field(key: "email")
+		var email: String
+		
+		@Field(key: "password_hash")
+		var passwordHash: String
+		
+		@Timestamp(key: "created_at", on: .create)
+		var createdAt: Date?
+		
+		@Timestamp(key: "updated_at", on: .update)
+		var updatedAt: Date?
+		
+		@Timestamp(key: "deleted_at", on: .delete)
+		var deletedAt: Date?
+		
+		init() {}
+		
+		init(id: UUID? = nil, username: String, email: String, passwordHash: String) {
+			self.id = id
+			self.username = username
+			self.email = email
+			self.passwordHash = passwordHash
+		}
+		
 	}
 	
 }

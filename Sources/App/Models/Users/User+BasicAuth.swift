@@ -10,10 +10,10 @@ import Vapor
 import Fluent
 
 /// Comes from https://docs.vapor.codes/4.0/authentication/#model-authenticatable
-extension User: ModelAuthenticatable {
+extension UserModel: ModelAuthenticatable {
 	
-	static let usernameKey = \User.$username
-	static let passwordHashKey = \User.$passwordHash
+	static let usernameKey = \UserModel.$username
+	static let passwordHashKey = \UserModel.$passwordHash
 	
 	func verify(password: String) throws -> Bool {
 		try Bcrypt.verify(password, created: self.passwordHash)

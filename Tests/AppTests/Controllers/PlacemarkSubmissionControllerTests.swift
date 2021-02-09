@@ -16,7 +16,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 	typealias Submission = Placemark.Submission
 	typealias Review = Submission.Review
 	
-	private static var users = [(User, User.Token)]()
+	private static var users = [(UserModel, UserModel.Token)]()
 	private static let placemarkId = UUID()
 	private var placemark: Placemark?
 	
@@ -29,7 +29,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 			// Create 4 users
 			for _ in 1...4 {
 				// Create user
-				let user = User.dummy()
+				let user = UserModel.dummy()
 				try user.create(on: app.db).wait()
 				
 				// Create user token

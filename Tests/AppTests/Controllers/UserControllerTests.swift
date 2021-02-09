@@ -9,6 +9,7 @@
 @testable import App
 import XCTVapor
 import Fluent
+import MonkiProjectsModel
 
 class UserControllerTests: AppTestCase {
 	
@@ -50,13 +51,13 @@ class UserControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		// Create user
-		let user = User.dummy()
+		let user = UserModel.dummy()
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
 		try app.test(.GET, "v1/users") { res in
 			try res.assertStatus(.ok) {
-				let users = try res.content.decode([User.Public].self)
+				let users = try res.content.decode([User.Public.Small].self)
 				
 				XCTAssertEqual(users.count, 1)
 				let userResponse = try XCTUnwrap(users.first)
@@ -81,7 +82,7 @@ class UserControllerTests: AppTestCase {
 		
 		// Create user
 		let username = "test_username"
-		let user = User.Create(
+		let user = UserModel.Create(
 			username: username,
 			email: "test@email.com",
 			password: "password",
@@ -100,7 +101,7 @@ class UserControllerTests: AppTestCase {
 					XCTAssertEqual(createdUser.email, user.email)
 					
 					// Test creation on DB
-					let storedUser = try User.find(createdUser.id, on: app.db).wait()
+					let storedUser = try UserModel.find(createdUser.id, on: app.db).wait()
 					XCTAssertNotNil(storedUser)
 				}
 			}
@@ -123,7 +124,7 @@ class UserControllerTests: AppTestCase {
 		
 		// Create user
 		let userId = UUID()
-		let user = User.dummy(id: userId)
+		let user = UserModel.dummy(id: userId)
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
@@ -143,11 +144,11 @@ class UserControllerTests: AppTestCase {
 					
 					// Test if user is really deleted
 					let userId = try user.requireID()
-					let storedUser = try User.find(userId, on: app.db).wait()
+					let storedUser = try UserModel.find(userId, on: app.db).wait()
 					XCTAssertNil(storedUser)
 					
 					// Test if user tokens are deleted
-					let tokens = try User.Token.query(on: app.db)
+					let tokens = try UserModel.Token.query(on: app.db)
 						.with(\.$user)					// Load user to filter on its `id` field
 						.filter(\.$user.$id == userId)	// Filter only the user's tokens
 						.all() 							// Get all results
@@ -172,7 +173,7 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithMismatchingPassword() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		let user = User.Create(
+		let user = UserModel.Create(
 			username: "test_username",
 			email: "test@email.com",
 			password: "password1",
@@ -222,12 +223,12 @@ class UserControllerTests: AppTestCase {
 		let sameEmail = "test@email.com"
 		
 		// Create user
-		let user1 = User.dummy(email: sameEmail)
+		let user1 = UserModel.dummy(email: sameEmail)
 		try user1.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user1, on: app.db)
 		
 		// Try to create other user
-		let user2 = User.Create(
+		let user2 = UserModel.Create(
 			username: "test_username2",
 			email: sameEmail,
 			password: "password2",
@@ -259,12 +260,12 @@ class UserControllerTests: AppTestCase {
 		let sameUsername = "test_username"
 		
 		// Create user
-		let user1 = User.dummy(username: sameUsername)
+		let user1 = UserModel.dummy(username: sameUsername)
 		try user1.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user1, on: app.db)
 		
 		// Try to create other user
-		let user2 = User.Create(
+		let user2 = UserModel.Create(
 			username: sameUsername,
 			email: "test2@email.com",
 			password: "password2",
@@ -293,7 +294,7 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithTooShortPassword() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		let user = User.Create(
+		let user = UserModel.Create(
 			username: "test_username",
 			email: "test@email.com",
 			password: "1234567",
@@ -325,7 +326,7 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithInvalidEmail() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		let user = User.Create(
+		let user = UserModel.Create(
 			username: "test_username",
 			email: "test@email",
 			password: "password",
@@ -354,7 +355,7 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithInvalidUsername() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		let user = User.Create(
+		let user = UserModel.Create(
 			username: "Test_username",
 			email: "test@email.com",
 			password: "password",
@@ -388,7 +389,7 @@ class UserControllerTests: AppTestCase {
 		
 		// Create user
 		let userId = UUID()
-		let user = User.dummy()
+		let user = UserModel.dummy()
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
@@ -419,7 +420,7 @@ class UserControllerTests: AppTestCase {
 		// Create user
 		let userId = UUID()
 		let password = "password"
-		let user = User.dummy(
+		let user = UserModel.dummy(
 			passwordHash: password // Do not hash for speed purposes
 		)
 		try user.create(on: app.db).wait()

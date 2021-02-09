@@ -8,7 +8,7 @@
 
 import Vapor
 
-extension User {
+extension UserModel {
 	
 	struct Create: Content {
 		let username: String
@@ -19,7 +19,7 @@ extension User {
 	
 }
 
-extension User.Create: Validatable {
+extension UserModel.Create: Validatable {
 	
 	static func validations(_ validations: inout Validations) {
 		validations.add("username", as: String.self, is: .count(3...32))

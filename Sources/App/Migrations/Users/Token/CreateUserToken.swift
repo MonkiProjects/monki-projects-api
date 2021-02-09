@@ -8,7 +8,7 @@
 
 import Fluent
 
-extension User.Token {
+extension UserModel.Token {
 	
 	/// Comes from https://docs.vapor.codes/4.0/authentication/#user-token
 	struct CreateUserToken: Migration {

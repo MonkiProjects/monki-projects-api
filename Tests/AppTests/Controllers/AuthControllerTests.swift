@@ -14,8 +14,8 @@ final class CurrentUserControllerTests: AppTestCase {
 	
 	private static let userId = UUID()
 	private static let password = "password"
-	private static var user: User?
-	private static var userToken: User.Token?
+	private static var user: UserModel?
+	private static var userToken: UserModel.Token?
 	
 	override class func setUp() {
 		super.setUp()
@@ -24,7 +24,7 @@ final class CurrentUserControllerTests: AppTestCase {
 			let app = try XCTUnwrap(self.app)
 			
 			// Create user
-			let user = User.dummy(id: userId, passwordHash: try Bcrypt.hash(password))
+			let user = UserModel.dummy(id: userId, passwordHash: try Bcrypt.hash(password))
 			try user.create(on: app.db).wait()
 			self.user = user
 			
@@ -52,7 +52,7 @@ final class CurrentUserControllerTests: AppTestCase {
 				try res.assertStatus(.ok) {
 					// Test user value in token
 					do {
-						let token = try res.content.decode(User.Token.self)
+						let token = try res.content.decode(UserModel.Token.self)
 						XCTAssertEqual(token.$user.id, Self.userId)
 					} catch {
 						XCTFail(error.localizedDescription)

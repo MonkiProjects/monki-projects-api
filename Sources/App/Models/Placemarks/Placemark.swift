@@ -32,7 +32,7 @@ final class Placemark: Model {
 	var state: State
 	
 	@Parent(key: "creator_id")
-	var creator: User
+	var creator: UserModel
 	
 	@Field(key: "caption")
 	var caption: String
@@ -67,7 +67,7 @@ final class Placemark: Model {
 		longitude: Double,
 		typeId: PlacemarkType.IDValue,
 		state: State = .private,
-		creatorId: User.IDValue,
+		creatorId: UserModel.IDValue,
 		caption: String,
 		images: [String] = []
 	) {

@@ -12,10 +12,10 @@ import Fluent
 
 extension XCTestCase {
 	
-	/// Adds a `tearDown` block that deletes the given `User` after the current test finishes.
+	/// Adds a `tearDown` block that deletes the given `UserModel` after the current test finishes.
 	///
 	/// - Parameters:
-	///   - user: The `User` to delete
+	///   - user: The `UserModel` to delete
 	///
 	/// # Notes: #
 	/// 1. Forces deletion
@@ -25,7 +25,7 @@ extension XCTestCase {
 	/// try user.create(on: app.db).wait()
 	/// deleteUserAfterTestFinishes(user, on: app.db)
 	/// ```
-	func deleteUserAfterTestFinishes(_ user: User?, on database: Database) {
+	func deleteUserAfterTestFinishes(_ user: UserModel?, on database: Database) {
 		addTeardownBlock {
 			do {
 				try user?.delete(force: true, on: database).wait()
@@ -35,10 +35,10 @@ extension XCTestCase {
 		}
 	}
 	
-	/// Adds a `tearDown` block that deletes the given `User.Token` after the current test finishes.
+	/// Adds a `tearDown` block that deletes the given `UserModel.Token` after the current test finishes.
 	///
 	/// - Parameters:
-	///   - userToken: The `User.Token` to delete
+	///   - userToken: The `UserModel.Token` to delete
 	///
 	/// # Notes: #
 	/// 1. Forces deletion
@@ -48,7 +48,7 @@ extension XCTestCase {
 	/// try userToken.create(on: app.db).wait()
 	/// deleteUserTokenAfterTestFinishes(userToken, on: app.db)
 	/// ```
-	func deleteUserTokenAfterTestFinishes(_ userToken: User.Token?, on database: Database) {
+	func deleteUserTokenAfterTestFinishes(_ userToken: UserModel.Token?, on database: Database) {
 		addTeardownBlock {
 			do {
 				try userToken?.delete(force: true, on: database).wait()
@@ -58,10 +58,10 @@ extension XCTestCase {
 		}
 	}
 	
-	/// Adds a `tearDown` block that deletes the `User` with the given `username`
+	/// Adds a `tearDown` block that deletes the `UserModel` with the given `username`
 	/// after the current test finishes.
 	///
-	/// Does nothing if no `User` has the given `username`.
+	/// Does nothing if no `UserModel` has the given `username`.
 	///
 	/// - Parameters:
 	///   - username: The user's `username`
@@ -77,7 +77,7 @@ extension XCTestCase {
 	func deletePossiblyCreatedUserAfterTestFinishes(username: String, on database: Database) {
 		addTeardownBlock {
 			do {
-				let storedUser = try User.query(on: database)
+				let storedUser = try UserModel.query(on: database)
 					.filter(\.$username == username).first()
 					.wait()
 				try storedUser?.delete(force: true, on: database).wait()

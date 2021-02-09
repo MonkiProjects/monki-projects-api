@@ -7,23 +7,38 @@
 //
 
 import Vapor
+import MonkiProjectsModel
 
-extension User {
+extension UserModel {
 	
-	struct Public: Content {
-		
-		let id: UUID
-		let username: String
-		let updatedAt: Date
-		
-	}
-	
-	func asPublic() throws -> Public {
-		return try Public(
+	func asPublicSmall() throws -> User.Public.Small {
+		// FIXME: Use real data
+		return try .init(
 			id: self.requireID(),
 			username: self.username,
+			displayName: "<TODO>",
+			avatar: nil,
+			country: nil,
+			type: .user,
 			updatedAt: self.updatedAt.require()
 		)
 	}
 	
+	func asPublicFull() throws -> User.Public.Full {
+		// FIXME: Use real data
+		return try .init(
+			self.asPublicSmall(),
+			with: User.Details(
+				bio: nil,
+				location: nil,
+				experience: [:],
+				socialUsernames: [:],
+				createdAt: Date()
+			)
+		)
+	}
+	
 }
+
+extension User.Public.Small: Content {}
+extension User.Public.Full: Content {}

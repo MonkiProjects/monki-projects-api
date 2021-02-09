@@ -7,23 +7,17 @@
 //
 
 import Vapor
+import MonkiProjectsModel
 
-extension User {
+extension UserModel {
 	
-	struct Private: Content {
-		
-		let id: UUID
-		let username: String
-		let email: String
-		
-	}
-	
-	func asPrivate() throws -> Private {
-		return try Private(
-			id: self.requireID(),
-			username: self.username,
+	func asPrivate() throws -> User.Private {
+		return try User.Private(
+			self.asPublicFull(),
 			email: self.email
 		)
 	}
 	
 }
+
+extension User.Private: Content {}

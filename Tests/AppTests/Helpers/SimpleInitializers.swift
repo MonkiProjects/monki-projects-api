@@ -9,7 +9,7 @@
 @testable import App
 import Foundation
 
-extension User {
+extension UserModel {
 	
 	static func dummy(
 		id: UUID = UUID(),
@@ -31,7 +31,7 @@ extension Placemark {
 		longitude: Double = Double.random(in: -180...180),
 		typeId: PlacemarkType.IDValue,
 		state: State = .private,
-		creatorId: User.IDValue,
+		creatorId: UserModel.IDValue,
 		caption: String = UUID().uuidString,
 		images: [String] = []
 	) -> Self {

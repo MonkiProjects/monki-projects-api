@@ -10,12 +10,12 @@ import Fluent
 import Vapor
 
 /// Comes from https://docs.vapor.codes/4.0/authentication/#model-token-authenticatable
-extension User.Token: ModelTokenAuthenticatable {
+extension UserModel.Token: ModelTokenAuthenticatable {
 	
-	typealias User = App.User
+	typealias User = App.UserModel
 	
-	static let valueKey = \User.Token.$value
-	static let userKey = \User.Token.$user
+	static let valueKey = \UserModel.Token.$value
+	static let userKey = \UserModel.Token.$user
 	
 	var isValid: Bool {
 		guard let expiryDate = expiresAt else {

@@ -69,7 +69,7 @@
         "repositoryURL": "https://github.com/MonkiProjects/monki-map-model-swift.git",
         "state": {
           "branch": "main",
-          "revision": "d66663f9e26914b086e3855ccff0a6885f8656ae",
+          "revision": "d28728ea160f2e0c47fa5462e54416055edd79e4",
           "version": null
         }
       },
@@ -78,7 +78,7 @@
         "repositoryURL": "https://github.com/MonkiProjects/monki-projects-model-swift.git",
         "state": {
           "branch": "main",
-          "revision": "13c23e577de405f32b7c5ac6a4dc1359b2542f00",
+          "revision": "df3cb4d2430a8ec224d7bc7980db7bed39889230",
           "version": null
         }
       },
