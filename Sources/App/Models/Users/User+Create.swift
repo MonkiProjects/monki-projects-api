@@ -7,27 +7,18 @@
 //
 
 import Vapor
+import MonkiProjectsModel
 
-extension UserModel {
+extension User.Create: Content, Validatable {
 	
-	struct Create: Content {
-		let username: String
-		let email: String
-		let password: String
-		let confirmPassword: String
-	}
-	
-}
-
-extension UserModel.Create: Validatable {
-	
-	static func validations(_ validations: inout Validations) {
+	public static func validations(_ validations: inout Validations) {
+		validations.add("email", as: String.self, is: .email)
 		validations.add("username", as: String.self, is: .count(3...32))
 		let allowedChars = CharacterSet.lowercaseLetters	// [a-z]
 			.union(.decimalDigits)							// [0-9]
 			.union(.init(charactersIn: "._"))				// [._]
 		validations.add("username", as: String.self, is: .characterSet(allowedChars))
-		validations.add("email", as: String.self, is: .email)
+		validations.add("displayName", as: String.self, is: .count(3...32))
 		validations.add("password", as: String.self, is: .count(8...))
 	}
 	

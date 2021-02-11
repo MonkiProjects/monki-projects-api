@@ -37,7 +37,7 @@ struct UserController: RouteCollection {
 	func createUser(req: Request) throws -> EventLoopFuture<Response> {
 		// Validate and decode data
 		do {
-			try UserModel.Create.validate(content: req)
+			try User.Create.validate(content: req)
 		} catch {
 			// Fix error message not showing '.' and '_' for some reason
 			var message = String(describing: error)
@@ -49,7 +49,7 @@ struct UserController: RouteCollection {
 			}
 			throw error
 		}
-		let create = try req.content.decode(UserModel.Create.self)
+		let create = try req.content.decode(User.Create.self)
 		
 		// Do additional validations
 		guard create.password == create.confirmPassword else {

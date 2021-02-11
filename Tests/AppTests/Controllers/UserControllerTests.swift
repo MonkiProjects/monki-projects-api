@@ -82,9 +82,10 @@ class UserControllerTests: AppTestCase {
 		
 		// Create user
 		let username = "test_username"
-		let user = UserModel.Create(
-			username: username,
+		let user = User.Create(
 			email: "test@email.com",
+			username: username,
+			displayName: "Test Name",
 			password: "password",
 			confirmPassword: "password"
 		)
@@ -173,9 +174,10 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithMismatchingPassword() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		let user = UserModel.Create(
-			username: "test_username",
+		let user = User.Create(
 			email: "test@email.com",
+			username: "test_username",
+			displayName: "Test Name",
 			password: "password1",
 			confirmPassword: "password2"
 		)
@@ -228,9 +230,10 @@ class UserControllerTests: AppTestCase {
 		deleteUserAfterTestFinishes(user1, on: app.db)
 		
 		// Try to create other user
-		let user2 = UserModel.Create(
-			username: "test_username2",
+		let user2 = User.Create(
 			email: sameEmail,
+			username: "test_username2",
+			displayName: "Test Name",
 			password: "password2",
 			confirmPassword: "password2"
 		)
@@ -265,9 +268,10 @@ class UserControllerTests: AppTestCase {
 		deleteUserAfterTestFinishes(user1, on: app.db)
 		
 		// Try to create other user
-		let user2 = UserModel.Create(
-			username: sameUsername,
+		let user2 = User.Create(
 			email: "test2@email.com",
+			username: sameUsername,
+			displayName: "Test Name",
 			password: "password2",
 			confirmPassword: "password2"
 		)
@@ -294,9 +298,10 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithTooShortPassword() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		let user = UserModel.Create(
-			username: "test_username",
+		let user = User.Create(
 			email: "test@email.com",
+			username: "test_username",
+			displayName: "Test Name",
 			password: "1234567",
 			confirmPassword: "1234567"
 		)
@@ -326,9 +331,10 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithInvalidEmail() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		let user = UserModel.Create(
-			username: "test_username",
+		let user = User.Create(
 			email: "test@email",
+			username: "test_username",
+			displayName: "Test Name",
 			password: "password",
 			confirmPassword: "password"
 		)
@@ -355,9 +361,10 @@ class UserControllerTests: AppTestCase {
 	func testCreateUserWithInvalidUsername() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		let user = UserModel.Create(
-			username: "Test_username",
+		let user = User.Create(
 			email: "test@email.com",
+			username: "Test_username",
+			displayName: "Test Name",
 			password: "password",
 			confirmPassword: "password"
 		)
