@@ -1,5 +1,5 @@
 //
-//  User+ModelAuthenticable.swift
+//  User+BasicAuth.swift
 //  App
 //
 //  Created by Rémi Bardon on 08/06/2020.
