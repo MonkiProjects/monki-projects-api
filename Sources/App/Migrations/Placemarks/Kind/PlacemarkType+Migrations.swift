@@ -7,13 +7,17 @@
 //
 
 import Fluent
+import MonkiMapModel
 
-extension Placemark.PlacemarkType {
+extension Placemark.Kind.Model {
 	
 	enum Migrations {
 		
+		typealias Migrated = Placemark.Kind
+		
 		static var all: [Migration] {
-			return [CreatePlacemarkType(), AddInitialTypes()]
+			return Category.Migrations.all
+				+ [CreatePlacemarkType(), AddInitialTypes()]
 		}
 		
 	}

@@ -7,27 +7,11 @@
 //
 
 import Vapor
-
-extension Placemark.Submission.Review {
-	
-	struct Create: Content {
-		let opinion: Opinion
-		let comment: String?
-		// TODO: For some reason, not providing an "issues" array causes
-		//       "issues failed to decode: keyNotFound(issues,
-		//       Swift.DecodingError.Context(codingPath: [],
-		//       debugDescription: \"Cannot get UnkeyedDecodingContainer --
-		//       no value found for key issues (\\\"issues\\\")\", underlyingError: nil))"
-		//       Probably caused by Vapor's Content decoding, because no validation error happens
-		let issues: [Issue.Create]?
-		let moderated: Bool?
-	}
-	
-}
+import MonkiMapModel
 
 extension Placemark.Submission.Review.Create: Validatable {
 	
-	static func validations(_ validations: inout Validations) {
+	public static func validations(_ validations: inout Validations) {
 		validations.add(
 			"opinion", as: String.self,
 			is: .in(Placemark.Submission.Review.Opinion.allCases.map(\.rawValue))

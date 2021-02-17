@@ -7,16 +7,16 @@
 //
 
 import Fluent
+import MonkiMapModel
 
-extension Placemark {
+extension Placemark.Model {
 	
 	enum Migrations {
 		
 		static var all: [Migration] {
-			return Category.Migrations.all
-				+ PlacemarkType.Migrations.all
-				+ Property.Migrations.all
-				+ Location.Migrations.all
+			return Kind.Migrations.all
+				+ Details.Property.Migrations.all
+				+ Details.Location.Migrations.all
 				+ [CreatePlacemark()]
 				+ PlacemarkPropertyPivot.Migrations.all
 				+ Submission.Migrations.all

@@ -8,6 +8,7 @@
 
 import Fluent
 import Vapor
+import MonkiMapModel
 
 struct PlacemarkController: RouteCollection {
 	
@@ -49,24 +50,28 @@ struct PlacemarkController: RouteCollection {
 		let state = try req.query.decode(Params.self).state ?? .published
 		
 		switch state {
-		case .private:
+		case .unknown:
+			throw Abort(.forbidden, reason: "Fetching placemarks in 'unknown' state is impossible.")
+		case .draft, .local, .private:
 			// TODO: Return user's private placemarks if a token was provided
-			throw Abort(.notImplemented, reason: "Fetching your private placemarks is not yet possible")
+			throw Abort(.notImplemented, reason: "Fetching your \(state) placemarks is not yet possible.")
 		case .submitted, .published, .rejected:
 			return try listPlacemarks(state: state, in: req.db)
 		}
 	}
 	
-	func listPlacemarks(state: Placemark.State, in database: Database) throws -> EventLoopFuture<[Placemark.Public]> {
-		return Placemark.query(on: database)
+	func listPlacemarks(
+		state: Placemark.State,
+		in database: Database
+	) throws -> EventLoopFuture<[Placemark.Public]> {
+		return Placemark.Model.query(on: database)
 			.filter(\.$state == state)
-			.with(\.$type) { type in
-				type.with(\.$category)
+			.with(\.$kind) { kind in
+				kind.with(\.$category)
 			}
 			.with(\.$creator)
-			.with(\.$properties)
 			.all()
-			.flatMapEachThrowing { try $0.asPublic() }
+			.flatMapEachThrowing { try $0.asPublic(on: database) }
 	}
 	
 	func createPlacemark(req: Request) throws -> EventLoopFuture<Response> {
@@ -78,61 +83,58 @@ struct PlacemarkController: RouteCollection {
 		// Do additional validations
 		// TODO: Check for near spots (e.g. < 20m)
 		
-		let placemarkTypeFuture = Placemark.PlacemarkType.query(on: req.db)
+		let placemarkKindFuture = Placemark.Kind.Model.query(on: req.db)
 			.filter(\.$humanId == create.type)
 			.first()
 			.unwrap(or: Abort(.notFound, reason: "Placemark type not found"))
 		
 		// Create Placemark object
-		let placemarkFuture = placemarkTypeFuture.flatMapThrowing { type in
-			try Placemark(
+		let placemarkFuture = placemarkKindFuture.flatMapThrowing { kind in
+			try Placemark.Model(
 				name: create.name,
 				latitude: create.latitude,
 				longitude: create.longitude,
-				typeId: type.requireID(),
+				kindId: kind.requireID(),
 				state: .private,
-				creatorId: user.requireID(),
-				caption: create.caption,
-				images: (create.images ?? []).map { $0.absoluteString }
+				creatorId: user.requireID()
 			)
 		}
 		
-		// FIXME: Add properties
+		// FIXME: Add caption, images, properties
+		// (create.images ?? []).map { $0.absoluteString }
 		
 		// Save Placemark in database
 		let createPlacemarkFuture = placemarkFuture.flatMap { placemark in
 			placemark.create(on: req.db)
-				.flatMap { placemark.$type.load(on: req.db) }
-				.flatMap { placemark.type.$category.load(on: req.db) }
+				.flatMap { placemark.$kind.load(on: req.db) }
+				.flatMap { placemark.kind.$category.load(on: req.db) }
 				.flatMap { placemark.$creator.load(on: req.db) }
-				.flatMap { placemark.$properties.load(on: req.db) }
 				.transform(to: placemark)
 		}
 		
 		return createPlacemarkFuture
-			.flatMapThrowing { try $0.asPublic() }
+			.flatMapThrowing { try $0.asPublic(on: req.db) }
 			.flatMap { $0.encodeResponse(status: .created, for: req) }
 	}
 	
 	func getPlacemark(req: Request) throws -> EventLoopFuture<Placemark.Public> {
 		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
-		return Placemark.find(placemarkId, on: req.db)
+		return Placemark.Model.find(placemarkId, on: req.db)
 			.unwrap(or: Abort(.notFound, reason: "Placemark not found"))
 			.flatMap { placemark in
-				placemark.$type.load(on: req.db)
-					.flatMap { placemark.type.$category.load(on: req.db) }
+				placemark.$kind.load(on: req.db)
+					.flatMap { placemark.kind.$category.load(on: req.db) }
 					.flatMap { placemark.$creator.load(on: req.db) }
-					.flatMap { placemark.$properties.load(on: req.db) }
 					.transform(to: placemark)
 			}
-			.flatMapThrowing { try $0.asPublic() }
+			.flatMapThrowing { try $0.asPublic(on: req.db) }
 	}
 	
 	func deletePlacemark(req: Request) throws -> EventLoopFuture<HTTPStatus> {
 		let user = try req.auth.require(UserModel.self)
 		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
 		
-		let placemarkFuture = Placemark.find(placemarkId, on: req.db)
+		let placemarkFuture = Placemark.Model.find(placemarkId, on: req.db)
 			.unwrap(or: Abort(.notFound, reason: "Placemark not found"))
 		
 		// Do additional validations
@@ -143,7 +145,8 @@ struct PlacemarkController: RouteCollection {
 		let deletePropertiesFuture = guardAuthorizedFuture
 			.flatMap { placemark in
 				PlacemarkPropertyPivot.query(on: req.db)
-					.filter(\.$placemark.$id == placemarkId)
+//					.with(\.$details)
+					.filter(\.details.$placemark.$id == placemarkId)
 					.all()
 					.flatMap { $0.delete(on: req.db) }
 					.transform(to: placemark)
@@ -154,30 +157,30 @@ struct PlacemarkController: RouteCollection {
 			.transform(to: .ok)
 	}
 	
-	func listPlacemarkFeatures(req: Request) -> EventLoopFuture<[Placemark.Property.Public]> {
-		listProperties(ofType: .feature, in: req.db)
+	func listPlacemarkFeatures(req: Request) -> EventLoopFuture<[Placemark.Property.Localized]> {
+		listProperties(ofKind: .feature, in: req.db)
 	}
 	
-	func listPlacemarkTechniques(req: Request) -> EventLoopFuture<[Placemark.Property.Public]> {
-		listProperties(ofType: .technique, in: req.db)
+	func listPlacemarkTechniques(req: Request) -> EventLoopFuture<[Placemark.Property.Localized]> {
+		listProperties(ofKind: .technique, in: req.db)
 	}
 	
-	func listPlacemarkBenefits(req: Request) -> EventLoopFuture<[Placemark.Property.Public]> {
-		listProperties(ofType: .benefit, in: req.db)
+	func listPlacemarkBenefits(req: Request) -> EventLoopFuture<[Placemark.Property.Localized]> {
+		listProperties(ofKind: .benefit, in: req.db)
 	}
 	
-	func listPlacemarkHazards(req: Request) -> EventLoopFuture<[Placemark.Property.Public]> {
-		listProperties(ofType: .hazard, in: req.db)
+	func listPlacemarkHazards(req: Request) -> EventLoopFuture<[Placemark.Property.Localized]> {
+		listProperties(ofKind: .hazard, in: req.db)
 	}
 	
 	private func listProperties(
-		ofType type: Placemark.Property.PropertyType,
+		ofKind kind: Placemark.Property.Kind,
 		in database: Database
-	) -> EventLoopFuture<[Placemark.Property.Public]> {
-		Placemark.Property.query(on: database)
-			.filter(\.$type == type)
+	) -> EventLoopFuture<[Placemark.Property.Localized]> {
+		Placemark.Property.Model.query(on: database)
+			.filter(\.$kind == kind)
 			.all()
-			.mapEach { $0.asPublic() }
+			.flatMapEachThrowing { try $0.localized() }
 	}
 	
 }

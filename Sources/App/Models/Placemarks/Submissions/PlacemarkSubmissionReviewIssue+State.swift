@@ -7,11 +7,6 @@
 //
 
 import Vapor
+import MonkiMapModel
 
-extension Placemark.Submission.Review.Issue {
-	
-	enum State: String, Content {
-		case submitted, addressed, denied
-	}
-	
-}
+extension Placemark.Submission.Review.Issue.State: Content {}

@@ -7,8 +7,9 @@
 //
 
 import Fluent
+import MonkiMapModel
 
-extension Placemark.Location {
+extension Placemark.Location.Model {
 	
 	enum Migrations {
 		

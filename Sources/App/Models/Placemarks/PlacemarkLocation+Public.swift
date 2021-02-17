@@ -7,21 +7,17 @@
 //
 
 import Vapor
+import MonkiMapModel
 
-extension Placemark.Location {
+extension Placemark.Location.Model {
 	
-	struct Public: Content, Equatable {
-		
-		let city: String
-		let country: String
-		
-	}
-	
-	func asPublic() -> Public {
-		Public(
+	func asPublic() -> Placemark.Location.Public {
+		return .init(
 			city: self.city,
 			country: self.country
 		)
 	}
 	
 }
+
+extension Placemark.Location.Public: Content {}

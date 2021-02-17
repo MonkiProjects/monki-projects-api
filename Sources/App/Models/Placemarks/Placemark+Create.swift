@@ -7,23 +7,11 @@
 //
 
 import Vapor
+import MonkiMapModel
 
-extension Placemark {
+extension Placemark.Create: Content, Validatable {
 	
-	struct Create: Content {
-		let name: String
-		let latitude, longitude: Double
-		let type,
-			caption: String
-		let images: [URL]?
-		let features, goodForTraining, benefits, hazards: [String]?
-	}
-	
-}
-
-extension Placemark.Create: Validatable {
-	
-	static func validations(_ validations: inout Validations) {
+	public static func validations(_ validations: inout Validations) {
 		validations.add("name", as: String.self, is: .count(3...48))
 		validations.add("latitude", as: Double.self, is: .range(-90...90))
 		validations.add("longitude", as: Double.self, is: .range(-180...180))

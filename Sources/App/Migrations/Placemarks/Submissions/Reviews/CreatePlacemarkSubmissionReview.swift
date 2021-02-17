@@ -7,8 +7,9 @@
 //
 
 import Fluent
+import MonkiMapModel
 
-extension Placemark.Submission.Review.Migrations {
+extension Placemark.Submission.Review.Model.Migrations {
 	
 	struct CreatePlacemarkSubmissionReview: Migration {
 		

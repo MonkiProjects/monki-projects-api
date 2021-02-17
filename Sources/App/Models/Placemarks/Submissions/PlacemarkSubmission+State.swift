@@ -8,21 +8,18 @@
 
 import Vapor
 import Fluent
+import MonkiMapModel
 
-extension Placemark.Submission {
+extension Placemark.Submission.Model {
 	
 	static let positiveReviewCountToValidate: UInt8 = 5
 	static let negativeReviewCountToReject: UInt8 = 2
 	
-	enum State: String, Content {
-		case waitingForReviews, needsChanges, waitingForChanges, accepted, rejected, moderated
-	}
-	
 	func review(
-		opinion: Review.Opinion,
+		opinion: Placemark.Submission.Review.Opinion,
 		isModerator: Bool,
 		on database: Database
-	) -> EventLoopFuture<Placemark.Submission> {
+	) -> EventLoopFuture<Placemark.Submission.Model> {
 		do {
 			if isModerator {
 				return reviewAsModerator(opinion: opinion, on: database)
@@ -34,9 +31,9 @@ extension Placemark.Submission {
 	}
 	
 	private func reviewAsModerator(
-		opinion: Review.Opinion,
+		opinion: Placemark.Submission.Review.Opinion,
 		on database: Database
-	) -> EventLoopFuture<Placemark.Submission> {
+	) -> EventLoopFuture<Placemark.Submission.Model> {
 		switch opinion {
 		case .positive:
 			self.positiveReviews += 1
@@ -53,9 +50,9 @@ extension Placemark.Submission {
 	}
 	
 	private func reviewAsRegularUser(
-		opinion: Review.Opinion,
+		opinion: Placemark.Submission.Review.Opinion,
 		on database: Database
-	) throws -> EventLoopFuture<Placemark.Submission> {
+	) throws -> EventLoopFuture<Placemark.Submission.Model> {
 		switch self.state {
 		case .waitingForReviews:
 			switch opinion {
@@ -98,10 +95,10 @@ extension Placemark.Submission {
 			.transform(to: self)
 	}
 	
-	private func setNeedsChanges(on database: Database) -> EventLoopFuture<Placemark.Submission> {
+	private func setNeedsChanges(on database: Database) -> EventLoopFuture<Placemark.Submission.Model> {
 		self.state = .needsChanges
 		
-		let newSubmission = Placemark.Submission(placemarkId: self.$placemark.id, state: .waitingForChanges)
+		let newSubmission = Self(placemarkId: self.$placemark.id, state: .waitingForChanges)
 		
 		return self.update(on: database)
 			.flatMap { newSubmission.create(on: database) }

@@ -8,81 +8,68 @@
 
 import Fluent
 import Vapor
+import MonkiMapModel
 
-final class Placemark: Model {
+typealias PlacemarkModel = Placemark.Model
+
+extension Placemark {
 	
-	static let schema = "placemarks"
-	
-	@ID(key: .id)
-	var id: UUID?
-	
-	@Field(key: "name")
-	var name: String
-	
-	@Field(key: "latitude")
-	var latitude: Double
-	
-	@Field(key: "longitude")
-	var longitude: Double
-	
-	@Parent(key: "type_id")
-	var type: PlacemarkType
-	
-	@Field(key: "state")
-	var state: State
-	
-	@Parent(key: "creator_id")
-	var creator: UserModel
-	
-	@Field(key: "caption")
-	var caption: String
-	
-	@Field(key: "satellite_image")
-	var satelliteImage: String
-	
-	@Field(key: "images")
-	var images: [String]
-	
-	@OptionalParent(key: "location_id")
-	var location: Location?
-	
-	@Siblings(through: PlacemarkPropertyPivot.self, from: \.$placemark, to: \.$property)
-	var properties: [Property]
-	
-	@Timestamp(key: "created_at", on: .create)
-	var createdAt: Date?
-	
-	@Timestamp(key: "updated_at", on: .update)
-	var updatedAt: Date?
-	
-	@Timestamp(key: "deleted_at", on: .delete)
-	var deletedAt: Date?
-	
-	init() {}
-	
-	init(
-		id: UUID? = nil,
-		name: String,
-		latitude: Double,
-		longitude: Double,
-		typeId: PlacemarkType.IDValue,
-		state: State = .private,
-		creatorId: UserModel.IDValue,
-		caption: String,
-		images: [String] = []
-	) {
-		self.id = id
-		self.name = name
-		self.latitude = latitude
-		self.longitude = longitude
-		self.$type.id = typeId
-		self.state = state
-		self.$creator.id = creatorId
-		self.caption = caption
-		self.satelliteImage = "https://monkiprojects.com/images/satellite-view-placeholder.jpg"
-		self.images = images
+	final class Model: Fluent.Model {
+		
+		static let schema = "placemarks"
+		
+		@ID(key: .id)
+		var id: UUID?
+		
+		@Field(key: "name")
+		var name: String
+		
+		@Field(key: "latitude")
+		var latitude: Double
+		
+		@Field(key: "longitude")
+		var longitude: Double
+		
+		@Parent(key: "kind_id")
+		var kind: Kind
+		
+		@Field(key: "state")
+		var state: State
+		
+		@Parent(key: "creator_id")
+		var creator: UserModel
+		
+		@Timestamp(key: "created_at", on: .create)
+		var createdAt: Date?
+		
+		@Timestamp(key: "updated_at", on: .update)
+		var updatedAt: Date?
+		
+		@Timestamp(key: "deleted_at", on: .delete)
+		var deletedAt: Date?
+		
+		init() {}
+		
+		init(
+			id: IDValue? = nil,
+			name: String,
+			latitude: Double,
+			longitude: Double,
+			kindId: Kind.IDValue,
+			state: State = .private,
+			creatorId: UserModel.IDValue
+		) {
+			self.id = id
+			self.name = name
+			self.latitude = latitude
+			self.longitude = longitude
+			self.$kind.id = kindId
+			self.state = state
+			self.$creator.id = creatorId
+		}
+		
+		// FIXME: Add a method to trigger location reverse geocoding
+		
 	}
-	
-	// FIXME: Add a method to trigger location reverse geocoding
 	
 }

@@ -7,19 +7,11 @@
 //
 
 import Vapor
-
-extension Placemark.Submission.Review.Issue {
-	
-	struct Create: Content {
-		let reason: Reason
-		let comment: String
-	}
-	
-}
+import MonkiMapModel
 
 extension Placemark.Submission.Review.Issue.Create: Validatable {
 	
-	static func validations(_ validations: inout Validations) {
+	public static func validations(_ validations: inout Validations) {
 		validations.add(
 			"reason", as: String.self,
 			is: .in(Placemark.Submission.Review.Issue.Reason.allCases.map(\.rawValue))

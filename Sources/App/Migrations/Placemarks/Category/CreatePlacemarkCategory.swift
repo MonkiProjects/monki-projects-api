@@ -7,8 +7,9 @@
 //
 
 import Fluent
+import MonkiMapModel
 
-extension Placemark.Category.Migrations {
+extension Placemark.Category.Model.Migrations {
 	
 	struct CreatePlacemarkCategory: Migration {
 		

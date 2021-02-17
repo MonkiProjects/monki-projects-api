@@ -1,5 +1,5 @@
 //
-//  Placemark+Type.swift
+//  Placemark+Kind.swift
 //  App
 //
 //  Created by Rémi Bardon on 09/01/2021.
@@ -8,12 +8,19 @@
 
 import Fluent
 import Vapor
+import MonkiMapModel
 
-extension Placemark {
+extension Placemark.Model {
 	
-	final class PlacemarkType: Model {
+	typealias Kind = Placemark.Kind.Model
+	
+}
+
+extension Placemark.Kind {
+	
+	final class Model: Fluent.Model {
 		
-		static let schema = "placemark_types"
+		static let schema = "placemark_kinds"
 		
 		@ID(key: .id)
 		var id: UUID?
@@ -22,14 +29,14 @@ extension Placemark {
 		var humanId: String
 		
 		@Parent(key: "category_id")
-		var category: Placemark.Category
+		var category: Category
 		
 		init() {}
 		
 		init(
-			id: UUID? = nil,
+			id: IDValue? = nil,
 			humanId: String,
-			categoryId: Placemark.Category.IDValue
+			categoryId: Category.IDValue
 		) {
 			self.id = id
 			self.humanId = humanId

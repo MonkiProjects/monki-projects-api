@@ -8,30 +8,37 @@
 
 import Fluent
 import Vapor
+import MonkiMapModel
 
-extension Placemark {
+extension Placemark.Details.Model {
 	
-	final class Property: Model {
+	typealias Property = Placemark.Property.Model
+	
+}
+
+extension Placemark.Property {
+	
+	final class Model: Fluent.Model {
 		
 		static let schema = "placemark_properties"
 		
-		@ID(key: .id)
+		@IDProperty<Placemark.Property.Model, UUID>(key: .id)
 		var id: UUID?
 		
-		@Field(key: "type")
-		var type: PropertyType
+		@Field(key: "kind")
+		var kind: Kind
 		
 		@Field(key: "human_id")
 		var humanId: String
 		
-		@Siblings(through: PlacemarkPropertyPivot.self, from: \.$property, to: \.$placemark)
-		var placemarks: [Placemark]
+		@Siblings(through: PlacemarkPropertyPivot.self, from: \.$property, to: \.$details)
+		var details: [Placemark.Details.Model]
 		
 		init() {}
 		
-		init(id: UUID? = nil, type: PropertyType, humanId: String) {
+		init(id: IDValue? = nil, kind: Kind, humanId: String) {
 			self.id = id
-			self.type = type
+			self.kind = kind
 			self.humanId = humanId
 		}
 		

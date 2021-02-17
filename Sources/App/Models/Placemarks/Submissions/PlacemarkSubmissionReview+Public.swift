@@ -7,25 +7,12 @@
 //
 
 import Vapor
+import MonkiMapModel
 
-extension Placemark.Submission.Review {
+extension Placemark.Submission.Review.Model {
 	
-	struct Public: Content {
-		
-		let id: UUID
-		let submission: UUID
-		let placemark: UUID
-		let reviewer: UUID
-		let opinion: Opinion
-		let comment: String
-		let issues: [Issue.Public]
-		let moderated: Bool
-		let createdAt: Date
-		
-	}
-	
-	func asPublic() throws -> Public {
-		try Public(
+	func asPublic() throws -> Placemark.Submission.Review.Public {
+		return try .init(
 			id: self.requireID(),
 			submission: self.$submission.id,
 			placemark: self.submission.$placemark.id,
@@ -39,3 +26,5 @@ extension Placemark.Submission.Review {
 	}
 	
 }
+
+extension Placemark.Submission.Review.Public: Content {}

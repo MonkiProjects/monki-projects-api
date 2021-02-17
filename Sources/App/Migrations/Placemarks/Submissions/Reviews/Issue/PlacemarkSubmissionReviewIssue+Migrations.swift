@@ -7,8 +7,9 @@
 //
 
 import Fluent
+import MonkiMapModel
 
-extension Placemark.Submission.Review.Issue {
+extension Placemark.Submission.Review.Issue.Model {
 	
 	enum Migrations {
 		

@@ -7,12 +7,6 @@
 //
 
 import Vapor
+import MonkiMapModel
 
-extension Placemark.Submission.Review.Issue {
-	
-	enum Reason: String, Content, CaseIterable {
-		case name, coordinates, type, caption, satelliteImage, images,
-			 location, property, other
-	}
-	
-}
+extension Placemark.Submission.Review.Issue.Reason: Content {}

@@ -28,9 +28,6 @@ let package = Package(
 				.product(name: "Vapor", package: "vapor"),
 				.product(name: "MonkiMapModel", package: "monki-map-model"),
 			],
-			resources: [
-				.process("Resources"),
-			],
 			swiftSettings: [
 				// Enable better optimizations when building in Release configuration. Despite the use of
 				// the `.unsafeFlags` construct required by SwiftPM, this flag is recommended for Release

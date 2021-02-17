@@ -8,10 +8,17 @@
 
 import Fluent
 import Vapor
+import MonkiMapModel
 
-extension Placemark {
+extension Placemark.Kind.Model {
 	
-	final class Category: Model {
+	typealias Category = Placemark.Category.Model
+	
+}
+
+extension Placemark.Category {
+	
+	final class Model: Fluent.Model {
 		
 		static let schema = "placemark_categories"
 		
@@ -23,7 +30,7 @@ extension Placemark {
 		
 		init() {}
 		
-		init(id: UUID? = nil, humanId: String) {
+		init(id: IDValue? = nil, humanId: String) {
 			self.id = id
 			self.humanId = humanId
 		}

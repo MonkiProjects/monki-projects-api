@@ -8,6 +8,7 @@
 
 import Fluent
 import Vapor
+import MonkiMapModel
 
 struct PlacemarkSubmissionController: RouteCollection {
 	
@@ -42,7 +43,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 	
 	func submitPlacemark(req: Request) throws -> EventLoopFuture<Response> {
 		let userId = try req.auth.require(UserModel.self).requireID()
-		let placemarkId = try req.parameters.require("placemarkId", as: Placemark.IDValue.self)
+		let placemarkId = try req.parameters.require("placemarkId", as: Placemark.Model.IDValue.self)
 		
 		let guardIsCreator = guardCreator(
 			userId: userId, placemarkId: placemarkId,
@@ -52,7 +53,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 		
 		let guardNoDuplicate = guardIsCreator
 			.flatMap {
-				Submission.query(on: req.db)
+				Submission.Model.query(on: req.db)
 					.filter(\.$placemark.$id == placemarkId)
 					.first()
 			}
@@ -62,13 +63,13 @@ struct PlacemarkSubmissionController: RouteCollection {
 			.transform(to: ())
 		
 		let submitPlacemarkFuture = guardNoDuplicate
-			.flatMap { Placemark.find(placemarkId, on: req.db) }
+			.flatMap { Placemark.Model.find(placemarkId, on: req.db) }
 			.unwrap(or: Abort(.notFound, reason: "Placemark not found"))
 			.passthrough { $0.state = .submitted }
 			.flatMap { $0.update(on: req.db) }
 		
 		let createSubmissionFuture = submitPlacemarkFuture
-			.map { Placemark.Submission(placemarkId: placemarkId) }
+			.map { Placemark.Submission.Model(placemarkId: placemarkId) }
 			.flatMap {
 				$0.create(on: req.db)
 					.transform(to: getLastSubmission(for: placemarkId, in: req.db))
@@ -80,14 +81,14 @@ struct PlacemarkSubmissionController: RouteCollection {
 	}
 	
 	func getPlacemarkSubmissionReport(req: Request) throws -> EventLoopFuture<Submission.Public> {
-		let placemarkId = try req.parameters.require("placemarkId", as: Placemark.IDValue.self)
+		let placemarkId = try req.parameters.require("placemarkId", as: Placemark.Model.IDValue.self)
 		
 		return getLastSubmission(for: placemarkId, in: req.db)
 			.flatMapThrowing { try $0.asPublic() }
 	}
 	
 	func listPlacemarkSubmissionReviews(req: Request) throws -> EventLoopFuture<[Review.Public]> {
-		let placemarkId = try req.parameters.require("placemarkId", as: Placemark.IDValue.self)
+		let placemarkId = try req.parameters.require("placemarkId", as: Placemark.Model.IDValue.self)
 		
 		return getLastSubmission(for: placemarkId, in: req.db)
 			.map { $0.reviews }
@@ -96,7 +97,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 	
 	func addPlacemarkSubmissionReview(req: Request) throws -> EventLoopFuture<Review.Public> {
 		let userId = try req.auth.require(UserModel.self).requireID()
-		let placemarkId = try req.parameters.require("placemarkId", as: Placemark.IDValue.self)
+		let placemarkId = try req.parameters.require("placemarkId", as: Placemark.Model.IDValue.self)
 		
 		// Validate and decode data
 		try Review.Create.validate(content: req)
@@ -105,9 +106,9 @@ struct PlacemarkSubmissionController: RouteCollection {
 		let updateSubmissionState = getLastSubmission(for: placemarkId, in: req.db)
 			// FIXME: Set isModerator to true if user is a moderator
 			.flatMap { $0.review(opinion: create.opinion, isModerator: false, on: req.db) }
-		let publishPlacemarkIfNeeded = { (submission: Submission) -> EventLoopFuture<Void?>? in
+		let publishPlacemarkIfNeeded = { (submission: Submission.Model) -> EventLoopFuture<Void?>? in
 			if submission.state == .accepted {
-				return Placemark.find(placemarkId, on: req.db)
+				return Placemark.Model.find(placemarkId, on: req.db)
 					.optionalFlatMap { placemark -> EventLoopFuture<Void> in
 						placemark.state = .published
 						return placemark.update(on: req.db)
@@ -115,8 +116,8 @@ struct PlacemarkSubmissionController: RouteCollection {
 			}
 			return nil
 		}
-		let addReview = { (submission: Submission) throws -> EventLoopFuture<Review> in
-			let review = try Review(
+		let addReview = { (submission: Submission.Model) throws -> EventLoopFuture<Review.Model> in
+			let review = try Review.Model(
 				submissionId: submission.requireID(),
 				reviewerId: userId,
 				opinion: create.opinion,
@@ -125,9 +126,9 @@ struct PlacemarkSubmissionController: RouteCollection {
 			return submission.$reviews.create(review, on: req.db)
 				.transform(to: review)
 		}
-		let addIssues = { (review: Review) -> EventLoopFuture<Void> in
+		let addIssues = { (review: Review.Model) -> EventLoopFuture<Void> in
 			let issues = create.issues ?? []
-			let issuesObjects = issues.map { Review.Issue(reviewId: userId, reason: $0.reason, comment: $0.comment) }
+			let issuesObjects = issues.map { Review.Issue.Model(reviewId: userId, reason: $0.reason, comment: $0.comment) }
 			return review.$issues.create(issuesObjects, on: req.db)
 		}
 		
@@ -153,10 +154,10 @@ struct PlacemarkSubmissionController: RouteCollection {
 	// MARK: - Helper functions
 	
 	private func getLastSubmission(
-		for placemarkId: Placemark.IDValue,
+		for placemarkId: Placemark.Model.IDValue,
 		in database: Database
-	) -> EventLoopFuture<Submission> {
-		Submission.query(on: database)
+	) -> EventLoopFuture<Submission.Model> {
+		Submission.Model.query(on: database)
 			.with(\.$placemark)
 			.with(\.$reviews) { review in
 				review.with(\.$submission) { submission in
@@ -180,11 +181,11 @@ struct PlacemarkSubmissionController: RouteCollection {
 	
 	private func guardCreator(
 		userId: UserModel.IDValue,
-		placemarkId: Placemark.IDValue,
+		placemarkId: Placemark.Model.IDValue,
 		otherwise message: String,
 		in database: Database
 	) -> EventLoopFuture<Void> {
-		Placemark.find(placemarkId, on: database)
+		Placemark.Model.find(placemarkId, on: database)
 			.unwrap(or: Abort(.notFound, reason: "Placemark not found"))
 			.guard({ $0.$creator.id == userId }, else: Abort(.forbidden, reason: message))
 			.transform(to: ())
@@ -193,11 +194,11 @@ struct PlacemarkSubmissionController: RouteCollection {
 	/// Prevent user from reviewing his own submission
 	private func guardNotCreator(
 		userId: UserModel.IDValue,
-		placemarkId: Placemark.IDValue,
+		placemarkId: Placemark.Model.IDValue,
 		otherwise message: String,
 		in database: Database
 	) -> EventLoopFuture<Void> {
-		Placemark.find(placemarkId, on: database)
+		Placemark.Model.find(placemarkId, on: database)
 			.unwrap(or: Abort(.notFound, reason: "Placemark not found"))
 			.guard({ $0.$creator.id != userId }, else: Abort(.forbidden, reason: message))
 			.transform(to: ())
@@ -206,16 +207,16 @@ struct PlacemarkSubmissionController: RouteCollection {
 	/// Prevent user from reviewing twice the same submission
 	private func guardNoDoubleReview(
 		by userId: UserModel.IDValue,
-		for placemarkId: Placemark.IDValue,
+		for placemarkId: Placemark.Model.IDValue,
 		in database: Database
 	) -> EventLoopFuture<Void> {
 		// Fetch all reviews
-		Review.query(on: database)
+		Review.Model.query(on: database)
 			// From user `userId`
 			.filter(\.$reviewer.$id == userId)
 			// With a submission for placemark `placemarkId`
-			.join(Submission.self, on: \Review.$submission.$id == \Submission.$id)
-			.filter(Submission.self, \.$placemark.$id == placemarkId)
+			.join(Submission.Model.self, on: \Review.Model.$submission.$id == \Submission.Model.$id)
+			.filter(Submission.Model.self, \.$placemark.$id == placemarkId)
 			.first()
 			.guard({ $0 == nil },
 				   else: Abort(.forbidden, reason: "You cannot review a submission twice!")
@@ -223,7 +224,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 			.transform(to: ())
 	}
 	
-	private func loadRelations(of review: Review, on database: Database) -> EventLoopFuture<Void> {
+	private func loadRelations(of review: Review.Model, on database: Database) -> EventLoopFuture<Void> {
 		review.$submission.load(on: database)
 			.flatMap { review.$issues.load(on: database) }
 			.map { review.issues }

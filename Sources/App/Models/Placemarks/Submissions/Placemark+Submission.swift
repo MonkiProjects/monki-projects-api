@@ -8,15 +8,22 @@
 
 import Fluent
 import Vapor
+import MonkiMapModel
 
-extension Placemark {
+extension Placemark.Model {
+	
+	typealias Submission = Placemark.Submission.Model
+	
+}
+
+extension Placemark.Submission {
 	
 	/// When a `Placemark` is submitted, a `Submission` is created.
 	/// When a submission needs changes, a new `Submission` is created.
 	/// It is stored in the `childSubmission` field of the last `Submission`.
 	/// This allows a user to review every submission while not reviewing twice the same.
 	/// It also keeps track of reviews while not interfeering with last submission.
-	final class Submission: Model {
+	final class Model: Fluent.Model {
 		
 		static let schema = "placemark_submissions"
 		
@@ -24,7 +31,7 @@ extension Placemark {
 		var id: UUID?
 		
 		@Parent(key: "placemark_id")
-		var placemark: Placemark
+		var placemark: Placemark.Model
 		
 		@Field(key: "state")
 		var state: State
@@ -39,7 +46,7 @@ extension Placemark {
 		var negativeReviews: UInt8
 		
 		@OptionalParent(key: "child_submission_id")
-		var childSubmission: Submission?
+		var childSubmission: Placemark.Submission.Model?
 		
 		@Timestamp(key: "created_at", on: .create)
 		var createdAt: Date?
@@ -53,8 +60,8 @@ extension Placemark {
 		init() {}
 		
 		init(
-			id: UUID? = nil,
-			placemarkId: Placemark.IDValue,
+			id: IDValue? = nil,
+			placemarkId: Placemark.Model.IDValue,
 			state: State = .waitingForReviews
 		) {
 			self.id = id

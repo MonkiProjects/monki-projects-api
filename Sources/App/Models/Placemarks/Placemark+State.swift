@@ -7,11 +7,6 @@
 //
 
 import Vapor
+import MonkiMapModel
 
-extension Placemark {
-	
-	enum State: String, Content {
-		case `private`, submitted, published, rejected
-	}
-	
-}
+extension Placemark.State: Content {}
