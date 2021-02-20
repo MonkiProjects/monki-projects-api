@@ -9,7 +9,7 @@
 import Vapor
 import MonkiMapModel
 
-extension Placemark.Submission.Review.Create: Validatable {
+extension Placemark.Submission.Review.Create: Content, Validatable {
 	
 	public static func validations(_ validations: inout Validations) {
 		validations.add(
