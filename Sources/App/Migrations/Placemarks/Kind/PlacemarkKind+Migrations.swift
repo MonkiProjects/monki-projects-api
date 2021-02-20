@@ -1,5 +1,5 @@
 //
-//  PlacemarkLocation+Migrations.swift
+//  PlacemarkKind+Migrations.swift
 //  App
 //
 //  Created by Rémi Bardon on 09/01/2021.
@@ -7,14 +7,16 @@
 //
 
 import Fluent
-import MonkiMapModel
 
-extension Models.Placemark.Location {
+extension Models.Placemark.Kind {
 	
 	enum Migrations {
 		
+		typealias Migrated = Models.Placemark.Kind
+		
 		static var all: [Migration] {
-			return [CreatePlacemarkLocation()]
+			return Category.Migrations.all
+				+ [CreatePlacemarkKind(), AddInitialKinds()]
 		}
 		
 	}

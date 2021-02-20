@@ -12,30 +12,33 @@ import MonkiMapModel
 
 extension Models.Placemark {
 	
-	func asPublic(on database: Database) throws -> Placemark.Public {
+	func asPublic(on database: Database) throws -> EventLoopFuture<Placemark.Public> {
 		let kind = Placemark.Kind(rawValue: self.kind.humanId)
 		
-		let details = try Details.query(on: database)
+		let detailsFuture = try Details.query(on: database)
 			.filter(\.$placemark.$id == self.requireID())
 			.first()
 			.unwrap(or: Abort(.internalServerError,
 				reason: "We could not find the details for this placemark."
 			))
-			.wait()
+			.flatMapThrowing { try $0.asPublic(on: database) }
+			.flatMap { $0 }
 		
-		return try .init(
-			id: self.requireID(),
-			name: self.name,
-			latitude: self.latitude,
-			longitude: self.longitude,
-			kind: kind,
-			category: Placemark.Category(for: kind),
-			state: self.state,
-			creator: self.creator.requireID(),
-			details: details.asPublic(on: database),
-			createdAt: self.createdAt.require(),
-			updatedAt: self.updatedAt.require()
-		)
+		return detailsFuture.flatMapThrowing { details in
+			return try .init(
+				id: self.requireID(),
+				name: self.name,
+				latitude: self.latitude,
+				longitude: self.longitude,
+				kind: kind,
+				category: Placemark.Category(for: kind),
+				state: self.state,
+				creator: self.creator.requireID(),
+				details: details,
+				createdAt: self.createdAt.require(),
+				updatedAt: self.updatedAt.require()
+			)
+		}
 	}
 	
 }

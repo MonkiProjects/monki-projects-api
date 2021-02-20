@@ -7,7 +7,6 @@
 //
 
 import Fluent
-import MonkiMapModel
 
 extension Models.Placemark.Category.Migrations {
 	

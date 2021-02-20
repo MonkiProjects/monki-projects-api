@@ -17,9 +17,9 @@ extension Models.Placemark.Property.Migrations {
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
 			database.schema("placemark_properties")
 				.id()
-				.field("type", .string, .required)
+				.field("kind", .string, .required)
 				.field("human_id", .string, .required)
-				.unique(on: "type", "human_id", name: "placemark_properties_no_duplicate_human_id")
+				.unique(on: "kind", "human_id", name: "placemark_properties_no_duplicate_human_id")
 				.create()
 		}
 		

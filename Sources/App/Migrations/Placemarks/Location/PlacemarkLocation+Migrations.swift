@@ -1,5 +1,5 @@
 //
-//  Placemark+Migrations.swift
+//  PlacemarkLocation+Migrations.swift
 //  App
 //
 //  Created by Rémi Bardon on 09/01/2021.
@@ -7,17 +7,13 @@
 //
 
 import Fluent
-import MonkiMapModel
 
-extension Models.Placemark {
+extension Models.Placemark.Location {
 	
 	enum Migrations {
 		
 		static var all: [Migration] {
-			return Kind.Migrations.all
-				+ [CreatePlacemark()]
-				+ Details.Migrations.all
-				+ Submission.Migrations.all
+			return [CreatePlacemarkLocation()]
 		}
 		
 	}

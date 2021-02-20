@@ -1,5 +1,5 @@
 //
-//  AddInitialTypes.swift
+//  AddInitialKinds.swift
 //  App
 //
 //  Created by Rémi Bardon on 10/01/2021.
@@ -12,9 +12,9 @@ import MonkiMapModel
 
 extension Models.Placemark.Kind.Migrations {
 	
-	struct AddInitialTypes: Migration {
+	struct AddInitialKinds: Migration {
 		
-		var name: String { "AddInitialTypes" }
+		var name: String { "AddInitialKinds" }
 		
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
 			database.eventLoop.future(Placemark.Kind.allCases)

@@ -12,16 +12,16 @@ import MonkiMapModel
 extension Models.Placemark.Property {
 	
 	// FIXME: Localize in custom language
-	func localized() throws -> Placemark.Property.Localized {
+	func localized(in locale: Locale) throws -> Placemark.Property.Localized {
 		switch Placemark.Property.Kind(rawValue: self.kind.rawValue) {
 		case .feature:
-			return try Placemark.Property.feature(self.humanId).localized()
+			return try Placemark.Property.feature(self.humanId).localized(in: locale)
 		case .technique:
-			return try Placemark.Property.technique(self.humanId).localized()
+			return try Placemark.Property.technique(self.humanId).localized(in: locale)
 		case .benefit:
-			return try Placemark.Property.benefit(self.humanId).localized()
+			return try Placemark.Property.benefit(self.humanId).localized(in: locale)
 		case .hazard:
-			return try Placemark.Property.hazard(self.humanId).localized()
+			return try Placemark.Property.hazard(self.humanId).localized(in: locale)
 		case .none:
 			throw Abort(
 				.internalServerError,

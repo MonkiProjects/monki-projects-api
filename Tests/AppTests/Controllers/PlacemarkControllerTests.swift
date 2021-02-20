@@ -79,7 +79,7 @@ final class PlacemarkControllerTests: AppTestCase {
 			kindId: kindId(for: "training_spot", on: app.db).wait(),
 			creatorId: user.requireID()
 		)
-		try submittedPlacemark.create(on: app.db).wait()
+		try createPlacemark(submittedPlacemark, on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(submittedPlacemark, on: app.db)
 		
 		// Create published placemark
@@ -88,7 +88,7 @@ final class PlacemarkControllerTests: AppTestCase {
 			state: .published,
 			creatorId: user.requireID()
 		)
-		try publishedPlacemark.create(on: app.db).wait()
+		try createPlacemark(publishedPlacemark, on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
 		try app.test(.GET, "v1/placemarks") { res in
@@ -126,7 +126,7 @@ final class PlacemarkControllerTests: AppTestCase {
 			state: .submitted,
 			creatorId: user.requireID()
 		)
-		try submittedPlacemark.create(on: app.db).wait()
+		try createPlacemark(submittedPlacemark, on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(submittedPlacemark, on: app.db)
 		
 		// Create published placemark
@@ -135,7 +135,7 @@ final class PlacemarkControllerTests: AppTestCase {
 			state: .published,
 			creatorId: user.requireID()
 		)
-		try publishedPlacemark.create(on: app.db).wait()
+		try createPlacemark(publishedPlacemark, on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
 		try app.test(.GET, "v1/placemarks?state=submitted") { res in
@@ -226,7 +226,7 @@ final class PlacemarkControllerTests: AppTestCase {
 			kindId: kindId(for: "training_spot", on: app.db).wait(),
 			creatorId: user.requireID()
 		)
-		try placemark.create(on: app.db).wait()
+		try createPlacemark(placemark, on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
 		try app.test(.GET, "v1/placemarks/\(placemarkId)") { res in

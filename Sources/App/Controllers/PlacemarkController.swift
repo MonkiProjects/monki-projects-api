@@ -71,7 +71,12 @@ struct PlacemarkController: RouteCollection {
 			}
 			.with(\.$creator)
 			.all()
-			.flatMapEachThrowing { try $0.asPublic(on: database) }
+			.mapEachCompact {
+				try? $0.asPublic(on: database)
+					.map(Optional.init)
+					.recover { _ in nil }
+			}
+			.flatMapEachCompact(on: database.eventLoop) { $0 }
 	}
 	
 	func createPlacemark(req: Request) throws -> EventLoopFuture<Response> {
@@ -100,9 +105,6 @@ struct PlacemarkController: RouteCollection {
 			)
 		}
 		
-		// FIXME: Add caption, images, properties
-		// (create.images ?? []).map { $0.absoluteString }
-		
 		// Save Placemark in database
 		let createPlacemarkFuture = placemarkFuture.flatMap { placemark in
 			placemark.create(on: req.db)
@@ -112,7 +114,36 @@ struct PlacemarkController: RouteCollection {
 				.transform(to: placemark)
 		}
 		
-		return createPlacemarkFuture
+		// FIXME: Add properties
+		
+		// Create placemark details
+		let createDetailsFuture = createPlacemarkFuture
+			.map { ($0, UUID()) }
+			.flatMapThrowing { (placemark, id) in
+				try PlacemarkModel.Details(
+					id: id,
+					placemarkId: placemark.requireID(),
+					caption: create.caption,
+					images: (create.images ?? []).map { $0.absoluteString }
+				)
+				.create(on: req.db)
+				.transform(to: (placemark, id))
+			}
+			.flatMap { $0 }
+		
+		// Reverse geocode placemark location
+		let createLocationFuture = createDetailsFuture.flatMap { (placemark, detailsId) in
+			// FIXME: Reverse geocode placemark location
+			PlacemarkModel.Location(
+				detailsId: detailsId,
+				city: "",
+				country: ""
+			)
+			.create(on: req.db)
+			.transform(to: placemark)
+		}
+		
+		return createLocationFuture
 			.flatMapThrowing { try $0.asPublic(on: req.db) }
 			.flatMap { $0.encodeResponse(status: .created, for: req) }
 	}
@@ -128,6 +159,7 @@ struct PlacemarkController: RouteCollection {
 					.transform(to: placemark)
 			}
 			.flatMapThrowing { try $0.asPublic(on: req.db) }
+			.flatMap { $0 }
 	}
 	
 	func deletePlacemark(req: Request) throws -> EventLoopFuture<HTTPStatus> {
@@ -142,17 +174,16 @@ struct PlacemarkController: RouteCollection {
 			placemark.$creator.id == user.id
 		}, else: Abort(.forbidden, reason: "You cannot delete someone else's placemark!"))
 		
-		let deletePropertiesFuture = guardAuthorizedFuture
-			.flatMap { placemark in
-				PlacemarkPropertyPivot.query(on: req.db)
-//					.with(\.$details)
-					.filter(\.details.$placemark.$id == placemarkId)
+		let deleteDetailsFuture = guardAuthorizedFuture
+			.passthroughAfter { _ in
+				PlacemarkModel.Details.query(on: req.db)
+					.with(\.$placemark)
+					.filter(\.$placemark.$id == placemarkId)
 					.all()
 					.flatMap { $0.delete(on: req.db) }
-					.transform(to: placemark)
 			}
 		
-		return deletePropertiesFuture
+		return deleteDetailsFuture
 			.flatMap { $0.delete(on: req.db) }
 			.transform(to: .ok)
 	}
@@ -180,7 +211,7 @@ struct PlacemarkController: RouteCollection {
 		Models.Placemark.Property.query(on: database)
 			.filter(\.$kind == kind)
 			.all()
-			.flatMapEachThrowing { try $0.localized() }
+			.flatMapEachThrowing { try $0.localized(in: .en) }
 	}
 	
 }

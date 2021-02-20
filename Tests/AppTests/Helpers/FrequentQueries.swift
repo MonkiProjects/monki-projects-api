@@ -20,3 +20,21 @@ func kindId(
 		.unwrap(or: Abort(.notFound, reason: "Type not found"))
 		.flatMapThrowing { try $0.requireID() }
 }
+
+func createPlacemark(
+	_ model: PlacemarkModel,
+	details: PlacemarkModel.Details = .dummy(placemarkId: UUID()),
+	location: PlacemarkModel.Location = .dummy(detailsId: UUID()),
+	on database: Database
+) -> EventLoopFuture<Void> {
+	model.create(on: database)
+		.flatMapThrowing { details.$placemark.id = try model.requireID() }
+		.flatMap { details.create(on: database) }
+		.flatMapThrowing { location.$details.id = try details.requireID() }
+		.flatMap { location.create(on: database) }
+		.flatMapThrowing { details.$location.id = try location.requireID() }
+		.flatMap { details.update(on: database) }
+	
+//	deletePlacemarkAfterTestFinishes(submittedPlacemark, on: app.db)
+//	deletePlacemarkDetailsAfterTestFinishes(submittedPlacemark, on: app.db)
+}

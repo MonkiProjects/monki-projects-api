@@ -17,6 +17,7 @@ extension Models.Placemark.Location.Migrations {
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
 			database.schema("placemark_locations")
 				.id()
+				.field("details_id", .uuid, .references("placemark_details", .id, onDelete: .cascade))
 				.field("city", .string, .required)
 				.field("country", .string, .required)
 				.create()

@@ -1,5 +1,5 @@
 //
-//  CreatePlacemarkType.swift
+//  CreatePlacemarkKind.swift
 //  App
 //
 //  Created by Rémi Bardon on 09/01/2021.
@@ -7,25 +7,24 @@
 //
 
 import Fluent
-import MonkiMapModel
 
 extension Models.Placemark.Kind.Migrations {
 	
-	struct CreatePlacemarkType: Migration {
+	struct CreatePlacemarkKind: Migration {
 		
-		var name: String { "CreatePlacemarkType" }
+		var name: String { "CreatePlacemarkKind" }
 		
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
-			database.schema("placemark_types")
+			database.schema("placemark_kinds")
 				.id()
 				.field("human_id", .string, .required)
 				.field("category_id", .uuid, .references("placemark_categories", .id))
-				.unique(on: "human_id", name: "placemark_types_no_duplicate_human_id")
+				.unique(on: "human_id", name: "placemark_kinds_no_duplicate_human_id")
 				.create()
 		}
 		
 		func revert(on database: Database) -> EventLoopFuture<Void> {
-			database.schema("placemark_types").delete()
+			database.schema("placemark_kinds").delete()
 		}
 		
 	}

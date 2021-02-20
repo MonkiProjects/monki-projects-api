@@ -18,8 +18,8 @@ extension PlacemarkPropertyPivot.Migrations {
 			database.schema("placemark+property")
 				.id()
 				.field(
-					"placemark_id", .uuid, .required,
-					.references("placemarks", .id, onDelete: .cascade)
+					"details_id", .uuid, .required,
+					.references("placemark_details", .id, onDelete: .cascade)
 				)
 				.field(
 					"property_id", .uuid, .required,

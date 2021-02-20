@@ -40,3 +40,43 @@ extension PlacemarkModel {
 	}
 	
 }
+
+extension PlacemarkModel.Details {
+	
+	static func dummy(
+		id: IDValue = UUID(),
+		placemarkId: Placemark.IDValue,
+		caption: String = UUID().uuidString,
+		images: [String] = [],
+		satelliteImage: String? = nil,
+		locationId: Location.IDValue? = nil
+	) -> Self {
+		self.init(
+			id: id,
+			placemarkId: placemarkId,
+			caption: caption,
+			images: images,
+			satelliteImage: satelliteImage,
+			locationId: locationId
+		)
+	}
+	
+}
+
+extension PlacemarkModel.Location {
+	
+	static func dummy(
+		id: IDValue = UUID(),
+		detailsId: Details.IDValue,
+		city: String = UUID().uuidString,
+		country: String = UUID().uuidString
+	) -> Self {
+		self.init(
+			id: id,
+			detailsId: detailsId,
+			city: city,
+			country: country
+		)
+	}
+	
+}
