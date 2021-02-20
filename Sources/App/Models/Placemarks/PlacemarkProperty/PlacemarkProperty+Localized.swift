@@ -9,11 +9,11 @@
 import Vapor
 import MonkiMapModel
 
-extension Placemark.Property.Model {
+extension Models.Placemark.Property {
 	
 	// FIXME: Localize in custom language
 	func localized() throws -> Placemark.Property.Localized {
-		switch self.kind {
+		switch Placemark.Property.Kind(rawValue: self.kind.rawValue) {
 		case .feature:
 			return try Placemark.Property.feature(self.humanId).localized()
 		case .technique:
@@ -22,6 +22,11 @@ extension Placemark.Property.Model {
 			return try Placemark.Property.benefit(self.humanId).localized()
 		case .hazard:
 			return try Placemark.Property.hazard(self.humanId).localized()
+		case .none:
+			throw Abort(
+				.internalServerError,
+				reason: "We could not decode a property kind for id '\(self.kind.rawValue)'."
+			)
 		}
 	}
 	

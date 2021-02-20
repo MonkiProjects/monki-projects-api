@@ -8,18 +8,17 @@
 
 import Vapor
 import Fluent
-import MonkiMapModel
 
-extension Placemark.Submission.Model {
+extension Models.Placemark.Submission {
 	
 	static let positiveReviewCountToValidate: UInt8 = 5
 	static let negativeReviewCountToReject: UInt8 = 2
 	
 	func review(
-		opinion: Placemark.Submission.Review.Opinion,
+		opinion: Review.Opinion,
 		isModerator: Bool,
 		on database: Database
-	) -> EventLoopFuture<Placemark.Submission.Model> {
+	) -> EventLoopFuture<Models.Placemark.Submission> {
 		do {
 			if isModerator {
 				return reviewAsModerator(opinion: opinion, on: database)
@@ -31,9 +30,9 @@ extension Placemark.Submission.Model {
 	}
 	
 	private func reviewAsModerator(
-		opinion: Placemark.Submission.Review.Opinion,
+		opinion: Review.Opinion,
 		on database: Database
-	) -> EventLoopFuture<Placemark.Submission.Model> {
+	) -> EventLoopFuture<Models.Placemark.Submission> {
 		switch opinion {
 		case .positive:
 			self.positiveReviews += 1
@@ -50,9 +49,9 @@ extension Placemark.Submission.Model {
 	}
 	
 	private func reviewAsRegularUser(
-		opinion: Placemark.Submission.Review.Opinion,
+		opinion: Review.Opinion,
 		on database: Database
-	) throws -> EventLoopFuture<Placemark.Submission.Model> {
+	) throws -> EventLoopFuture<Models.Placemark.Submission> {
 		switch self.state {
 		case .waitingForReviews:
 			switch opinion {
@@ -95,7 +94,7 @@ extension Placemark.Submission.Model {
 			.transform(to: self)
 	}
 	
-	private func setNeedsChanges(on database: Database) -> EventLoopFuture<Placemark.Submission.Model> {
+	private func setNeedsChanges(on database: Database) -> EventLoopFuture<Models.Placemark.Submission> {
 		self.state = .needsChanges
 		
 		let newSubmission = Self(placemarkId: self.$placemark.id, state: .waitingForChanges)

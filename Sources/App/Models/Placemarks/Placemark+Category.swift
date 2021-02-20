@@ -8,17 +8,10 @@
 
 import Fluent
 import Vapor
-import MonkiMapModel
 
-extension Placemark.Kind.Model {
+extension Models.Placemark {
 	
-	typealias Category = Placemark.Category.Model
-	
-}
-
-extension Placemark.Category {
-	
-	final class Model: Fluent.Model {
+	final class Category: Model {
 		
 		static let schema = "placemark_categories"
 		

@@ -9,23 +9,23 @@
 import Fluent
 import MonkiMapModel
 
-extension Placemark.Category.Model.Migrations {
+extension Models.Placemark.Category.Migrations {
 	
 	struct AddInitialCategories: Migration {
 		
 		var name: String { "AddInitialCategories" }
 		
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
-			database.eventLoop.future(Migrated.allCases)
-				.mapEach { Migrated.Model(humanId: $0.rawValue) }
+			database.eventLoop.future(Placemark.Category.allCases)
+				.mapEach { Migrated(humanId: $0.rawValue) }
 				.mapEach { $0.save(on: database) }
 				.transform(to: ())
 		}
 		
 		func revert(on database: Database) -> EventLoopFuture<Void> {
-			database.eventLoop.future(Migrated.allCases)
+			database.eventLoop.future(Placemark.Category.allCases)
 				.mapEach { category in
-					Migrated.Model.query(on: database)
+					Migrated.query(on: database)
 						.filter(\.$humanId == category.rawValue)
 						.first()
 						.optionalMap { $0.delete(on: database) }

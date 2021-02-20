@@ -10,7 +10,7 @@ import Vapor
 import Fluent
 import MonkiMapModel
 
-extension Placemark.Model {
+extension Models.Placemark {
 	
 	func asPublic(on database: Database) throws -> Placemark.Public {
 		let kind = Placemark.Kind(rawValue: self.kind.humanId)

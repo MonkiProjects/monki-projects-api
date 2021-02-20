@@ -8,9 +8,11 @@
 
 import Fluent
 import Vapor
-import MonkiMapModel
 
 final class PlacemarkPropertyPivot: Model {
+	
+	typealias Details = Models.Placemark.Details
+	typealias Property = Models.Placemark.Property
 	
 	static let schema = "placemark+property"
 	
@@ -18,18 +20,14 @@ final class PlacemarkPropertyPivot: Model {
 	var id: UUID?
 	
 	@Parent(key: "details_id")
-	var details: Placemark.Details.Model
+	var details: Details
 	
 	@Parent(key: "property_id")
-	var property: Placemark.Property.Model
+	var property: Property
 	
 	init() {}
 	
-	init(
-		id: IDValue? = nil,
-		detailsId: Placemark.Details.Model.IDValue,
-		propertyId: Placemark.Property.Model.IDValue
-	) {
+	init(id: IDValue? = nil, detailsId: Details.IDValue, propertyId: Property.IDValue) {
 		self.id = id
 		self.$details.id = detailsId
 		self.$property.id = propertyId

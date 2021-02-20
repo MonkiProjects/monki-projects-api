@@ -9,14 +9,14 @@
 import Fluent
 import MonkiMapModel
 
-extension Placemark.Model {
+extension Models.Placemark {
 	
 	enum Migrations {
 		
 		static var all: [Migration] {
 			return Kind.Migrations.all
-				+ Details.Property.Migrations.all
-				+ Details.Location.Migrations.all
+				+ Property.Migrations.all
+				+ Location.Migrations.all
 				+ [CreatePlacemark()]
 				+ PlacemarkPropertyPivot.Migrations.all
 				+ Submission.Migrations.all

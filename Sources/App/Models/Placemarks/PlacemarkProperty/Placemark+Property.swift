@@ -10,19 +10,15 @@ import Fluent
 import Vapor
 import MonkiMapModel
 
-extension Placemark.Details.Model {
+extension Models.Placemark {
 	
-	typealias Property = Placemark.Property.Model
-	
-}
-
-extension Placemark.Property {
-	
-	final class Model: Fluent.Model {
+	final class Property: Model {
+		
+		typealias Kind = MonkiMapModel.Placemark.Property.Kind
 		
 		static let schema = "placemark_properties"
 		
-		@IDProperty<Placemark.Property.Model, UUID>(key: .id)
+		@ID(key: .id)
 		var id: UUID?
 		
 		@Field(key: "kind")
@@ -32,7 +28,7 @@ extension Placemark.Property {
 		var humanId: String
 		
 		@Siblings(through: PlacemarkPropertyPivot.self, from: \.$property, to: \.$details)
-		var details: [Placemark.Details.Model]
+		var details: [Details]
 		
 		init() {}
 		

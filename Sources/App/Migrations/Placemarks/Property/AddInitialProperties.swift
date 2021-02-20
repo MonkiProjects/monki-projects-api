@@ -9,7 +9,7 @@
 import Fluent
 import MonkiMapModel
 
-extension Placemark.Property.Model.Migrations {
+extension Models.Placemark.Property.Migrations {
 	
 	struct AddInitialProperties: Migration {
 		
@@ -17,7 +17,7 @@ extension Placemark.Property.Model.Migrations {
 		
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
 			database.eventLoop.future(Placemark.Property.all())
-				.mapEach { Placemark.Property.Model(kind: $0.kind, humanId: $0.id) }
+				.mapEach { Migrated(kind: $0.kind, humanId: $0.id) }
 				.mapEach { $0.save(on: database) }
 				.transform(to: ())
 		}
@@ -25,7 +25,7 @@ extension Placemark.Property.Model.Migrations {
 		func revert(on database: Database) -> EventLoopFuture<Void> {
 			database.eventLoop.future(Placemark.Property.all())
 				.mapEach { property in
-					Placemark.Property.Model.query(on: database)
+					Migrated.query(on: database)
 						.filter(\.$humanId == property.id)
 						.first()
 						.optionalMap { $0.delete(on: database) }

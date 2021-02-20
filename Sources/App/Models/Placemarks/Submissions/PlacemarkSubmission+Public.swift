@@ -9,9 +9,9 @@
 import Vapor
 import MonkiMapModel
 
-extension Placemark.Submission.Model {
+extension Models.Placemark.Submission {
 	
-	func asPublic() throws -> Placemark.Submission.Public {
+	func asPublic() throws -> MonkiMapModel.Placemark.Submission.Public {
 		return try .init(
 			id: self.requireID(),
 			placemark: self.$placemark.id,
@@ -26,4 +26,4 @@ extension Placemark.Submission.Model {
 	
 }
 
-extension Placemark.Submission.Public: Content {}
+extension MonkiMapModel.Placemark.Submission.Public: Content {}

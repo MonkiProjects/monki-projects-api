@@ -10,11 +10,13 @@ import Fluent
 import Vapor
 import MonkiMapModel
 
-typealias PlacemarkModel = Placemark.Model
+typealias PlacemarkModel = Models.Placemark
 
-extension Placemark {
+extension Models {
 	
-	final class Model: Fluent.Model {
+	final class Placemark: Model {
+		
+		typealias State = MonkiMapModel.Placemark.State
 		
 		static let schema = "placemarks"
 		

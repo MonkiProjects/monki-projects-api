@@ -9,11 +9,11 @@
 import Fluent
 import MonkiMapModel
 
-extension Placemark.Kind.Model {
+extension Models.Placemark.Kind {
 	
 	enum Migrations {
 		
-		typealias Migrated = Placemark.Kind
+		typealias Migrated = Models.Placemark.Kind
 		
 		static var all: [Migration] {
 			return Category.Migrations.all

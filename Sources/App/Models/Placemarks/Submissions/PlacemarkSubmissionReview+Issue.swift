@@ -10,15 +10,13 @@ import Fluent
 import Vapor
 import MonkiMapModel
 
-extension Placemark.Submission.Review.Model {
+extension Models.Placemark.Submission.Review {
 	
-	typealias Issue = Placemark.Submission.Review.Issue.Model
-	
-}
-
-extension Placemark.Submission.Review.Issue {
-	
-	final class Model: Fluent.Model {
+	final class Issue: Model {
+		
+		typealias Review = Models.Placemark.Submission.Review
+		typealias Reason = Placemark.Submission.Review.Issue.Reason
+		typealias State = Placemark.Submission.Review.Issue.State
 		
 		static let schema = "placemark_submission_review_issues"
 		
@@ -26,10 +24,10 @@ extension Placemark.Submission.Review.Issue {
 		var id: UUID?
 		
 		@Parent(key: "review_id")
-		var review: Placemark.Submission.Review.Model
+		var review: Review
 		
 		@Field(key: "reason")
-		var reason: Placemark.Submission.Review.Issue.Reason
+		var reason: Reason
 		
 		@Field(key: "comment")
 		var comment: String
@@ -50,8 +48,8 @@ extension Placemark.Submission.Review.Issue {
 		
 		init(
 			id: IDValue? = nil,
-			reviewId: Placemark.Submission.Review.Model.IDValue,
-			reason: Placemark.Submission.Review.Issue.Reason,
+			reviewId: Review.IDValue,
+			reason: Reason,
 			comment: String,
 			state: State = .submitted
 		) {

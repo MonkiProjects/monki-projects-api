@@ -9,11 +9,11 @@
 import Fluent
 import MonkiMapModel
 
-extension Placemark.Category.Model {
+extension Models.Placemark.Category {
 	
 	enum Migrations {
 		
-		typealias Migrated = Placemark.Category
+		typealias Migrated = Models.Placemark.Category
 		
 		static var all: [Migration] {
 			return [CreatePlacemarkCategory(), AddInitialCategories()]

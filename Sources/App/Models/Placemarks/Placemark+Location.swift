@@ -8,17 +8,12 @@
 
 import Fluent
 import Vapor
-import MonkiMapModel
 
-extension Placemark.Details.Model {
+extension Models.Placemark {
 	
-	typealias Location = Placemark.Location.Model
-	
-}
-
-extension Placemark.Location {
-	
-	final class Model: Fluent.Model {
+	final class Location: Model {
+		
+		typealias Details = Models.Placemark.Details
 		
 		static let schema = "placemark_locations"
 		
@@ -26,7 +21,7 @@ extension Placemark.Location {
 		var id: UUID?
 		
 		@Parent(key: "details_id")
-		var details: Placemark.Details.Model
+		var details: Details
 		
 		@Field(key: "city")
 		var city: String
@@ -38,7 +33,7 @@ extension Placemark.Location {
 		
 		init(
 			id: IDValue? = nil,
-			detailsId: Placemark.Details.Model.IDValue,
+			detailsId: Details.IDValue,
 			city: String,
 			country: String
 		) {

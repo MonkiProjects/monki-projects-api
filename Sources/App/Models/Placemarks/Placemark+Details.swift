@@ -8,17 +8,14 @@
 
 import Fluent
 import Vapor
-import MonkiMapModel
 
-extension Placemark.Model {
+extension Models.Placemark {
 	
-	typealias Details = Placemark.Details.Model
-	
-}
-
-extension Placemark.Details {
-	
-	final class Model: Fluent.Model {
+	final class Details: Model {
+		
+		typealias Placemark = Models.Placemark
+		typealias Location = Placemark.Location
+		typealias Property = Placemark.Property
 		
 		static let schema = "placemark_details"
 		
@@ -26,7 +23,7 @@ extension Placemark.Details {
 		var id: UUID?
 		
 		@Parent(key: "placemark_id")
-		var placemark: Placemark.Model
+		var placemark: Placemark
 		
 		@Field(key: "caption")
 		var caption: String
@@ -56,12 +53,14 @@ extension Placemark.Details {
 		
 		init(
 			id: IDValue? = nil,
+			placemarkId: Placemark.IDValue,
 			caption: String,
 			images: [String] = [],
 			satelliteImage: String? = nil,
 			locationId: Location.IDValue? = nil
 		) {
 			self.id = id
+			self.$placemark.id = placemarkId
 			self.caption = caption
 			self.satelliteImage = satelliteImage ?? "https://monkiprojects.com/images/satellite-view-placeholder.jpg"
 			self.images = images

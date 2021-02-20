@@ -9,7 +9,7 @@
 import Fluent
 import MonkiMapModel
 
-extension Placemark.Location.Model {
+extension Models.Placemark.Location {
 	
 	enum Migrations {
 		

@@ -10,10 +10,10 @@ import Vapor
 import Fluent
 import MonkiMapModel
 
-extension Placemark.Details.Model {
+extension Models.Placemark.Details {
 	
-	func asPublic(on database: Database) throws -> Placemark.Details.Public {
-		typealias Properties = [Placemark.Property.Localized]
+	func asPublic(on database: Database) throws -> MonkiMapModel.Placemark.Details.Public {
+		typealias Properties = [MonkiMapModel.Placemark.Property.Localized]
 		
 		var features = Properties()
 		var goodForTraining = Properties()

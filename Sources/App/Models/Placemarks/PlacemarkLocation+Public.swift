@@ -9,7 +9,7 @@
 import Vapor
 import MonkiMapModel
 
-extension Placemark.Location.Model {
+extension Models.Placemark.Location {
 	
 	func asPublic() -> Placemark.Location.Public {
 		return .init(

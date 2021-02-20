@@ -7,11 +7,12 @@
 //
 
 import Fluent
-import MonkiMapModel
 
-extension Placemark.Property.Model {
+extension Models.Placemark.Property {
 	
 	enum Migrations {
+		
+		typealias Migrated = Models.Placemark.Property
 		
 		static var all: [Migration] {
 			return [CreatePlacemarkProperty(), AddInitialProperties()]
