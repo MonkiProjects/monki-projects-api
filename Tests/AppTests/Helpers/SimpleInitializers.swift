@@ -22,22 +22,20 @@ extension UserModel {
 	
 }
 
-extension Placemark {
+extension PlacemarkModel {
 	
 	static func dummy(
 		id: UUID = UUID(),
 		name: String = UUID().uuidString,
 		latitude: Double = Double.random(in: -90...90),
 		longitude: Double = Double.random(in: -180...180),
-		typeId: PlacemarkType.IDValue,
+		kindId: Kind.IDValue,
 		state: State = .private,
-		creatorId: UserModel.IDValue,
-		caption: String = UUID().uuidString,
-		images: [String] = []
+		creatorId: UserModel.IDValue
 	) -> Self {
 		self.init(
-			id: id, name: name, latitude: latitude, longitude: longitude, typeId: typeId,
-			state: state, creatorId: creatorId, caption: caption, images: images
+			id: id, name: name, latitude: latitude, longitude: longitude, kindId: kindId,
+			state: state, creatorId: creatorId
 		)
 	}
 	

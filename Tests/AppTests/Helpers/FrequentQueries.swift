@@ -10,11 +10,11 @@
 import Vapor
 import Fluent
 
-func typeId(
+func kindId(
 	for humanId: String,
 	on database: Database
-) -> EventLoopFuture<Placemark.PlacemarkType.IDValue> {
-	Placemark.PlacemarkType.query(on: database)
+) -> EventLoopFuture<PlacemarkModel.Kind.IDValue> {
+	PlacemarkModel.Kind.query(on: database)
 		.filter(\.$humanId == humanId)
 		.first()
 		.unwrap(or: Abort(.notFound, reason: "Type not found"))

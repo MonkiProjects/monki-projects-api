@@ -87,10 +87,10 @@ extension XCTestCase {
 		}
 	}
 	
-	/// Adds a `tearDown` block that deletes the given `Placemark` after the current test finishes.
+	/// Adds a `tearDown` block that deletes the given `PlacemarkModel` after the current test finishes.
 	///
 	/// - Parameters:
-	///   - placemark: The `Placemark` to delete
+	///   - placemark: The `PlacemarkModel` to delete
 	///
 	/// # Notes: #
 	/// 1. Forces deletion
@@ -98,18 +98,18 @@ extension XCTestCase {
 	/// # Example #
 	/// ```
 	/// // Create placemark
-	/// let placemark = try Placemark(
-	/// name: "test_title",
+	/// let placemark = try PlacemarkModel(
+	/// 	name: "test_title",
 	/// 	latitude: Double.random(in: -90...90),
 	/// 	longitude: Double.random(in: -180...180),
-	/// 	typeId: typeId(for: "training_spot", on: app.db).wait(),
+	/// 	kindId: kindId(for: "training_spot", on: app.db).wait(),
 	/// 	creatorId: user.requireID(),
 	/// 	caption: "Test caption"
 	/// )
 	/// try placemark.create(on: app.db).wait()
 	/// deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 	/// ```
-	func deletePlacemarkAfterTestFinishes(_ placemark: Placemark?, on database: Database) {
+	func deletePlacemarkAfterTestFinishes(_ placemark: PlacemarkModel?, on database: Database) {
 		addTeardownBlock {
 			do {
 				try placemark?.delete(force: true, on: database).wait()
@@ -119,10 +119,10 @@ extension XCTestCase {
 		}
 	}
 	
-	/// Adds a `tearDown` block that deletes the `Placemark` with the given `name`
+	/// Adds a `tearDown` block that deletes the `PlacemarkModel` with the given `name`
 	/// after the current test finishes.
 	///
-	/// Does nothing if no `Placemark` has the given `username`.
+	/// Does nothing if no `PlacemarkModel` has the given `username`.
 	///
 	/// - Parameters:
 	///   - name: The placemarks's `name`
@@ -138,7 +138,7 @@ extension XCTestCase {
 	func deletePossiblyCreatedPlacemarkAfterTestFinishes(name: String, on database: Database) {
 		addTeardownBlock {
 			do {
-				try Placemark.query(on: database)
+				try PlacemarkModel.query(on: database)
 					.filter(\.$name == name)
 					.first()
 					.optionalMap { $0.delete(force: true, on: database) }

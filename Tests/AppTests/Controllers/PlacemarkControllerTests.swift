@@ -75,16 +75,16 @@ final class PlacemarkControllerTests: AppTestCase {
 		let user = try XCTUnwrap(Self.user)
 		
 		// Create submitted placemark
-		let submittedPlacemark = try Placemark.dummy(
-			typeId: typeId(for: "training_spot", on: app.db).wait(),
+		let submittedPlacemark = try PlacemarkModel.dummy(
+			kindId: kindId(for: "training_spot", on: app.db).wait(),
 			creatorId: user.requireID()
 		)
 		try submittedPlacemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(submittedPlacemark, on: app.db)
 		
 		// Create published placemark
-		let publishedPlacemark = try Placemark.dummy(
-			typeId: typeId(for: "training_spot", on: app.db).wait(),
+		let publishedPlacemark = try PlacemarkModel.dummy(
+			kindId: kindId(for: "training_spot", on: app.db).wait(),
 			state: .published,
 			creatorId: user.requireID()
 		)
@@ -121,8 +121,8 @@ final class PlacemarkControllerTests: AppTestCase {
 		let user = try XCTUnwrap(Self.user)
 		
 		// Create submitted placemark
-		let submittedPlacemark = try Placemark.dummy(
-			typeId: typeId(for: "training_spot", on: app.db).wait(),
+		let submittedPlacemark = try PlacemarkModel.dummy(
+			kindId: kindId(for: "training_spot", on: app.db).wait(),
 			state: .submitted,
 			creatorId: user.requireID()
 		)
@@ -130,8 +130,8 @@ final class PlacemarkControllerTests: AppTestCase {
 		deletePlacemarkAfterTestFinishes(submittedPlacemark, on: app.db)
 		
 		// Create published placemark
-		let publishedPlacemark = try Placemark.dummy(
-			typeId: typeId(for: "training_spot", on: app.db).wait(),
+		let publishedPlacemark = try PlacemarkModel.dummy(
+			kindId: kindId(for: "training_spot", on: app.db).wait(),
 			state: .published,
 			creatorId: user.requireID()
 		)
@@ -166,7 +166,7 @@ final class PlacemarkControllerTests: AppTestCase {
 			name: "Test name",
 			latitude: Double.random(in: -90...90),
 			longitude: Double.random(in: -180...180),
-			type: "training_spot",
+			kind: .trainingSpot,
 			caption: "Test caption",
 			images: nil,
 			features: nil,
@@ -189,27 +189,17 @@ final class PlacemarkControllerTests: AppTestCase {
 					let placemark = try res.content.decode(Placemark.Public.self)
 					
 					XCTAssertEqual(placemark.name, create.name)
-					XCTAssertEqual(placemark.caption, create.caption)
 					XCTAssertEqual(placemark.latitude, create.latitude)
 					XCTAssertEqual(placemark.longitude, create.longitude)
 					XCTAssertEqual(placemark.creator, try user.requireID())
 					XCTAssertEqual(placemark.state, .private)
-					XCTAssertEqual(
-						placemark.satelliteImage.absoluteString,
-						"https://monkiprojects.com/images/satellite-view-placeholder.jpg"
-					)
-					XCTAssertEqual(placemark.type, "training_spot")
-					XCTAssertEqual(placemark.category, "spot")
-					XCTAssertEqual(placemark.images, [])
-					XCTAssertEqual(placemark.features, [])
-					XCTAssertEqual(placemark.goodForTraining, [])
-					XCTAssertEqual(placemark.benefits, [])
-					XCTAssertEqual(placemark.hazards, [])
+					XCTAssertEqual(placemark.kind, .trainingSpot)
+					XCTAssertEqual(placemark.category, .spot)
 					XCTAssertNotNil(placemark.createdAt)
 					XCTAssertNotNil(placemark.updatedAt)
 					
 					// Test creation on DB
-					let storedPlacemark = try Placemark.find(placemark.id, on: app.db).wait()
+					let storedPlacemark = try PlacemarkModel.find(placemark.id, on: app.db).wait()
 					XCTAssertNotNil(storedPlacemark)
 				}
 			}
@@ -231,9 +221,9 @@ final class PlacemarkControllerTests: AppTestCase {
 		
 		// Create submitted placemark
 		let placemarkId = UUID()
-		let placemark = try Placemark.dummy(
+		let placemark = try PlacemarkModel.dummy(
 			id: placemarkId,
-			typeId: typeId(for: "training_spot", on: app.db).wait(),
+			kindId: kindId(for: "training_spot", on: app.db).wait(),
 			creatorId: user.requireID()
 		)
 		try placemark.create(on: app.db).wait()
@@ -263,9 +253,9 @@ final class PlacemarkControllerTests: AppTestCase {
 		
 		// Create submitted placemark
 		let placemarkId = UUID()
-		let placemark = try Placemark.dummy(
+		let placemark = try PlacemarkModel.dummy(
 			id: placemarkId,
-			typeId: typeId(for: "training_spot", on: app.db).wait(),
+			kindId: kindId(for: "training_spot", on: app.db).wait(),
 			creatorId: user.requireID()
 		)
 		try placemark.create(on: app.db).wait()
@@ -298,7 +288,7 @@ final class PlacemarkControllerTests: AppTestCase {
 		
 		try app.test(.GET, "v1/placemarks/features") { res in
 			try res.assertStatus(.ok) {
-				let features = try res.content.decode([Placemark.Property.Public].self)
+				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 31)
 			}
 		}
@@ -318,7 +308,7 @@ final class PlacemarkControllerTests: AppTestCase {
 		
 		try app.test(.GET, "v1/placemarks/techniques") { res in
 			try res.assertStatus(.ok) {
-				let features = try res.content.decode([Placemark.Property.Public].self)
+				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 12)
 			}
 		}
@@ -338,7 +328,7 @@ final class PlacemarkControllerTests: AppTestCase {
 		
 		try app.test(.GET, "v1/placemarks/benefits") { res in
 			try res.assertStatus(.ok) {
-				let features = try res.content.decode([Placemark.Property.Public].self)
+				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 8)
 			}
 		}
@@ -358,7 +348,7 @@ final class PlacemarkControllerTests: AppTestCase {
 		
 		try app.test(.GET, "v1/placemarks/hazards") { res in
 			try res.assertStatus(.ok) {
-				let features = try res.content.decode([Placemark.Property.Public].self)
+				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 8)
 			}
 		}
@@ -384,7 +374,7 @@ final class PlacemarkControllerTests: AppTestCase {
 			name: "12",
 			latitude: Double.random(in: -90...90),
 			longitude: Double.random(in: -180...180),
-			type: "training_spot",
+			kind: .trainingSpot,
 			caption: "Test caption",
 			images: nil,
 			features: nil,
@@ -473,9 +463,9 @@ final class PlacemarkControllerTests: AppTestCase {
 		
 		// Create placemark
 		let placemarkId = UUID()
-		let placemark = try Placemark.dummy(
+		let placemark = try PlacemarkModel.dummy(
 			id: placemarkId,
-			typeId: typeId(for: "training_spot", on: app.db).wait(),
+			kindId: kindId(for: "training_spot", on: app.db).wait(),
 			creatorId: otherUser.requireID()
 		)
 		try placemark.create(on: app.db).wait()

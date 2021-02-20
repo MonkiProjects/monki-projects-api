@@ -13,12 +13,14 @@ import Fluent
 // swiftlint:disable:next type_body_length
 final class PlacemarkSubmissionControllerTests: AppTestCase {
 	
+	typealias SubmissionModel = PlacemarkModel.Submission
+	typealias ReviewModel = SubmissionModel.Review
 	typealias Submission = Placemark.Submission
 	typealias Review = Submission.Review
 	
 	private static var users = [(UserModel, UserModel.Token)]()
 	private static let placemarkId = UUID()
-	private var placemark: Placemark?
+	private var placemark: PlacemarkModel?
 	
 	override class func setUp() {
 		super.setUp()
@@ -49,9 +51,9 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let app = try Self.app.require()
 		let user = try Self.users.first.require().0
 		
-		let placemark = try Placemark.dummy(
+		let placemark = try PlacemarkModel.dummy(
 			id: Self.placemarkId,
-			typeId: typeId(for: "training_spot", on: app.db).wait(),
+			kindId: kindId(for: "training_spot", on: app.db).wait(),
 			creatorId: user.requireID()
 		)
 		try placemark.create(on: app.db).wait()
@@ -78,7 +80,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 	/// - THEN:
 	///     - `HTTP` status should be `201 Created`
 	///     - `body` should be the newly created `Submission`
-	///     - The `Placemark` state should be `.submitted`
+	///     - The `PlacemarkModel` state should be `.submitted`
 	///     - A `Submission` should be created with the state `.waitingForReviews`
 	func testSubmitActuallySubmitsPlacemark() throws {
 		let app = try XCTUnwrap(Self.app)
@@ -102,11 +104,11 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 					XCTAssertEqual(submission.negativeReviews, 0)
 					
 					// Check placemark state
-					let placemark = try XCTUnwrap(Placemark.find(Self.placemarkId, on: app.db).wait())
+					let placemark = try XCTUnwrap(PlacemarkModel.find(Self.placemarkId, on: app.db).wait())
 					XCTAssertEqual(placemark.state, .submitted)
 					
 					// Check creation of `Submission`
-					let storedSubmission = try Submission.query(on: app.db)
+					let storedSubmission = try SubmissionModel.query(on: app.db)
 						.filter(\.$placemark.$id == Self.placemarkId)
 						.first()
 						.wait()
@@ -182,13 +184,13 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 					XCTAssertEqual(review.comment, create.comment)
 					XCTAssertEqual(review.issues.count, 0)
 					
-					let submission = try XCTUnwrap(Submission.find(submissionId, on: app.db).wait())
+					let submission = try XCTUnwrap(SubmissionModel.find(submissionId, on: app.db).wait())
 					try submission.$reviews.load(on: app.db).wait()
 					XCTAssertEqual(submission.reviews.count, 1)
 					XCTAssertEqual(submission.positiveReviews, 1)
 					XCTAssertEqual(submission.negativeReviews, 0)
 					
-					let placemark = try XCTUnwrap(Placemark.find(Self.placemarkId, on: app.db).wait())
+					let placemark = try XCTUnwrap(PlacemarkModel.find(Self.placemarkId, on: app.db).wait())
 					XCTAssertEqual(placemark.state, .submitted)
 				}
 			}
@@ -244,14 +246,14 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 					XCTAssertEqual(review.comment, create.comment)
 					XCTAssertEqual(review.issues.count, 1)
 					
-					let oldSubmission = try XCTUnwrap(Submission.find(submissionId, on: app.db).wait())
+					let oldSubmission = try XCTUnwrap(SubmissionModel.find(submissionId, on: app.db).wait())
 					try oldSubmission.$reviews.load(on: app.db).wait()
 					XCTAssertEqual(oldSubmission.state, .needsChanges)
 					XCTAssertEqual(oldSubmission.reviews.count, 0)
 					XCTAssertEqual(oldSubmission.positiveReviews, 0)
 					XCTAssertEqual(oldSubmission.negativeReviews, 0)
 					
-					let newSubmission = try XCTUnwrap(Submission.find(review.submission, on: app.db).wait())
+					let newSubmission = try XCTUnwrap(SubmissionModel.find(review.submission, on: app.db).wait())
 					try newSubmission.$reviews.load(on: app.db).wait()
 					XCTAssertEqual(newSubmission.state, .waitingForChanges)
 					XCTAssertEqual(newSubmission.reviews.count, 1)
@@ -280,7 +282,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let token = try XCTUnwrap(Self.users[1].1)
 		let (_, submissionId, submission) = try submitPlacemark(on: app.db)
 		
-		submission.positiveReviews = Submission.positiveReviewCountToValidate - 1
+		submission.positiveReviews = SubmissionModel.positiveReviewCountToValidate - 1
 		try submission.update(on: app.db).wait()
 		
 		let create = Review.Create(
@@ -302,13 +304,13 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 				try res.assertStatus(.ok) {
 					_ = try res.content.decode(Review.Public.self)
 					
-					let submission = try XCTUnwrap(Submission.find(submissionId, on: app.db).wait())
+					let submission = try XCTUnwrap(SubmissionModel.find(submissionId, on: app.db).wait())
 					try submission.$reviews.load(on: app.db).wait()
 					XCTAssertEqual(submission.state, .accepted)
-					XCTAssertEqual(submission.positiveReviews, Submission.positiveReviewCountToValidate)
+					XCTAssertEqual(submission.positiveReviews, SubmissionModel.positiveReviewCountToValidate)
 					XCTAssertEqual(submission.negativeReviews, 0)
 					
-					let placemark = try XCTUnwrap(Placemark.find(Self.placemarkId, on: app.db).wait())
+					let placemark = try XCTUnwrap(PlacemarkModel.find(Self.placemarkId, on: app.db).wait())
 					XCTAssertEqual(placemark.state, .published)
 				}
 			}
@@ -345,11 +347,11 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 				)
 				
 				// Check placemark state
-				let placemark = try XCTUnwrap(Placemark.find(Self.placemarkId, on: app.db).wait())
+				let placemark = try XCTUnwrap(PlacemarkModel.find(Self.placemarkId, on: app.db).wait())
 				XCTAssertEqual(placemark.state, .private)
 				
 				// Check no creation of `Submission`
-				let storedSubmission = try Submission.query(on: app.db)
+				let storedSubmission = try SubmissionModel.query(on: app.db)
 					.filter(\.$placemark.$id == Self.placemarkId)
 					.first()
 					.wait()
@@ -386,11 +388,11 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 				)
 				
 				// Check placemark state
-				let placemark = try XCTUnwrap(Placemark.find(Self.placemarkId, on: app.db).wait())
+				let placemark = try XCTUnwrap(PlacemarkModel.find(Self.placemarkId, on: app.db).wait())
 				XCTAssertEqual(placemark.state, .submitted)
 				
 				// Check no creation of `Submission`
-				let storedSubmissions = try Submission.query(on: app.db)
+				let storedSubmissions = try SubmissionModel.query(on: app.db)
 					.filter(\.$placemark.$id == Self.placemarkId)
 					.all()
 					.wait()
@@ -437,7 +439,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 					reason: "You cannot review your own submission!"
 				)
 				
-				let submission = try XCTUnwrap(Submission.find(submissionId, on: app.db).wait())
+				let submission = try XCTUnwrap(SubmissionModel.find(submissionId, on: app.db).wait())
 				try submission.$reviews.load(on: app.db).wait()
 				XCTAssertEqual(submission.reviews.count, 0)
 				XCTAssertEqual(submission.positiveReviews, 0)
@@ -465,7 +467,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let token = try XCTUnwrap(Self.users[1].1)
 		let (_, submissionId, submission) = try submitPlacemark(on: app.db)
 		
-		let firstReview = try Review(
+		let firstReview = try ReviewModel(
 			submissionId: submissionId,
 			reviewerId: userId.requireID(),
 			opinion: .positive,
@@ -496,7 +498,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 					reason: "You cannot review a submission twice!"
 				)
 				
-				let submission = try XCTUnwrap(Submission.find(submissionId, on: app.db).wait())
+				let submission = try XCTUnwrap(SubmissionModel.find(submissionId, on: app.db).wait())
 				try submission.$reviews.load(on: app.db).wait()
 				XCTAssertEqual(submission.reviews.count, 1)
 				XCTAssertEqual(submission.positiveReviews, 1)
@@ -524,7 +526,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let secondUserToken = try XCTUnwrap(Self.users[2].1)
 		let (_, submissionId, submission) = try submitPlacemark(on: app.db)
 		
-		let firstReview = try Review(
+		let firstReview = try ReviewModel(
 			submissionId: submissionId,
 			reviewerId: firstUserId.requireID(),
 			opinion: .needsChanges,
@@ -555,7 +557,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 					reason: "This submission has been closed because it needed changes"
 				)
 				
-				let submission = try XCTUnwrap(Submission.find(submissionId, on: app.db).wait())
+				let submission = try XCTUnwrap(SubmissionModel.find(submissionId, on: app.db).wait())
 				try submission.$reviews.load(on: app.db).wait()
 				XCTAssertEqual(submission.reviews.count, 1)
 				XCTAssertEqual(submission.positiveReviews, 0)
@@ -583,7 +585,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let secondUserToken = try XCTUnwrap(Self.users[2].1)
 		let (_, submissionId, submission) = try submitPlacemark(on: app.db)
 		
-		let firstReview = try Review(
+		let firstReview = try ReviewModel(
 			submissionId: submissionId,
 			reviewerId: firstUserId.requireID(),
 			opinion: .positive,
@@ -616,7 +618,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 					reason: "This place has already been accepted"
 				)
 				
-				let submission = try XCTUnwrap(Submission.find(submissionId, on: app.db).wait())
+				let submission = try XCTUnwrap(SubmissionModel.find(submissionId, on: app.db).wait())
 				try submission.$reviews.load(on: app.db).wait()
 				XCTAssertEqual(submission.reviews.count, 1)
 				XCTAssertEqual(submission.positiveReviews, 1)
@@ -644,7 +646,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let secondUserToken = try XCTUnwrap(Self.users[2].1)
 		let (_, submissionId, submission) = try submitPlacemark(on: app.db)
 		
-		let firstReview = try Review(
+		let firstReview = try ReviewModel(
 			submissionId: submissionId,
 			reviewerId: firstUserId.requireID(),
 			opinion: .negative,
@@ -677,7 +679,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 					reason: "This place has been rejected"
 				)
 				
-				let submission = try XCTUnwrap(Submission.find(submissionId, on: app.db).wait())
+				let submission = try XCTUnwrap(SubmissionModel.find(submissionId, on: app.db).wait())
 				try submission.$reviews.load(on: app.db).wait()
 				XCTAssertEqual(submission.reviews.count, 1)
 				XCTAssertEqual(submission.positiveReviews, 0)
@@ -728,7 +730,7 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 					reason: "This place has been moderated"
 				)
 				
-				let submission = try XCTUnwrap(Submission.find(submissionId, on: app.db).wait())
+				let submission = try XCTUnwrap(SubmissionModel.find(submissionId, on: app.db).wait())
 				try submission.$reviews.load(on: app.db).wait()
 				XCTAssertEqual(submission.reviews.count, 0)
 				XCTAssertEqual(submission.positiveReviews, 0)
@@ -740,13 +742,13 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 	// MARK: - Helper Functions
 	
 	// swiftlint:disable:next large_tuple
-	private func submitPlacemark(on database: Database) throws -> (Placemark, UUID, Submission) {
+	private func submitPlacemark(on database: Database) throws -> (PlacemarkModel, UUID, SubmissionModel) {
 		let placemark = try XCTUnwrap(self.placemark)
 		placemark.state = .submitted
 		try placemark.update(on: database).wait()
 		
 		let submissionId = UUID()
-		let submission = Submission(
+		let submission = SubmissionModel(
 			id: submissionId,
 			placemarkId: Self.placemarkId
 		)
