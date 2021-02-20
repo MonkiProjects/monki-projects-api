@@ -84,7 +84,7 @@ struct PlacemarkController: RouteCollection {
 		// TODO: Check for near spots (e.g. < 20m)
 		
 		let placemarkKindFuture = Models.Placemark.Kind.query(on: req.db)
-			.filter(\.$humanId == create.type)
+			.filter(\.$humanId == create.kind.rawValue)
 			.first()
 			.unwrap(or: Abort(.notFound, reason: "Placemark type not found"))
 		

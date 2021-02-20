@@ -42,9 +42,6 @@ let package = Package(
 				.target(name: "App"),
 				.product(name: "XCTVapor", package: "vapor"),
 				.product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
-			],
-			resources: [
-				.process("Resources"),
 			]
 		),
 	]

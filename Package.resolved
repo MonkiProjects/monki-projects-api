@@ -69,7 +69,7 @@
         "repositoryURL": "https://github.com/MonkiProjects/monki-map-model-swift.git",
         "state": {
           "branch": "main",
-          "revision": "aad1820c4be1abc1a495c04f34c6258506030777",
+          "revision": "6bc6e573b967e0d13f263a7265f2ef87a5559fad",
           "version": null
         }
       },
@@ -105,8 +105,8 @@
         "repositoryURL": "https://github.com/vapor/postgres-nio.git",
         "state": {
           "branch": null,
-          "revision": "7c52814d489b49720e046b91519ac9454ca77f19",
-          "version": "1.4.3"
+          "revision": "5876fdf1511c1f7599ec5e0a4d43483219ded930",
+          "version": "1.4.4"
         }
       },
       {
