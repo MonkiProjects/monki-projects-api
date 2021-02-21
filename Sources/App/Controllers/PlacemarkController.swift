@@ -137,8 +137,7 @@ struct PlacemarkController: RouteCollection {
 							placemarkId: try placemark.requireID(),
 							latitude: placemark.latitude,
 							longitude: placemark.longitude
-						),
-						maxRetryCount: 3
+						)
 					)
 			}
 		
@@ -152,8 +151,7 @@ struct PlacemarkController: RouteCollection {
 							placemarkId: try placemark.requireID(),
 							latitude: placemark.latitude,
 							longitude: placemark.longitude
-						),
-						maxRetryCount: 3
+						)
 					)
 			}
 		
