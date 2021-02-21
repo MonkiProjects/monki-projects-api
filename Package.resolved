@@ -69,7 +69,7 @@
         "repositoryURL": "https://github.com/MonkiProjects/monki-map-model-swift.git",
         "state": {
           "branch": "main",
-          "revision": "6bc6e573b967e0d13f263a7265f2ef87a5559fad",
+          "revision": "25c8c63424c029baae68b926bb596c0883930c48",
           "version": null
         }
       },
@@ -107,6 +107,42 @@
           "branch": null,
           "revision": "5876fdf1511c1f7599ec5e0a4d43483219ded930",
           "version": "1.4.4"
+        }
+      },
+      {
+        "package": "queues",
+        "repositoryURL": "https://github.com/vapor/queues.git",
+        "state": {
+          "branch": null,
+          "revision": "9418af49ca3ca779c2fab7aa0cedecb1aa6779b6",
+          "version": "1.5.1"
+        }
+      },
+      {
+        "package": "queues-redis-driver",
+        "repositoryURL": "https://github.com/vapor/queues-redis-driver.git",
+        "state": {
+          "branch": null,
+          "revision": "04306b81ef25b3bc42d9634c7c657b3eb498ed0e",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "redis",
+        "repositoryURL": "https://github.com/vapor/redis.git",
+        "state": {
+          "branch": null,
+          "revision": "f65588b64418fbd0516817deb5a00beedc1c3e98",
+          "version": "4.1.1"
+        }
+      },
+      {
+        "package": "RediStack",
+        "repositoryURL": "https://gitlab.com/mordil/RediStack.git",
+        "state": {
+          "branch": null,
+          "revision": "b2367ac33eb8632011c1ec7afff12307838a4dab",
+          "version": "1.1.0"
         }
       },
       {

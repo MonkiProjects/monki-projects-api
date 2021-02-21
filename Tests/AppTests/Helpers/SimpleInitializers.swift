@@ -48,16 +48,14 @@ extension PlacemarkModel.Details {
 		placemarkId: Placemark.IDValue,
 		caption: String = UUID().uuidString,
 		images: [String] = [],
-		satelliteImage: String? = nil,
-		locationId: Location.IDValue? = nil
+		satelliteImageId: String? = nil
 	) -> Self {
 		self.init(
 			id: id,
 			placemarkId: placemarkId,
 			caption: caption,
 			images: images,
-			satelliteImage: satelliteImage,
-			locationId: locationId
+			satelliteImageId: satelliteImageId
 		)
 	}
 	

@@ -32,8 +32,6 @@ func createPlacemark(
 		.flatMap { details.create(on: database) }
 		.flatMapThrowing { location.$details.id = try details.requireID() }
 		.flatMap { location.create(on: database) }
-		.flatMapThrowing { details.$location.id = try location.requireID() }
-		.flatMap { details.update(on: database) }
 	
 //	deletePlacemarkAfterTestFinishes(submittedPlacemark, on: app.db)
 //	deletePlacemarkDetailsAfterTestFinishes(submittedPlacemark, on: app.db)

@@ -14,8 +14,8 @@ extension Models.Placemark.Details {
 		
 		static var all: [Migration] {
 			return Property.Migrations.all
-				+ Location.Migrations.all
 				+ [CreatePlacemarkDetails()]
+				+ Location.Migrations.all
 				+ PlacemarkPropertyPivot.Migrations.all
 		}
 		

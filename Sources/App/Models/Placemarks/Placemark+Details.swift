@@ -29,13 +29,10 @@ extension Models.Placemark {
 		var caption: String
 		
 		@Field(key: "satellite_image")
-		var satelliteImage: String
+		var satelliteImageId: String
 		
 		@Field(key: "images")
 		var images: [String]
-		
-		@OptionalParent(key: "location_id")
-		var location: Location?
 		
 		@Siblings(through: PlacemarkPropertyPivot.self, from: \.$details, to: \.$property)
 		var properties: [Property]
@@ -56,17 +53,36 @@ extension Models.Placemark {
 			placemarkId: Placemark.IDValue,
 			caption: String,
 			images: [String] = [],
-			satelliteImage: String? = nil,
-			locationId: Location.IDValue? = nil
+			satelliteImageId: String? = nil
 		) {
 			self.id = id
 			self.$placemark.id = placemarkId
 			self.caption = caption
-			self.satelliteImage = satelliteImage ?? "https://monkiprojects.com/images/satellite-view-placeholder.jpg"
+			self.satelliteImageId = satelliteImageId ?? "satellite_images/satellite-view-placeholder.jpg"
 			self.images = images
-			self.$location.id = locationId
 		}
 		
+	}
+	
+	func updateSatelliteImage(on req: Request) -> EventLoopFuture<String> {
+		return req.eventLoop.makeSucceededFuture((self.latitude, self.longitude))
+			.flatMapThrowing { lat, long in
+				try mapboxApi.satelliteImage(lat: lat, long: long).requireURL()
+			}
+			.flatMapThrowing { url in
+				try cloudinaryApi.uploadSateliteImage(from: url).requireURI()
+			}
+			.flatMap { req.client.post($0) }
+			.flatMapThrowing { (res: ClientResponse) in
+				guard res.status == .ok else {
+					throw Abort(.internalServerError, reason: "Could not upload satellite image.")
+				}
+				
+				struct UploadResponse: Content {
+					let publicId: String
+				}
+				return try res.content.decode(UploadResponse.self).publicId
+			}
 	}
 	
 }

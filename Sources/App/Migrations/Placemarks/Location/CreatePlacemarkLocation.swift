@@ -20,6 +20,7 @@ extension Models.Placemark.Location.Migrations {
 				.field("details_id", .uuid, .references("placemark_details", .id, onDelete: .cascade))
 				.field("city", .string, .required)
 				.field("country", .string, .required)
+				.unique(on: "details_id", name: "one_location_per_placemark_details")
 				.create()
 		}
 		

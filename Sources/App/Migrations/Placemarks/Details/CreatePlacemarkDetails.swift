@@ -21,10 +21,10 @@ extension Models.Placemark.Details.Migrations {
 				.field("caption", .string, .required)
 				.field("satellite_image", .string, .required)
 				.field("images", .array(of: .string), .required)
-				.field("location_id", .uuid, .references("placemark_locations", .id))
 				.field("created_at", .datetime, .required)
 				.field("updated_at", .datetime, .required)
 				.field("deleted_at", .datetime)
+				.unique(on: "placemark_id", name: "one_details_per_placemark")
 				.create()
 		}
 		

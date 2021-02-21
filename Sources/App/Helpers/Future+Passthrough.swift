@@ -14,8 +14,20 @@ extension EventLoopFuture {
 		return self.map(callback).transform(to: self)
 	}
 	
-	func passthroughAfter<T>(_ callback: @escaping (Value) -> EventLoopFuture<T>) -> EventLoopFuture<Value> {
+	func passthrough<T>(_ callback: @escaping (Value) throws -> T) -> EventLoopFuture<Value> {
+		return self.flatMapThrowing(callback).transform(to: self)
+	}
+	
+	func passthroughAfter<T>(
+		_ callback: @escaping (Value) -> EventLoopFuture<T>
+	) -> EventLoopFuture<Value> {
 		return self.flatMap(callback).transform(to: self)
+	}
+	
+	func passthroughAfter<T>(
+		_ callback: @escaping (Value) throws -> EventLoopFuture<T>
+	) -> EventLoopFuture<Value> {
+		return self.flatMapThrowing(callback).flatMap { $0 }.transform(to: self)
 	}
 	
 }

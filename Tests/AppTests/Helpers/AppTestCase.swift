@@ -20,7 +20,18 @@ class AppTestCase: XCTestCase {
 		
 		do {
 			let app = Application(.testing)
+			
+			// Register database
 			app.databases.use(.sqlite(.memory), as: .sqlite)
+			
+			// Configure queues
+			try app.queues.use(.redis(url: Environment.get("REDIS_URL") ?? "redis://127.0.0.1:6379"))
+			
+			// Start jobs
+//			Jobs.addAll(to: app)
+//			try app.queues.startInProcessJobs(on: .default)
+//			try app.queues.startInProcessJobs(on: .placemarks)
+			
 			try configure(app)
 			self.app = app
 		} catch {

@@ -8,6 +8,7 @@
 
 import Fluent
 import FluentPostgresDriver
+import QueuesRedisDriver
 import Vapor
 
 /// Configures your application
@@ -38,6 +39,17 @@ public func configure(_ app: Application) throws {
 	app.migrations.add(UserModel.Migrations.all)
 	app.migrations.add(PlacemarkModel.Migrations.all)
 	try app.autoMigrate().wait()
+	
+	// Configure queues
+	if app.environment != .testing {
+		try app.queues.use(.redis(url: Environment.get("REDIS_URL") ?? "redis://127.0.0.1:6379"))
+		
+		// Start jobs
+		Jobs.addAll(to: app)
+		try app.queues.startInProcessJobs(on: .default)
+		try app.queues.startInProcessJobs(on: .placemarks)
+		try app.queues.startScheduledJobs()
+	}
 	
 	// Register routes
 	try routes(app)

@@ -118,32 +118,46 @@ struct PlacemarkController: RouteCollection {
 		
 		// Create placemark details
 		let createDetailsFuture = createPlacemarkFuture
-			.map { ($0, UUID()) }
-			.flatMapThrowing { (placemark, id) in
+			.passthroughAfter { placemark in
 				try PlacemarkModel.Details(
-					id: id,
 					placemarkId: placemark.requireID(),
 					caption: create.caption,
 					images: (create.images ?? []).map { $0.absoluteString }
 				)
 				.create(on: req.db)
-				.transform(to: (placemark, id))
 			}
-			.flatMap { $0 }
 		
-		// Reverse geocode placemark location
-		let createLocationFuture = createDetailsFuture.flatMap { (placemark, detailsId) in
-			// FIXME: Reverse geocode placemark location
-			PlacemarkModel.Location(
-				detailsId: detailsId,
-				city: "",
-				country: ""
-			)
-			.create(on: req.db)
-			.transform(to: placemark)
-		}
+		// Trigger satellite view loading
+		let loadSatelliteViewFuture = createDetailsFuture
+			.passthroughAfter { placemark in
+				req.queues(.placemarks)
+					.dispatch(
+						PlacemarkSatelliteViewJob.self,
+						.init(
+							placemarkId: try placemark.requireID(),
+							latitude: placemark.latitude,
+							longitude: placemark.longitude
+						),
+						maxRetryCount: 3
+					)
+			}
 		
-		return createLocationFuture
+		// Trigger location reverse geocoding
+		let reverseGeocodeLocationFuture = loadSatelliteViewFuture
+			.passthroughAfter { placemark in
+				req.queues(.placemarks)
+					.dispatch(
+						PlacemarkLocationJob.self,
+						.init(
+							placemarkId: try placemark.requireID(),
+							latitude: placemark.latitude,
+							longitude: placemark.longitude
+						),
+						maxRetryCount: 3
+					)
+			}
+		
+		return reverseGeocodeLocationFuture
 			.flatMapThrowing { try $0.asPublic(on: req.db) }
 			.flatMap { $0.encodeResponse(status: .created, for: req) }
 	}

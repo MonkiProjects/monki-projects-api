@@ -16,9 +16,6 @@ extension Models.Placemark.Details {
 		let locationFuture = try Location.query(on: database)
 			.filter(\.$details.$id == self.requireID())
 			.first()
-			.unwrap(or: Abort(.internalServerError,
-				reason: "We could not find the location details for this placemark."
-			))
 		// FIXME: Trigger a call to reverse geocode location
 		
 		let loadRelationsFuture = locationFuture
@@ -49,9 +46,9 @@ extension Models.Placemark.Details {
 			
 			return try MonkiMapModel.Placemark.Details.Public(
 				caption: self.caption,
-				satelliteImage: URL(string: self.satelliteImage).require(),
+				satelliteImage: cloudinary.image(withId: self.satelliteImageId).requireURL(),
 				images: self.images.map(URL.init(string:)).compactMap { $0 },
-				location: location.asPublic(),
+				location: location?.asPublic(),
 				features: features,
 				goodForTraining: goodForTraining,
 				benefits: benefits,
