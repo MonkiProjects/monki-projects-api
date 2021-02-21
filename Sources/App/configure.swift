@@ -48,7 +48,7 @@ public func configure(_ app: Application) throws {
 		Jobs.addAll(to: app)
 		try app.queues.startInProcessJobs(on: .default)
 		try app.queues.startInProcessJobs(on: .placemarks)
-		try app.queues.startScheduledJobs()
+//		try app.queues.startScheduledJobs()
 	}
 	
 	// Register routes
