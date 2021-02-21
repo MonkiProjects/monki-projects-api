@@ -46,7 +46,12 @@ struct PlacemarkLocationJob: Job {
 					throw Abort(.internalServerError, reason: "Could not call reverse geocoding API.")
 				}
 				
-				return try res.content.decode(ReverseGeocodingResponse.self)
+				// Map "application/vnd.geo+json" to "application/json" (to fix decoding)
+				var jsonRes = res
+				if jsonRes.headers.contentType?.subType == "vnd.geo+json" {
+					jsonRes.headers.contentType = HTTPMediaType.json
+				}
+				return try jsonRes.content.decode(ReverseGeocodingResponse.self)
 			}
 		
 		// Update Location in Details
