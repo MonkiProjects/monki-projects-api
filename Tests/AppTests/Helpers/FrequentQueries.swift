@@ -9,6 +9,7 @@
 @testable import App
 import Vapor
 import Fluent
+import Models
 
 func kindId(
 	for humanId: String,

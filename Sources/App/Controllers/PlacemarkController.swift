@@ -8,6 +8,8 @@
 
 import Fluent
 import Vapor
+import Models
+import Jobs
 import MonkiMapModel
 
 struct PlacemarkController: RouteCollection {
@@ -64,7 +66,7 @@ struct PlacemarkController: RouteCollection {
 		state: Placemark.State,
 		in database: Database
 	) throws -> EventLoopFuture<[Placemark.Public]> {
-		return Models.Placemark.query(on: database)
+		return PlacemarkModel.query(on: database)
 			.filter(\.$state == state)
 			.with(\.$kind) { kind in
 				kind.with(\.$category)
@@ -88,14 +90,14 @@ struct PlacemarkController: RouteCollection {
 		// Do additional validations
 		// TODO: Check for near spots (e.g. < 20m)
 		
-		let placemarkKindFuture = Models.Placemark.Kind.query(on: req.db)
+		let placemarkKindFuture = PlacemarkModel.Kind.query(on: req.db)
 			.filter(\.$humanId == create.kind.rawValue)
 			.first()
 			.unwrap(or: Abort(.notFound, reason: "Placemark type not found"))
 		
 		// Create Placemark object
 		let placemarkFuture = placemarkKindFuture.flatMapThrowing { kind in
-			try Models.Placemark(
+			try PlacemarkModel(
 				name: create.name,
 				latitude: create.latitude,
 				longitude: create.longitude,
@@ -162,7 +164,7 @@ struct PlacemarkController: RouteCollection {
 	
 	func getPlacemark(req: Request) throws -> EventLoopFuture<Placemark.Public> {
 		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
-		return Models.Placemark.find(placemarkId, on: req.db)
+		return PlacemarkModel.find(placemarkId, on: req.db)
 			.unwrap(or: Abort(.notFound, reason: "Placemark not found"))
 			.flatMap { placemark in
 				placemark.$kind.load(on: req.db)
@@ -178,7 +180,7 @@ struct PlacemarkController: RouteCollection {
 		let user = try req.auth.require(UserModel.self)
 		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
 		
-		let placemarkFuture = Models.Placemark.find(placemarkId, on: req.db)
+		let placemarkFuture = PlacemarkModel.find(placemarkId, on: req.db)
 			.unwrap(or: Abort(.notFound, reason: "Placemark not found"))
 		
 		// Do additional validations
@@ -220,7 +222,7 @@ struct PlacemarkController: RouteCollection {
 		ofKind kind: Placemark.Property.Kind,
 		in database: Database
 	) -> EventLoopFuture<[Placemark.Property.Localized]> {
-		Models.Placemark.Property.query(on: database)
+		PlacemarkModel.Property.query(on: database)
 			.filter(\.$kind == kind)
 			.all()
 			.flatMapEachThrowing { try $0.localized(in: .en) }

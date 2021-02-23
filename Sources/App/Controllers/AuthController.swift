@@ -8,6 +8,8 @@
 
 import Fluent
 import Vapor
+import Models
+import DTOs
 
 struct AuthController: RouteCollection {
 	

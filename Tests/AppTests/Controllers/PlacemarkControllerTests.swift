@@ -9,6 +9,7 @@
 @testable import App
 import XCTVapor
 import Fluent
+import Models
 
 final class PlacemarkControllerTests: AppTestCase {
 	
@@ -185,6 +186,11 @@ final class PlacemarkControllerTests: AppTestCase {
 				try req.content.encode(create)
 			},
 			afterResponse: { res in
+				XCTAssertFalse(
+					res.status == .internalServerError
+						&& res.body.string.contains("RedisConnectionPoolError"),
+					"Redis not started"
+				)
 				try res.assertStatus(.created) {
 					let placemark = try res.content.decode(Placemark.Public.self)
 					

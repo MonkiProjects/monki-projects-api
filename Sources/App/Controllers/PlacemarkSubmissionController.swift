@@ -8,6 +8,7 @@
 
 import Fluent
 import Vapor
+import Models
 import MonkiMapModel
 
 struct PlacemarkSubmissionController: RouteCollection {

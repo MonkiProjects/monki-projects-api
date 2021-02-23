@@ -6,10 +6,13 @@
 //  Copyright © 2021 Monki Projects. All rights reserved.
 //
 
+import Vapor
 import Fluent
 import FluentPostgresDriver
 import QueuesRedisDriver
-import Vapor
+import Models
+import Migrations
+import Jobs
 
 /// Configures your application
 public func configure(_ app: Application) throws {

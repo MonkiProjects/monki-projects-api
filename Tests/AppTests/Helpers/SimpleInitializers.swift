@@ -8,6 +8,7 @@
 
 @testable import App
 import Foundation
+import Models
 
 extension UserModel {
 	
