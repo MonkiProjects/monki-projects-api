@@ -17,9 +17,10 @@ public struct CloudinaryAPIRoot: EndpointRoot {
 	
 	private let cloudName = Environment.get("CLOUDINARY_CLOUD_NAME") ?? "nil"
 	
+	// swiftlint:disable type_contents_order
+	
+	/// See [Generating authentication signatures](https://cloudinary.com/documentation/upload_images#generating_authentication_signatures)
 	public func uploadSateliteImage(from url: URL) -> Endpoint {
-		/// [Generating authentication signatures](https://cloudinary.com/documentation/upload_images#generating_authentication_signatures)
-		
 		// Required parameters for authenticated requests
 		let requiredParameters: [URLQueryItem] = [
 			/// The file to upload. In this case, the `HTTPS` `URL` of an existing file.
@@ -38,19 +39,22 @@ public struct CloudinaryAPIRoot: EndpointRoot {
 		var queryItems: [URLQueryItem] = requiredParameters + optionalParameters
 		
 		/// 1. Create a string with the parameters used in the POST request to Cloudinary:
-		///   - All parameters added to the method call should be included **except**: `file`, `cloud_name`, `resource_type` and your `api_key`.
+		///   - All parameters added to the method call should be included **except**:
+		///     `file`, `cloud_name`, `resource_type` and your `api_key`.
 		let excluded = ["file", "cloud_name", "resource_type", "api_key"]
 		var hashQueryItems = queryItems
 		hashQueryItems.removeAll(where: { excluded.contains($0.name) })
 		///   - Sort all the parameters in alphabetical order.
 		hashQueryItems.sort(by: { $0.name < $1.name })
-		///   - Separate the _parameter_ names from their values with an `=` and join the parameter/value pairs together with an `&`.
+		///   - Separate the _parameter_ names from their values with a `=`
+		///     and join the parameter/value pairs together with an `&`.
 		var hashText = hashQueryItems.map({ "\($0.name)=\($0.value ?? "")" }).joined(separator: "&")
 		
 		/// 2. Append your `API` secret to the end of the string.
 		hashText.append(Environment.get("CLOUDINARY_API_SECRET") ?? "<api_secret>")
 		
-		/// 3. Create a hexadecimal message digest (hash value) of the string using a `SHA` cryptographic function.
+		/// 3. Create a hexadecimal message digest (hash value)
+		///    of the string using a `SHA` cryptographic function.
 		queryItems.append(.init(name: "signature", value: SHA256.hash(data: Data(hashText.utf8)).hex))
 		
 		return Endpoint(
@@ -61,7 +65,7 @@ public struct CloudinaryAPIRoot: EndpointRoot {
 	}
 	
 	public var uploadAvatar: Endpoint {
-		return Endpoint(
+		Endpoint(
 			root: self,
 			path: "/v1_1/\(cloudName)\(Cloudinary.path(for: .image, type: .upload))/avatars",
 			queryItems: [
@@ -69,5 +73,7 @@ public struct CloudinaryAPIRoot: EndpointRoot {
 			]
 		)
 	}
+	
+	// swiftlint:enable type_contents_order
 	
 }

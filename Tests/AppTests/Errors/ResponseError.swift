@@ -8,7 +8,7 @@
 
 import Vapor
 
-struct ResponseError: Content {
+internal struct ResponseError: Content {
 	
 	let reason: String
 	

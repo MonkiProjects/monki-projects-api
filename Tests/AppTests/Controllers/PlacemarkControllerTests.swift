@@ -11,7 +11,8 @@ import XCTVapor
 import Fluent
 import Models
 
-final class PlacemarkControllerTests: AppTestCase {
+// swiftlint:disable closure_body_length
+internal final class PlacemarkControllerTests: AppTestCase {
 	
 	private static var user: UserModel?
 	private static var userToken: UserModel.Token?
@@ -54,7 +55,8 @@ final class PlacemarkControllerTests: AppTestCase {
 	func testSchemaExists() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "v1/placemarks") { res in
+		try app.test(
+			.GET, "v1/placemarks") { res in
 			try res.assertStatus(.ok) {
 				XCTAssertEqual(res.body.string, "[]")
 			}
@@ -92,7 +94,8 @@ final class PlacemarkControllerTests: AppTestCase {
 		try createPlacemark(publishedPlacemark, on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
-		try app.test(.GET, "v1/placemarks") { res in
+		try app.test(
+			.GET, "v1/placemarks") { res in
 			try res.assertStatus(.ok) {
 				let placemarks = try res.content.decode([Placemark.Public].self)
 				
@@ -139,7 +142,8 @@ final class PlacemarkControllerTests: AppTestCase {
 		try createPlacemark(publishedPlacemark, on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
-		try app.test(.GET, "v1/placemarks?state=submitted") { res in
+		try app.test(
+			.GET, "v1/placemarks?state=submitted") { res in
 			try res.assertStatus(.ok) {
 				let placemarks = try res.content.decode([Placemark.Public].self)
 				
@@ -178,7 +182,8 @@ final class PlacemarkControllerTests: AppTestCase {
 		// Delete possibly created placemark
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
 		
-		try app.test(.POST, "v1/placemarks",
+		try app.test(
+			.POST, "v1/placemarks",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -243,7 +248,8 @@ final class PlacemarkControllerTests: AppTestCase {
 		try createPlacemark(placemark, on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
-		try app.test(.GET, "v1/placemarks/\(placemarkId)") { res in
+		try app.test(
+			.GET, "v1/placemarks/\(placemarkId)") { res in
 			try res.assertStatus(.ok) {
 				let placemarkResponse = try res.content.decode(Placemark.Public.self)
 				XCTAssertEqual(placemarkResponse.id, placemark.id)
@@ -275,7 +281,8 @@ final class PlacemarkControllerTests: AppTestCase {
 		try placemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
-		try app.test(.DELETE, "v1/placemarks/\(placemarkId)",
+		try app.test(
+			.DELETE, "v1/placemarks/\(placemarkId)",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -300,7 +307,8 @@ final class PlacemarkControllerTests: AppTestCase {
 	func testGetFeatures() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "v1/placemarks/features") { res in
+		try app.test(
+			.GET, "v1/placemarks/features") { res in
 			try res.assertStatus(.ok) {
 				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 31)
@@ -320,7 +328,8 @@ final class PlacemarkControllerTests: AppTestCase {
 	func testGetTechniques() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "v1/placemarks/techniques") { res in
+		try app.test(
+			.GET, "v1/placemarks/techniques") { res in
 			try res.assertStatus(.ok) {
 				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 12)
@@ -340,7 +349,8 @@ final class PlacemarkControllerTests: AppTestCase {
 	func testGetBenefits() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "v1/placemarks/benefits") { res in
+		try app.test(
+			.GET, "v1/placemarks/benefits") { res in
 			try res.assertStatus(.ok) {
 				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 8)
@@ -360,7 +370,8 @@ final class PlacemarkControllerTests: AppTestCase {
 	func testGetHazards() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "v1/placemarks/hazards") { res in
+		try app.test(
+			.GET, "v1/placemarks/hazards") { res in
 			try res.assertStatus(.ok) {
 				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 8)
@@ -399,7 +410,8 @@ final class PlacemarkControllerTests: AppTestCase {
 		// Delete possibly created placemark
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
 		
-		try app.test(.POST, "v1/placemarks",
+		try app.test(
+			.POST, "v1/placemarks",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -427,7 +439,8 @@ final class PlacemarkControllerTests: AppTestCase {
 	func testGetPlacemarkWithInexistentId() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "v1/placemarks/\(UUID())") { res in
+		try app.test(
+			.GET, "v1/placemarks/\(UUID())") { res in
 			try res.assertError(status: .notFound, reason: "Placemark not found")
 		}
 	}
@@ -444,7 +457,8 @@ final class PlacemarkControllerTests: AppTestCase {
 	func testCreatePlacemarkInvalidBearerToken() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.POST, "v1/placemarks",
+		try app.test(
+			.POST, "v1/placemarks",
 			beforeRequest: { req in
 				let invalidToken = [UInt8].random(count: 16).base64
 				let bearerAuth = BearerAuthorization(token: invalidToken)
@@ -485,7 +499,8 @@ final class PlacemarkControllerTests: AppTestCase {
 		try placemark.create(on: app.db).wait()
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
-		try app.test(.DELETE, "v1/placemarks/\(placemarkId)",
+		try app.test(
+			.DELETE, "v1/placemarks/\(placemarkId)",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -500,3 +515,4 @@ final class PlacemarkControllerTests: AppTestCase {
 	}
 	
 }
+// swiftlint:enable closure_body_length

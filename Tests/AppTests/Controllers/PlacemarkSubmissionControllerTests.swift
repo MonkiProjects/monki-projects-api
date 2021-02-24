@@ -12,7 +12,7 @@ import Fluent
 import Models
 
 // swiftlint:disable:next type_body_length
-final class PlacemarkSubmissionControllerTests: AppTestCase {
+internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 	
 	typealias SubmissionModel = PlacemarkModel.Submission
 	typealias ReviewModel = SubmissionModel.Review
@@ -759,4 +759,3 @@ final class PlacemarkSubmissionControllerTests: AppTestCase {
 	}
 	
 }
-// swiftlint:disable:this file_length

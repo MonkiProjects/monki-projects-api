@@ -26,6 +26,7 @@ extension PlacemarkModel.Details {
 		let loadRelationsFuture = locationFuture
 			.passthroughAfter { _ in self.$properties.load(on: database) }
 		
+		// swiftlint:disable:next closure_body_length
 		return loadRelationsFuture.flatMapThrowing { location in
 			typealias Properties = [MonkiMapModel.Placemark.Property.Localized]
 			

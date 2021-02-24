@@ -13,7 +13,7 @@ import MonkiMapModel
 extension PlacemarkModel.Submission {
 	
 	public func asPublic() throws -> MonkiMapModel.Placemark.Submission.Public {
-		return try .init(
+		try .init(
 			id: self.requireID(),
 			placemark: self.$placemark.id,
 			state: self.state,

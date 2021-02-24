@@ -14,7 +14,7 @@ extension UserModel {
 	public enum Migrations {
 		
 		public static var all: [Migration] {
-			return [CreateUser()]
+			[CreateUser()]
 				+ Token.Migrations.all
 		}
 		

@@ -8,14 +8,15 @@
 
 import Vapor
 
-protocol EndpointRoot {
+internal protocol EndpointRoot {
 	var scheme: String { get }
 	var host: String { get }
 }
 
+// swiftlint:disable:next file_types_order
 extension EndpointRoot {
 	var root: Endpoint {
-		return Endpoint(root: self, path: "")
+		Endpoint(root: self, path: "")
 	}
 }
 
@@ -25,12 +26,6 @@ public struct Endpoint {
 	private let root: EndpointRoot
 	private let path: String
 	private let queryItems: [URLQueryItem]
-	
-	init(root: EndpointRoot, path: String, queryItems: [URLQueryItem] = []) {
-		self.root = root
-		self.path = path
-		self.queryItems = queryItems
-	}
 	
 	public var components: URLComponents {
 		var components = URLComponents()
@@ -47,6 +42,12 @@ public struct Endpoint {
 	// dealing with dynamic components that could be invalid.
 	public var url: URL? { components.url }
 	public var uri: URI? { components.string.map(URI.init(string:)) }
+	
+	init(root: EndpointRoot, path: String, queryItems: [URLQueryItem] = []) {
+		self.root = root
+		self.path = path
+		self.queryItems = queryItems
+	}
 	
 	public func requireURL() throws -> URL {
 		guard let url = url else {

@@ -19,14 +19,15 @@ extension PlacemarkModel {
 		let detailsFuture = try Details.query(on: database)
 			.filter(\.$placemark.$id == self.requireID())
 			.first()
-			.unwrap(or: Abort(.internalServerError,
+			.unwrap(or: Abort(
+				.internalServerError,
 				reason: "We could not find the details for this placemark."
 			))
 			.flatMapThrowing { try $0.asPublic(on: database) }
 			.flatMap { $0 }
 		
 		return detailsFuture.flatMapThrowing { details in
-			return try .init(
+			try .init(
 				id: self.requireID(),
 				name: self.name,
 				latitude: self.latitude,

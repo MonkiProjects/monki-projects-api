@@ -11,7 +11,7 @@ import Vapor
 import Fluent
 import Models
 
-func kindId(
+internal func kindId(
 	for humanId: String,
 	on database: Database
 ) -> EventLoopFuture<PlacemarkModel.Kind.IDValue> {
@@ -22,7 +22,7 @@ func kindId(
 		.flatMapThrowing { try $0.requireID() }
 }
 
-func createPlacemark(
+internal func createPlacemark(
 	_ model: PlacemarkModel,
 	details: PlacemarkModel.Details = .dummy(placemarkId: UUID()),
 	location: PlacemarkModel.Location = .dummy(detailsId: UUID()),

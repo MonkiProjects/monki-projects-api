@@ -14,7 +14,7 @@ extension PlacemarkModel.Submission.Review.Issue {
 	enum Migrations {
 		
 		static var all: [Migration] {
-			return [CreatePlacemarkSubmissionReviewIssue()]
+			[CreatePlacemarkSubmissionReviewIssue()]
 		}
 		
 	}

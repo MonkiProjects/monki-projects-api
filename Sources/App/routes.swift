@@ -9,10 +9,10 @@
 import Fluent
 import Vapor
 
-func routes(_ app: Application) throws {
+internal func routes(_ app: Application) throws {
 	
 	app.get { req in
-		return req.redirect(to: "https://github.com/MonkiProjects/mp-api-specs")
+		req.redirect(to: "https://github.com/MonkiProjects/mp-api-specs")
 	}
 	
 	let v1 = app.routes.grouped("v1")

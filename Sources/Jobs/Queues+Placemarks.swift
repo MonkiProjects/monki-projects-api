@@ -8,8 +8,8 @@
 
 import Queues
 
-public extension QueueName {
+extension QueueName {
 	
-	static let placemarks = QueueName(string: "placemarks")
+	public static let placemarks = QueueName(string: "placemarks")
 	
 }

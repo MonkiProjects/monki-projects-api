@@ -10,29 +10,6 @@ import Vapor
 
 public let cloudinary = CloudinaryRoot()
 
-enum Cloudinary {
-	
-	static func path(for resourceType: ResourceType, type: DeliveryType) -> String {
-		return "/\(resourceType.rawValue)/\(type.rawValue)"
-	}
-	
-	enum ResourceType: String {
-		case image, video, raw, auto
-	}
-	
-	enum DeliveryType: String {
-		case all, upload, `private`, authenticated,
-			 facebook, twitter, gravatar, youtube, hulu, vimeo,
-			 animoto, worldstarhiphop, dailymotion
-	}
-	
-	enum Preset: String {
-		case placemarkImage = "placemark_image"
-		case avatar
-	}
-	
-}
-
 public struct CloudinaryRoot: EndpointRoot {
 	
 	let scheme = "https"
@@ -41,10 +18,35 @@ public struct CloudinaryRoot: EndpointRoot {
 	private let cloudName = Environment.get("CLOUDINARY_CLOUD_NAME") ?? "nil"
 	
 	public func image(withId id: String) -> Endpoint {
-		return Endpoint(
+		Endpoint(
 			root: self,
 			path: "/\(cloudName)\(Cloudinary.path(for: .image, type: .upload))/f_auto/\(id)"
 		)
+	}
+	
+}
+
+internal enum Cloudinary {
+	
+	enum ResourceType: String {
+		case image, video, raw, auto
+	}
+	
+	// swiftlint:disable indentation_width
+	enum DeliveryType: String {
+		case all, upload, `private`, authenticated,
+			 facebook, twitter, gravatar, youtube, hulu, vimeo,
+			 animoto, worldstarhiphop, dailymotion
+	}
+	// swiftlint:enable indentation_width
+	
+	enum Preset: String {
+		case placemarkImage = "placemark_image"
+		case avatar
+	}
+	
+	static func path(for resourceType: ResourceType, type: DeliveryType) -> String {
+		"/\(resourceType.rawValue)/\(type.rawValue)"
 	}
 	
 }

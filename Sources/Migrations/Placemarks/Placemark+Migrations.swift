@@ -14,7 +14,7 @@ extension PlacemarkModel {
 	public enum Migrations {
 		
 		public static var all: [Migration] {
-			return Kind.Migrations.all
+			Kind.Migrations.all
 				+ [CreatePlacemark()]
 				+ Details.Migrations.all
 				+ Submission.Migrations.all

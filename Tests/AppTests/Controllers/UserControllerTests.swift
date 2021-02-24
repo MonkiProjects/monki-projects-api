@@ -12,7 +12,7 @@ import Fluent
 import Models
 import MonkiProjectsModel
 
-class UserControllerTests: AppTestCase {
+internal class UserControllerTests: AppTestCase {
 	
 	// MARK: - Valid Domain
 	
@@ -32,7 +32,8 @@ class UserControllerTests: AppTestCase {
 	func testSchemaExists() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "v1/users") { res in
+		try app.test(
+			.GET, "v1/users") { res in
 			try res.assertStatus(.ok) {
 				XCTAssertEqual(res.body.string, "[]")
 			}
@@ -56,7 +57,8 @@ class UserControllerTests: AppTestCase {
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
-		try app.test(.GET, "v1/users") { res in
+		try app.test(
+			.GET, "v1/users") { res in
 			try res.assertStatus(.ok) {
 				let users = try res.content.decode([User.Public.Small].self)
 				
@@ -91,7 +93,8 @@ class UserControllerTests: AppTestCase {
 			confirmPassword: "password"
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: username, on: app.db)
-		try app.test(.POST, "v1/users",
+		try app.test(
+			.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user)
 			},
@@ -135,7 +138,8 @@ class UserControllerTests: AppTestCase {
 		try token.create(on: app.db).wait()
 		deleteUserTokenAfterTestFinishes(token, on: app.db)
 		
-		try app.test(.DELETE, "v1/users/\(userId)",
+		try app.test(
+			.DELETE, "v1/users/\(userId)",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: token.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -184,7 +188,8 @@ class UserControllerTests: AppTestCase {
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
 		
-		try app.test(.POST, "v1/users",
+		try app.test(
+			.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user)
 			},
@@ -206,7 +211,8 @@ class UserControllerTests: AppTestCase {
 	func testGetUserWithInexistentId() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "v1/users/\(UUID())") { res in
+		try app.test(
+			.GET, "v1/users/\(UUID())") { res in
 			try res.assertError(status: .notFound, reason: "Not Found")
 		}
 	}
@@ -239,7 +245,8 @@ class UserControllerTests: AppTestCase {
 			confirmPassword: "password2"
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: user2.username, on: app.db)
-		try app.test(.POST, "v1/users",
+		try app.test(
+			.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user2)
 			},
@@ -277,7 +284,8 @@ class UserControllerTests: AppTestCase {
 			confirmPassword: "password2"
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: user2.username, on: app.db)
-		try app.test(.POST, "v1/users",
+		try app.test(
+			.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user2)
 			},
@@ -307,7 +315,8 @@ class UserControllerTests: AppTestCase {
 			confirmPassword: "1234567"
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
-		try app.test(.POST, "v1/users",
+		try app.test(
+			.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user)
 			},
@@ -340,7 +349,8 @@ class UserControllerTests: AppTestCase {
 			confirmPassword: "password"
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
-		try app.test(.POST, "v1/users",
+		try app.test(
+			.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user)
 			},
@@ -370,7 +380,8 @@ class UserControllerTests: AppTestCase {
 			confirmPassword: "password"
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
-		try app.test(.POST, "v1/users",
+		try app.test(
+			.POST, "v1/users",
 			beforeRequest: { req in
 				try req.content.encode(user)
 			},
@@ -401,7 +412,8 @@ class UserControllerTests: AppTestCase {
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
-		try app.test(.DELETE, "v1/users/\(userId)",
+		try app.test(
+			.DELETE, "v1/users/\(userId)",
 			beforeRequest: { req in
 				let invalidToken = [UInt8].random(count: 16).base64
 				let bearerAuth = BearerAuthorization(token: invalidToken)
@@ -434,7 +446,8 @@ class UserControllerTests: AppTestCase {
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
-		try app.test(.DELETE, "v1/users/\(userId)",
+		try app.test(
+			.DELETE, "v1/users/\(userId)",
 			beforeRequest: { req in
 				let basicAuth = BasicAuthorization(username: user.username, password: password)
 				req.headers.basicAuthorization = basicAuth

@@ -22,7 +22,7 @@ extension UserModel.Token {
 	}
 	
 	public func asPrivate() throws -> Private {
-		return try Private(
+		try Private(
 			value: self.value,
 			user: self.user.asPublicFull(),
 			expiresAt: self.expiresAt,

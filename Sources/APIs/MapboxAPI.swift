@@ -34,11 +34,14 @@ public struct MapboxAPIRoot: EndpointRoot {
 	///   1. Default style is 'Satellite' (no streets)
 	///   2. Image is redered at 2x (`@2x`)
 	public func satelliteImage(
-		lat: Double, long: Double,
-		zoom: Double = 19, bearing: UInt16 = 0,
-		width: UInt16 = 1080, height: UInt16 = 1080
+		lat: Double,
+		long: Double,
+		zoom: Double = 19,
+		bearing: UInt16 = 0,
+		width: UInt16 = 1_080,
+		height: UInt16 = 1_080
 	) -> Endpoint {
-		return Endpoint(
+		Endpoint(
 			root: self,
 			path: "/styles/v1/mapbox/satellite-v9/static/\(long),\(lat),\(zoom),\(bearing)/\(width)x\(height)@2x",
 			queryItems: [
@@ -58,10 +61,8 @@ public struct MapboxAPIRoot: EndpointRoot {
 	///
 	/// # Notes #
 	///   1. Image is redered at 2x (`@2x`)
-	public func reverseGeocodeLocation(
-		lat: Double, long: Double
-	) -> Endpoint {
-		return Endpoint(
+	public func reverseGeocodeLocation(lat: Double, long: Double) -> Endpoint {
+		Endpoint(
 			root: self,
 			path: "/geocoding/v5/mapbox.places/\(long),\(lat).json",
 			queryItems: [

@@ -13,7 +13,7 @@ import MonkiMapModel
 extension PlacemarkModel.Submission.Review.Issue {
 	
 	public func asPublic() throws -> MonkiMapModel.Placemark.Submission.Review.Issue.Public {
-		return try .init(
+		try .init(
 			id: self.requireID(),
 			placemark: self.review.submission.placemark.requireID(),
 			issuer: self.review.reviewer.requireID(),

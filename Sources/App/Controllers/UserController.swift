@@ -11,7 +11,7 @@ import Vapor
 import Models
 import MonkiProjectsModel
 
-struct UserController: RouteCollection {
+internal struct UserController: RouteCollection {
 	
 	func boot(routes: RoutesBuilder) throws {
 		let users = routes.grouped("users")
@@ -31,7 +31,8 @@ struct UserController: RouteCollection {
 	}
 	
 	func listUsers(req: Request) throws -> EventLoopFuture<[User.Public.Small]> {
-		return UserModel.query(on: req.db).all()
+		UserModel.query(on: req.db)
+			.all()
 			.flatMapEachThrowing { try $0.asPublicSmall() }
 	}
 	
@@ -60,17 +61,19 @@ struct UserController: RouteCollection {
 		// Check for existing email
 		let emailCheckFuture = UserModel.query(on: req.db)
 			// Get User with same email
-			.filter(\.$email == create.email).first()
+			.filter(\.$email == create.email)
+			.first()
 			// Abort if existing email
-			.guard({ $0 == nil }, else: Abort(.forbidden, reason: "Email or username already taken"))
+			.guard(\.isNil, else: Abort(.forbidden, reason: "Email or username already taken"))
 		
 		// Check for existing username
 		let usernameCheckFuture = emailCheckFuture.flatMap { _ in
 			UserModel.query(on: req.db)
 				// Get User with same username
-				.filter(\.$username == create.username).first()
+				.filter(\.$username == create.username)
+				.first()
 				// Abort if existing username
-				.guard({ $0 == nil }, else: Abort(.forbidden, reason: "Email or username already taken"))
+				.guard(\.isNil, else: Abort(.forbidden, reason: "Email or username already taken"))
 		}
 		
 		// Create User object

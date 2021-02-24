@@ -14,7 +14,7 @@ extension PlacemarkModel.Submission {
 	enum Migrations {
 		
 		static var all: [Migration] {
-			return [CreatePlacemarkSubmission()]
+			[CreatePlacemarkSubmission()]
 				+ Review.Migrations.all
 		}
 		

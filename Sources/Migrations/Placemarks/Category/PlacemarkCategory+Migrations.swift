@@ -16,7 +16,7 @@ extension PlacemarkModel.Category {
 		typealias Migrated = PlacemarkModel.Category
 		
 		static var all: [Migration] {
-			return [CreatePlacemarkCategory(), AddInitialCategories()]
+			[CreatePlacemarkCategory(), AddInitialCategories()]
 		}
 		
 	}

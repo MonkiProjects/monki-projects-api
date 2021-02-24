@@ -14,7 +14,7 @@ extension PlacemarkPropertyPivot {
 	enum Migrations {
 		
 		static var all: [Migration] {
-			return [CreatePlacemarkPropertyPivot()]
+			[CreatePlacemarkPropertyPivot()]
 		}
 		
 	}

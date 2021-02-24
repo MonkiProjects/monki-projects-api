@@ -14,7 +14,7 @@ extension PlacemarkModel.Details {
 	enum Migrations {
 		
 		static var all: [Migration] {
-			return Property.Migrations.all
+			Property.Migrations.all
 				+ [CreatePlacemarkDetails()]
 				+ Location.Migrations.all
 				+ PlacemarkPropertyPivot.Migrations.all

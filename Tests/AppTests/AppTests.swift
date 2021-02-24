@@ -10,7 +10,7 @@
 import XCTVapor
 import FluentSQLiteDriver
 
-final class AppTests: XCTestCase {
+internal final class AppTests: XCTestCase {
 	
 	func testRedirectToDoc() throws {
 		let app = Application(.testing)

@@ -13,7 +13,7 @@ import MonkiProjectsModel
 extension UserModel {
 	
 	public func asPrivate() throws -> User.Private {
-		return try User.Private(
+		try User.Private(
 			self.asPublicFull(),
 			email: self.email
 		)

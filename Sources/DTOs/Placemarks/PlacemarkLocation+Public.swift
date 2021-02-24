@@ -13,7 +13,7 @@ import MonkiMapModel
 extension PlacemarkModel.Location {
 	
 	public func asPublic() -> Placemark.Location.Public {
-		return .init(
+		.init(
 			city: self.city,
 			country: self.country
 		)

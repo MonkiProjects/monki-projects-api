@@ -36,4 +36,3 @@ extension PlacemarkModel.Details.Migrations {
 	}
 	
 }
-

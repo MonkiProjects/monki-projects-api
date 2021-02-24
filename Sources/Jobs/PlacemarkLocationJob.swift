@@ -73,7 +73,7 @@ public struct PlacemarkLocationJob: Job {
 					.unwrap(or: Abort(.internalServerError, reason: "Cannot find placemark details."))
 					.map { (response, $0) }
 			}
-			.flatMapThrowing { (response, details) -> PlacemarkModel.Location in
+			.flatMapThrowing { response, details -> PlacemarkModel.Location in
 				let feature = response.features[0]
 				let city = feature.text
 				let country = try feature.context

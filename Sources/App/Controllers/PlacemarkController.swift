@@ -12,7 +12,7 @@ import Models
 import Jobs
 import MonkiMapModel
 
-struct PlacemarkController: RouteCollection {
+internal struct PlacemarkController: RouteCollection {
 	
 	func boot(routes: RoutesBuilder) throws {
 		let placemarks = routes.grouped("placemarks")
@@ -66,7 +66,7 @@ struct PlacemarkController: RouteCollection {
 		state: Placemark.State,
 		in database: Database
 	) throws -> EventLoopFuture<[Placemark.Public]> {
-		return PlacemarkModel.query(on: database)
+		PlacemarkModel.query(on: database)
 			.filter(\.$state == state)
 			.with(\.$kind) { kind in
 				kind.with(\.$category)

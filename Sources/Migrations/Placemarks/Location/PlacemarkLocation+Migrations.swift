@@ -14,7 +14,7 @@ extension PlacemarkModel.Location {
 	enum Migrations {
 		
 		static var all: [Migration] {
-			return [CreatePlacemarkLocation()]
+			[CreatePlacemarkLocation()]
 		}
 		
 	}

@@ -10,8 +10,9 @@
 import XCTVapor
 import FluentSQLiteDriver
 
-class AppTestCase: XCTestCase {
+internal class AppTestCase: XCTestCase {
 	
+	// swiftlint:disable:next test_case_accessibility
 	static var app: Application?
 	
 	/// Starts the app in testing mode and deletes everything in database.

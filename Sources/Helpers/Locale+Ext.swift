@@ -8,11 +8,11 @@
 
 import Foundation
 
-public extension Locale {
+extension Locale {
 	
-	static var en: Locale { .init(identifier: "en") }
-	static var fr: Locale { .init(identifier: "fr") }
+	public static var en: Locale { .init(identifier: "en") }
+	public static var fr: Locale { .init(identifier: "fr") }
 	
-	static var supported: [Locale] { [.en, .fr] }
+	public static var supported: [Locale] { [.en, .fr] }
 	
 }

@@ -11,7 +11,7 @@ import Vapor
 import Models
 import DTOs
 
-struct AuthController: RouteCollection {
+internal struct AuthController: RouteCollection {
 	
 	func boot(routes: RoutesBuilder) throws {
 		let auth = routes.grouped("auth")

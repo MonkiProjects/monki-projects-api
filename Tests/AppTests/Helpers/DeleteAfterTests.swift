@@ -79,7 +79,8 @@ extension XCTestCase {
 		addTeardownBlock {
 			do {
 				let storedUser = try UserModel.query(on: database)
-					.filter(\.$username == username).first()
+					.filter(\.$username == username)
+					.first()
 					.wait()
 				try storedUser?.delete(force: true, on: database).wait()
 			} catch {

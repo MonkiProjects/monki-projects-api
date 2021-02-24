@@ -16,7 +16,7 @@ extension PlacemarkModel.Property {
 		typealias Migrated = PlacemarkModel.Property
 		
 		static var all: [Migration] {
-			return [CreatePlacemarkProperty(), AddInitialProperties()]
+			[CreatePlacemarkProperty(), AddInitialProperties()]
 		}
 		
 	}

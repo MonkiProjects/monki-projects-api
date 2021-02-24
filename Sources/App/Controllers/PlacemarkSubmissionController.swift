@@ -11,7 +11,7 @@ import Vapor
 import Models
 import MonkiMapModel
 
-struct PlacemarkSubmissionController: RouteCollection {
+internal struct PlacemarkSubmissionController: RouteCollection {
 	
 	typealias Submission = Placemark.Submission
 	typealias Review = Submission.Review
@@ -62,9 +62,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 					.filter(\.$placemark.$id == placemarkId)
 					.first()
 			}
-			.guard({ $0 == nil },
-				   else: Abort(.forbidden, reason: "You cannot submit a placemark twice!")
-			)
+			.guard(\.isNil, else: Abort(.forbidden, reason: "You cannot submit a placemark twice!"))
 			.transform(to: ())
 		
 		let submitPlacemarkFuture = guardNoDuplicate
@@ -180,7 +178,8 @@ struct PlacemarkSubmissionController: RouteCollection {
 			}
 			.filter(\.$placemark.$id == placemarkId)
 			// Get last submission
-			.sort(\.$createdAt, .descending).first()
+			.sort(\.$createdAt, .descending)
+			.first()
 			.unwrap(or: Abort(.notFound, reason: "No placemark submission found"))
 	}
 	
@@ -223,9 +222,7 @@ struct PlacemarkSubmissionController: RouteCollection {
 			.join(SubmissionModel.self, on: \ReviewModel.$submission.$id == \SubmissionModel.$id)
 			.filter(SubmissionModel.self, \.$placemark.$id == placemarkId)
 			.first()
-			.guard({ $0 == nil },
-				   else: Abort(.forbidden, reason: "You cannot review a submission twice!")
-			)
+			.guard(\.isNil, else: Abort(.forbidden, reason: "You cannot review a submission twice!"))
 			.transform(to: ())
 	}
 	

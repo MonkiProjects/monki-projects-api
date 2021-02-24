@@ -16,7 +16,7 @@ extension PlacemarkModel.Kind {
 		typealias Migrated = PlacemarkModel.Kind
 		
 		static var all: [Migration] {
-			return Category.Migrations.all
+			Category.Migrations.all
 				+ [CreatePlacemarkKind(), AddInitialKinds()]
 		}
 		
