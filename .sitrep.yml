@@ -1,0 +1,6 @@
+excluded:
+  - .git
+  - .github
+  - .build
+  - .swiftpm
+  - Tests
