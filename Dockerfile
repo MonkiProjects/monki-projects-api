@@ -1,7 +1,7 @@
 # ================================
 # Build image
 # ================================
-FROM swift:5.3-focal as build
+FROM swift:5.3.3-focal as build
 
 # Set up a build area
 WORKDIR /build
@@ -22,7 +22,7 @@ RUN swift build --enable-test-discovery -c release
 # ================================
 # Run image
 # ================================
-FROM swift:5.3-focal-slim
+FROM swift:5.3.3-focal-slim
 
 # Create a vapor user and group with /run as its home directory
 RUN useradd --user-group --create-home --system --skel /dev/null --home-dir /run vapor
