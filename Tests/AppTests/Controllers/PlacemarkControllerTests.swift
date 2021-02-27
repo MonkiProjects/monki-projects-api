@@ -288,7 +288,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 				req.headers.bearerAuthorization = bearerAuth
 			},
 			afterResponse: { res in
-				try res.assertStatus(.ok) {
+				try res.assertStatus(.noContent) {
 					XCTAssertEqual(res.body.string, "")
 				}
 			}

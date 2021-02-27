@@ -199,7 +199,7 @@ internal struct PlacemarkController: RouteCollection {
 		
 		return deleteDetailsFuture
 			.flatMap { $0.delete(on: req.db) }
-			.transform(to: .ok)
+			.transform(to: .noContent)
 	}
 	
 	func listPlacemarkFeatures(req: Request) -> EventLoopFuture<[Placemark.Property.Localized]> {
