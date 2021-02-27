@@ -79,7 +79,7 @@ internal struct PlacemarkSubmissionController: RouteCollection {
 			}
 		
 		return createSubmissionFuture
-			.flatMapThrowing { try $0.asPublic() }
+			.flatMap { $0.asPublic(on: req.db) }
 			.flatMap { $0.encodeResponse(status: .created, for: req) }
 	}
 	
@@ -87,7 +87,7 @@ internal struct PlacemarkSubmissionController: RouteCollection {
 		let placemarkId = try req.parameters.require("placemarkId", as: PlacemarkModel.IDValue.self)
 		
 		return getLastSubmission(for: placemarkId, in: req.db)
-			.flatMapThrowing { try $0.asPublic() }
+			.flatMap { $0.asPublic(on: req.db) }
 	}
 	
 	func listPlacemarkSubmissionReviews(req: Request) throws -> EventLoopFuture<[Review.Public]> {
@@ -95,7 +95,7 @@ internal struct PlacemarkSubmissionController: RouteCollection {
 		
 		return getLastSubmission(for: placemarkId, in: req.db)
 			.map { $0.reviews }
-			.flatMapEachThrowing { try $0.asPublic() }
+			.flatMapEach(on: req.eventLoop) { $0.asPublic(on: req.db) }
 	}
 	
 	func addPlacemarkSubmissionReview(req: Request) throws -> EventLoopFuture<Review.Public> {
@@ -148,10 +148,9 @@ internal struct PlacemarkSubmissionController: RouteCollection {
 			.flatMapThrowing(addReview)
 			.flatMap { $0 }
 			.passthrough(addIssues)
-			.passthroughAfter { loadRelations(of: $0, on: req.db) }
 		
 		return future
-			.flatMapThrowing { try $0.asPublic() }
+			.flatMap { $0.asPublic(on: req.db) }
 	}
 	
 	// MARK: - Helper functions
@@ -223,23 +222,6 @@ internal struct PlacemarkSubmissionController: RouteCollection {
 			.filter(SubmissionModel.self, \.$placemark.$id == placemarkId)
 			.first()
 			.guard(\.isNil, else: Abort(.forbidden, reason: "You cannot review a submission twice!"))
-			.transform(to: ())
-	}
-	
-	private func loadRelations(of review: ReviewModel, on database: Database) -> EventLoopFuture<Void> {
-		review.$submission.load(on: database)
-			.flatMap { review.$issues.load(on: database) }
-			.map { review.issues }
-			.flatMapEach(on: database.eventLoop) { issue in
-				issue.$review.load(on: database)
-					.transform(to: issue.review)
-			}
-			.flatMapEach(on: database.eventLoop) { review in
-				review.$submission.load(on: database)
-					.flatMap { review.$reviewer.load(on: database) }
-					.transform(to: review.submission)
-			}
-			.flatMapEach(on: database.eventLoop) { $0.$placemark.load(on: database) }
 			.transform(to: ())
 	}
 	

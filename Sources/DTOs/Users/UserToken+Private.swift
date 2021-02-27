@@ -7,6 +7,7 @@
 //
 
 import Vapor
+import Fluent
 import Models
 import MonkiProjectsModel
 
@@ -21,13 +22,17 @@ extension UserModel.Token {
 		
 	}
 	
-	public func asPrivate() throws -> Private {
-		try Private(
-			value: self.value,
-			user: self.user.asPublicFull(),
-			expiresAt: self.expiresAt,
-			createdAt: self.createdAt.require()
-		)
+	public func asPrivate(on database: Database) -> EventLoopFuture<Private> {
+		let loadRelationsFuture = self.$user.load(on: database)
+		
+		return loadRelationsFuture.flatMapThrowing {
+			try Private(
+				value: self.value,
+				user: self.user.asPublicFull(),
+				expiresAt: self.expiresAt,
+				createdAt: self.createdAt.require()
+			)
+		}
 	}
 	
 }

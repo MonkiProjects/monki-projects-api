@@ -70,10 +70,6 @@ internal struct PlacemarkController: RouteCollection {
 	) throws -> EventLoopFuture<[Placemark.Public]> {
 		PlacemarkModel.query(on: database)
 			.filter(\.$state == state)
-			.with(\.$kind) { kind in
-				kind.with(\.$category)
-			}
-			.with(\.$creator)
 			.all()
 			.asPublic(on: database)
 	}
@@ -86,10 +82,6 @@ internal struct PlacemarkController: RouteCollection {
 		PlacemarkModel.query(on: database)
 			.filter(\.$creator.$id == userId)
 			.filter(\.$state == state)
-			.with(\.$kind) { kind in
-				kind.with(\.$category)
-			}
-			.with(\.$creator)
 			.all()
 			.asPublic(on: database)
 	}
@@ -121,13 +113,7 @@ internal struct PlacemarkController: RouteCollection {
 		}
 		
 		// Save Placemark in database
-		let createPlacemarkFuture = placemarkFuture.flatMap { placemark in
-			placemark.create(on: req.db)
-				.flatMap { placemark.$kind.load(on: req.db) }
-				.flatMap { placemark.kind.$category.load(on: req.db) }
-				.flatMap { placemark.$creator.load(on: req.db) }
-				.transform(to: placemark)
-		}
+		let createPlacemarkFuture = placemarkFuture.passthroughAfter { $0.create(on: req.db) }
 		
 		// FIXME: Add properties
 		
@@ -171,7 +157,7 @@ internal struct PlacemarkController: RouteCollection {
 			}
 		
 		return reverseGeocodeLocationFuture
-			.flatMapThrowing { try $0.asPublic(on: req.db) }
+			.flatMap { $0.asPublic(on: req.db) }
 			.flatMap { $0.encodeResponse(status: .created, for: req) }
 	}
 	
@@ -179,14 +165,7 @@ internal struct PlacemarkController: RouteCollection {
 		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
 		return PlacemarkModel.find(placemarkId, on: req.db)
 			.unwrap(or: Abort(.notFound, reason: "Placemark not found"))
-			.flatMap { placemark in
-				placemark.$kind.load(on: req.db)
-					.flatMap { placemark.kind.$category.load(on: req.db) }
-					.flatMap { placemark.$creator.load(on: req.db) }
-					.transform(to: placemark)
-			}
-			.flatMapThrowing { try $0.asPublic(on: req.db) }
-			.flatMap { $0 }
+			.flatMap { $0.asPublic(on: req.db) }
 	}
 	
 	func deletePlacemark(req: Request) throws -> EventLoopFuture<HTTPStatus> {

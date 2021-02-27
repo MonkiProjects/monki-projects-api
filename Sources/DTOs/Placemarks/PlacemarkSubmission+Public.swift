@@ -7,22 +7,30 @@
 //
 
 import Vapor
+import Fluent
 import Models
 import MonkiMapModel
 
 extension PlacemarkModel.Submission {
 	
-	public func asPublic() throws -> MonkiMapModel.Placemark.Submission.Public {
-		try .init(
-			id: self.requireID(),
-			placemark: self.$placemark.id,
-			state: self.state,
-			reviews: self.reviews.map { try $0.asPublic() },
-			positiveReviews: self.positiveReviews,
-			negativeReviews: self.negativeReviews,
-			createdAt: self.createdAt.require(),
-			updatedAt: self.updatedAt.require()
-		)
+	public func asPublic(
+		on database: Database
+	) -> EventLoopFuture<MonkiMapModel.Placemark.Submission.Public> {
+		let reviewsFuture = database.eventLoop.makeSucceededFuture(self.reviews)
+			.flatMapEach(on: database.eventLoop) { $0.asPublic(on: database) }
+		
+		return reviewsFuture.flatMapThrowing { reviews in
+			try .init(
+				id: self.requireID(),
+				placemark: self.$placemark.id,
+				state: self.state,
+				reviews: reviews,
+				positiveReviews: self.positiveReviews,
+				negativeReviews: self.negativeReviews,
+				createdAt: self.createdAt.require(),
+				updatedAt: self.updatedAt.require()
+			)
+		}
 	}
 	
 }

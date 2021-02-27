@@ -14,11 +14,14 @@ extension EventLoopFuture where Value == [PlacemarkModel] {
 	
 	func asPublic(on database: Database) -> EventLoopFuture<[Placemark.Public]> {
 		self
-			.mapEachCompact {
-				try? $0.asPublic(on: database)
+			.mapEach {
+				$0.asPublic(on: database)
+					// Map `Placemark.Public` to `Placemark.Public?` to allow `nil` recover
 					.map(Optional.init)
+					// Recover errors by mapping to `nil`
 					.recover { _ in nil }
 			}
+			// Skip `nil` values
 			.flatMapEachCompact(on: database.eventLoop) { $0 }
 	}
 	

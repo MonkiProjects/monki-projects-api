@@ -26,8 +26,7 @@ internal struct AuthController: RouteCollection {
 		let token = try user.generateToken()
 		
 		return token.save(on: req.db)
-			.flatMap { token.$user.load(on: req.db) }
-			.flatMapThrowing { try token.asPrivate() }
+			.flatMap { token.asPrivate(on: req.db) }
 	}
 	
 }
