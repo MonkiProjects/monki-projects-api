@@ -158,6 +158,72 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		}
 	}
 	
+	/// Tests `GET /v1/placemarks?state=submitted` when unauthorized.
+	///
+	/// - GIVEN:
+	///     - Nothing
+	/// - WHEN:
+	///     - Fetching all submitted placemarks
+	/// - THEN:
+	///     - `HTTP` status should be `200 OK`
+	func testListSubmittedPlacemarks_Unauthorized() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		try app.test(.GET, "v1/placemarks?state=submitted") { res in
+			try res.assertStatus(.ok) {}
+		}
+	}
+	
+	/// Tests `GET /v1/placemarks?state=submitted` when authorized.
+	///
+	/// - GIVEN:
+	///     - A user
+	/// - WHEN:
+	///     - Fetching all submitted placemarks
+	///     - Logged in as the user
+	/// - THEN:
+	///     - `HTTP` status should be `200 OK`
+	func testListSubmittedPlacemarks_Authorized() throws {
+		let app = try XCTUnwrap(Self.app)
+		let userToken = try XCTUnwrap(Self.userToken)
+		
+		try app.test(
+			.GET, "v1/placemarks?state=submitted",
+			beforeRequest: { req in
+				let bearerAuth = BearerAuthorization(token: userToken.value)
+				req.headers.bearerAuthorization = bearerAuth
+			},
+			afterResponse: { res in
+				try res.assertStatus(.ok) {}
+			}
+		)
+	}
+	
+	/// Tests `GET /v1/placemarks?state=private` when authorized.
+	///
+	/// - GIVEN:
+	///     - A user
+	/// - WHEN:
+	///     - Fetching all private placemarks
+	///     - Logged in as the user
+	/// - THEN:
+	///     - `HTTP` status should be `200 OK`
+	func testListPrivatePlacemarks_Authorized() throws {
+		let app = try XCTUnwrap(Self.app)
+		let userToken = try XCTUnwrap(Self.userToken)
+		
+		try app.test(
+			.GET, "v1/placemarks?state=private",
+			beforeRequest: { req in
+				let bearerAuth = BearerAuthorization(token: userToken.value)
+				req.headers.bearerAuthorization = bearerAuth
+			},
+			afterResponse: { res in
+				try res.assertStatus(.ok) {}
+			}
+		)
+	}
+	
 	/// Creates a new spot
 	/// Checks if status is 200 OK with placemark data
 	/// And then checks if spot is actually stored on DB by fetching it
@@ -425,6 +491,23 @@ internal final class PlacemarkControllerTests: AppTestCase {
 				)
 			}
 		)
+	}
+	
+	/// Tests `GET /v1/placemarks?state=private` when unauthorized.
+	///
+	/// - GIVEN:
+	///     - Nothing
+	/// - WHEN:
+	///     - Fetching all private placemarks
+	/// - THEN:
+	///     - `HTTP` status should be `401 Unauthorized`
+	///     - `body` should be `"Unauthorized"`
+	func testListPrivatePlacemarks_Unauthorized() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		try app.test(.GET, "v1/placemarks?state=private") { res in
+			try res.assertError(status: .unauthorized, reason: "Unauthorized")
+		}
 	}
 	
 	/// Tries to get details for an inexistent placemark.
