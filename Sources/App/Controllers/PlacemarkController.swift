@@ -22,7 +22,9 @@ internal struct PlacemarkController: RouteCollection {
 		tokenProtected.post(use: createPlacemark)
 		
 		// GET /placemarks
-		placemarks.get(use: listPlacemarks)
+		tokenProtected
+			.grouped(RequireAuthForPrivatePlacemarkStates())
+			.get(use: listPlacemarks)
 		
 		try placemarks.group(":placemarkId") { placemark in
 			// GET /placemarks/{placemarkId}
@@ -55,8 +57,8 @@ internal struct PlacemarkController: RouteCollection {
 		case .unknown:
 			throw Abort(.forbidden, reason: "Fetching placemarks in 'unknown' state is impossible.")
 		case .draft, .local, .private:
-			// TODO: Return user's private placemarks if a token was provided
-			throw Abort(.notImplemented, reason: "Fetching your \(state) placemarks is not yet possible.")
+			let userId = try req.auth.require(UserModel.self).requireID()
+			return try listUserPlacemarks(userId: userId, state: state, in: req.db)
 		case .submitted, .published, .rejected:
 			return try listPlacemarks(state: state, in: req.db)
 		}
@@ -73,12 +75,23 @@ internal struct PlacemarkController: RouteCollection {
 			}
 			.with(\.$creator)
 			.all()
-			.mapEachCompact {
-				try? $0.asPublic(on: database)
-					.map(Optional.init)
-					.recover { _ in nil }
+			.asPublic(on: database)
+	}
+	
+	func listUserPlacemarks(
+		userId: UserModel.IDValue,
+		state: Placemark.State,
+		in database: Database
+	) throws -> EventLoopFuture<[Placemark.Public]> {
+		PlacemarkModel.query(on: database)
+			.filter(\.$creator.$id == userId)
+			.filter(\.$state == state)
+			.with(\.$kind) { kind in
+				kind.with(\.$category)
 			}
-			.flatMapEachCompact(on: database.eventLoop) { $0 }
+			.with(\.$creator)
+			.all()
+			.asPublic(on: database)
 	}
 	
 	func createPlacemark(req: Request) throws -> EventLoopFuture<Response> {
