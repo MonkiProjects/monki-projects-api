@@ -240,10 +240,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 			kind: .trainingSpot,
 			caption: "Test caption",
 			images: nil,
-			features: nil,
-			goodForTraining: nil,
-			benefits: nil,
-			hazards: nil
+			properties: [:]
 		)
 		// Delete possibly created placemark
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
@@ -274,10 +271,10 @@ internal final class PlacemarkControllerTests: AppTestCase {
 					XCTAssertEqual(placemark.category, .spot)
 					XCTAssertEqual(placemark.details.caption, create.caption)
 					XCTAssertEqual(placemark.details.images, [])
-					XCTAssertEqual(placemark.details.features, [])
-					XCTAssertEqual(placemark.details.goodForTraining, [])
-					XCTAssertEqual(placemark.details.benefits, [])
-					XCTAssertEqual(placemark.details.hazards, [])
+					XCTAssertEqual(placemark.details.properties[.feature], [])
+					XCTAssertEqual(placemark.details.properties[.technique], [])
+					XCTAssertEqual(placemark.details.properties[.benefit], [])
+					XCTAssertEqual(placemark.details.properties[.hazard], [])
 					XCTAssertNotNil(placemark.details.satelliteImage)
 					XCTAssertNil(placemark.details.location)
 					XCTAssertNotNil(placemark.createdAt)
@@ -468,10 +465,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 			kind: .trainingSpot,
 			caption: "Test caption",
 			images: nil,
-			features: nil,
-			goodForTraining: nil,
-			benefits: nil,
-			hazards: nil
+			properties: [:]
 		)
 		// Delete possibly created placemark
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
