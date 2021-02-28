@@ -18,11 +18,13 @@ extension Placemark.Create: Content, Validatable {
 		validations.add("kind", as: String.self)
 		validations.add("caption", as: String.self)
 		validations.add("images", as: [URL].self, required: false)
-		// FIXME: Validate format
-		validations.add("features", as: [String].self, required: false)
-		validations.add("goodForTraining", as: [String].self, required: false)
-		validations.add("benefits", as: [String].self, required: false)
-		validations.add("hazards", as: [String].self, required: false)
+		validations.add("properties", required: false) { validations in
+			for kind in Placemark.Kind.allCases {
+				if let key = ValidationKey(stringValue: kind.rawValue) {
+					validations.add(key, as: [String].self, required: false)
+				}
+			}
+		}
 	}
 	
 }

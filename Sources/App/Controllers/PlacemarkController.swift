@@ -115,17 +115,39 @@ internal struct PlacemarkController: RouteCollection {
 		// Save Placemark in database
 		let createPlacemarkFuture = placemarkFuture.passthroughAfter { $0.create(on: req.db) }
 		
-		// FIXME: Add properties
+		// Add properties
+		let addPropertiesFuture = { (details: PlacemarkModel.Details) -> EventLoopFuture<Void> in
+			req.eventLoop.makeSucceededFuture(create.properties)
+				.sequencedFlatMapEach { (kind, propertyIds) in
+					req.eventLoop.makeSucceededFuture(propertyIds)
+						.sequencedFlatMapEach { propertyId in
+							PlacemarkModel.Details.Property.query(on: req.db)
+								.filter(\.$kind == kind)
+								.filter(\.$humanId == propertyId)
+								.first()
+								.unwrap(or: Abort(
+									.badRequest,
+									reason: "Invalid property: { \"kind\": \"\(kind)\", \"id\": \"\(propertyId)\" }"
+								))
+								.flatMap { property in
+									details.$properties.attach(property, method: .ifNotExists, on: req.db)
+								}
+						}
+				}
+		}
 		
 		// Create placemark details
 		let createDetailsFuture = createPlacemarkFuture
-			.passthroughAfter { placemark in
-				try PlacemarkModel.Details(
+			.passthroughAfter { placemark -> EventLoopFuture<Void> in
+				let details = try PlacemarkModel.Details(
 					placemarkId: placemark.requireID(),
 					caption: create.caption,
 					images: (create.images ?? []).map { $0.absoluteString }
 				)
-				.create(on: req.db)
+				
+				return details.create(on: req.db)
+					.transform(to: details)
+					.flatMap(addPropertiesFuture)
 			}
 		
 		// Trigger satellite view loading
