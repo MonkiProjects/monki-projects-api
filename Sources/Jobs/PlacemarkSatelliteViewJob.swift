@@ -49,7 +49,8 @@ public struct PlacemarkSatelliteViewJob: Job {
 			.flatMap { context.application.client.post($0) }
 			.flatMapThrowing { (res: ClientResponse) -> String in
 				guard res.status == .ok else {
-					throw Abort(.internalServerError, reason: "Could not upload satellite image.")
+					// TODO: Add logs
+					throw Abort(.internalServerError, reason: "Could not upload satellite image: \(res.status)")
 				}
 				
 				return try res.content.decode(UploadResponse.self).publicId

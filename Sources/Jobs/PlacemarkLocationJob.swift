@@ -53,7 +53,8 @@ public struct PlacemarkLocationJob: Job {
 			.flatMap { context.application.client.get($0) }
 			.flatMapThrowing { (res: ClientResponse) -> ReverseGeocodingResponse in
 				guard res.status == .ok else {
-					throw Abort(.internalServerError, reason: "Could not call reverse geocoding API.")
+					// TODO: Add logs
+					throw Abort(.internalServerError, reason: "Could not call reverse geocoding API: \(res.status)")
 				}
 				
 				// Map "application/vnd.geo+json" to "application/json" (to fix decoding)
