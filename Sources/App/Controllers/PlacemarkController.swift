@@ -152,30 +152,38 @@ internal struct PlacemarkController: RouteCollection {
 		
 		// Trigger satellite view loading
 		let loadSatelliteViewFuture = createDetailsFuture
-			.passthroughAfter { placemark in
-				req.queues(.placemarks)
-					.dispatch(
-						PlacemarkSatelliteViewJob.self,
-						.init(
-							placemarkId: try placemark.requireID(),
-							latitude: placemark.latitude,
-							longitude: placemark.longitude
+			.passthroughAfter { placemark -> EventLoopFuture<Void> in
+				if req.application.environment == .testing {
+					return req.eventLoop.makeSucceededFuture(())
+				} else {
+					return req.queues(.placemarks)
+						.dispatch(
+							PlacemarkSatelliteViewJob.self,
+							.init(
+								placemarkId: try placemark.requireID(),
+								latitude: placemark.latitude,
+								longitude: placemark.longitude
+							)
 						)
-					)
+				}
 			}
 		
 		// Trigger location reverse geocoding
 		let reverseGeocodeLocationFuture = loadSatelliteViewFuture
-			.passthroughAfter { placemark in
-				req.queues(.placemarks)
-					.dispatch(
-						PlacemarkLocationJob.self,
-						.init(
-							placemarkId: try placemark.requireID(),
-							latitude: placemark.latitude,
-							longitude: placemark.longitude
+			.passthroughAfter { placemark -> EventLoopFuture<Void> in
+				if req.application.environment == .testing {
+					return req.eventLoop.makeSucceededFuture(())
+				} else {
+					return req.queues(.placemarks)
+						.dispatch(
+							PlacemarkLocationJob.self,
+							.init(
+								placemarkId: try placemark.requireID(),
+								latitude: placemark.latitude,
+								longitude: placemark.longitude
+							)
 						)
-					)
+				}
 			}
 		
 		return reverseGeocodeLocationFuture

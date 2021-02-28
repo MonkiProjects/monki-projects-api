@@ -26,7 +26,7 @@ internal class AppTestCase: XCTestCase {
 			app.databases.use(.sqlite(.memory), as: .sqlite)
 			
 			// Configure queues
-			try app.queues.use(.redis(url: Environment.get("REDIS_URL") ?? "redis://127.0.0.1:6379"))
+//			try app.queues.use(.redis(url: Environment.get("REDIS_URL") ?? "redis://127.0.0.1:6379"))
 			
 			// Start jobs
 //			Jobs.addAll(to: app)
