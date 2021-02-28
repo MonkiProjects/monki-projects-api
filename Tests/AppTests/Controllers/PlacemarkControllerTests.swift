@@ -227,7 +227,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 	/// Creates a new spot
 	/// Checks if status is 200 OK with placemark data
 	/// And then checks if spot is actually stored on DB by fetching it
-	func testPostSubmitsPlacemark() throws { // swiftlint:disable:this function_body_length
+	func testPostCreatesPlacemark() throws { // swiftlint:disable:this function_body_length
 		let app = try XCTUnwrap(Self.app)
 		let user = try XCTUnwrap(Self.user)
 		let userToken = try XCTUnwrap(Self.userToken)
@@ -240,7 +240,12 @@ internal final class PlacemarkControllerTests: AppTestCase {
 			kind: .trainingSpot,
 			caption: "Test caption",
 			images: nil,
-			properties: [:]
+			properties: [
+				.feature: ["small_wall", "medium_wall"],
+				.technique: ["double_kong"],
+				.benefit: ["covered_area"],
+				.hazard: ["high_drop"],
+			]
 		)
 		// Delete possibly created placemark
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
@@ -271,10 +276,10 @@ internal final class PlacemarkControllerTests: AppTestCase {
 					XCTAssertEqual(placemark.category, .spot)
 					XCTAssertEqual(placemark.details.caption, create.caption)
 					XCTAssertEqual(placemark.details.images, [])
-					XCTAssertEqual(placemark.details.properties[.feature], [])
-					XCTAssertEqual(placemark.details.properties[.technique], [])
-					XCTAssertEqual(placemark.details.properties[.benefit], [])
-					XCTAssertEqual(placemark.details.properties[.hazard], [])
+					XCTAssertEqual(placemark.details.properties[.feature]?.count, 2)
+					XCTAssertEqual(placemark.details.properties[.technique]?.count, 1)
+					XCTAssertEqual(placemark.details.properties[.benefit]?.count, 1)
+					XCTAssertEqual(placemark.details.properties[.hazard]?.count, 1)
 					XCTAssertNotNil(placemark.details.satelliteImage)
 					XCTAssertNil(placemark.details.location)
 					XCTAssertNotNil(placemark.createdAt)
@@ -482,6 +487,51 @@ internal final class PlacemarkControllerTests: AppTestCase {
 				try res.assertError(
 					status: .badRequest,
 					reason: "name is less than minimum of 3 character(s)"
+				)
+			}
+		)
+	}
+	
+	/// Tries to create a placemark with an invalid property ID.
+	///
+	/// - GIVEN:
+	///     - A user
+	/// - WHEN:
+	///     - Creating a placemark with an invalid property ID
+	/// - THEN:
+	///     - `HTTP` status should be `400 Bad Request`
+	///     - `body` should be `"Invalid property: { "kind": "feature", "id": "123" }"`
+	func testCreateSpotWithInvalidProperty() throws {
+		let app = try XCTUnwrap(Self.app)
+		let userToken = try XCTUnwrap(Self.userToken)
+		
+		// Create placemark
+		let create = Placemark.Create(
+			name: "Test name",
+			latitude: Double.random(in: -90...90),
+			longitude: Double.random(in: -180...180),
+			kind: .trainingSpot,
+			caption: "Test caption",
+			images: nil,
+			properties: [
+				.feature: ["123"],
+			]
+		)
+		// Delete possibly created placemark
+		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
+		
+		try app.test(
+			.POST, "v1/placemarks",
+			beforeRequest: { req in
+				let bearerAuth = BearerAuthorization(token: userToken.value)
+				req.headers.bearerAuthorization = bearerAuth
+				
+				try req.content.encode(create)
+			},
+			afterResponse: { res in
+				try res.assertError(
+					status: .badRequest,
+					reason: "Invalid property: { \"kind\": \"feature\", \"id\": \"123\" }"
 				)
 			}
 		)
