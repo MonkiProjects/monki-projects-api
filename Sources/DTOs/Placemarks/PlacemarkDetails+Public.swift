@@ -30,24 +30,12 @@ extension PlacemarkModel.Details {
 		return loadRelationsFuture.flatMapThrowing { location in
 			typealias Properties = [MonkiMapModel.Placemark.Property.Localized]
 			
-			var features = Properties()
-			var goodForTraining = Properties()
-			var benefits = Properties()
-			var hazards = Properties()
+			var properties: [MonkiMapModel.Placemark.Property.Kind: Properties] = [:]
+			MonkiMapModel.Placemark.Property.Kind.allCases.forEach { properties[$0] = [] }
 			
 			for property in self.properties {
 				let localized = try property.localized(in: .en)
-				
-				switch localized.kind {
-				case .feature:
-					features.append(localized)
-				case .technique:
-					goodForTraining.append(localized)
-				case .benefit:
-					benefits.append(localized)
-				case .hazard:
-					hazards.append(localized)
-				}
+				properties[localized.kind]?.append(localized)
 			}
 			
 			return try MonkiMapModel.Placemark.Details.Public(
@@ -55,10 +43,7 @@ extension PlacemarkModel.Details {
 				satelliteImage: cloudinary.image(withId: self.satelliteImageId).requireURL(),
 				images: self.images.map(URL.init(string:)).compactMap { $0 },
 				location: location?.asPublic(),
-				features: features,
-				goodForTraining: goodForTraining,
-				benefits: benefits,
-				hazards: hazards
+				properties: properties
 			)
 		}
 	}

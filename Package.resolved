@@ -69,7 +69,7 @@
         "repositoryURL": "https://github.com/MonkiProjects/monki-map-model-swift.git",
         "state": {
           "branch": "main",
-          "revision": "085b680638b04bea0b8875775c481c8dc29ac54e",
+          "revision": "028a5bfc844d2234949785542ac96c6d22546e02",
           "version": null
         }
       },
@@ -78,7 +78,7 @@
         "repositoryURL": "https://github.com/MonkiProjects/monki-projects-model-swift.git",
         "state": {
           "branch": "main",
-          "revision": "8f5c1f6aade634a60ee5baf74f56ab98907dd94d",
+          "revision": "f7d376c065b980bc7e1b075a71e23be01428d7a7",
           "version": null
         }
       },
@@ -105,8 +105,8 @@
         "repositoryURL": "https://github.com/vapor/postgres-nio.git",
         "state": {
           "branch": null,
-          "revision": "cdb18d18a74b173701e7bf378cc3a249e2ffd8d1",
-          "version": "1.5.0"
+          "revision": "fa93d76b3fcddcd62a996d645a7971f2003c9b84",
+          "version": "1.5.1"
         }
       },
       {
@@ -267,8 +267,8 @@
         "repositoryURL": "https://github.com/vapor/vapor.git",
         "state": {
           "branch": null,
-          "revision": "8c68cc17b7f4a95010c47d06707cfb1734e4629b",
-          "version": "4.41.0"
+          "revision": "07478e1edb9376f96c1fd5d797c5f401165d4ec2",
+          "version": "4.41.1"
         }
       },
       {
