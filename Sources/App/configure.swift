@@ -27,6 +27,11 @@ public func configure(_ app: Application) throws {
 	decoder.dateDecodingStrategy = .iso8601
 	ContentConfiguration.global.use(decoder: decoder, for: .json)
 	
+	// Register middlewares
+	if app.environment == .development {
+		app.middleware.use(RouteLoggingMiddleware(logLevel: .debug))
+	}
+	
 	// Register database
 	if app.environment != .testing {
 		app.databases.use(.postgres(
