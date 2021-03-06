@@ -16,7 +16,7 @@ extension UserModel.Token {
 	public struct Private: Content {
 		
 		let value: String
-		let user: MonkiProjectsModel.User.Public.Full
+		let user: MonkiProjectsModel.User.Private
 		let expiresAt: Date?
 		let createdAt: Date
 		
@@ -28,7 +28,7 @@ extension UserModel.Token {
 		return loadRelationsFuture.flatMapThrowing {
 			try Private(
 				value: self.value,
-				user: self.user.asPublicFull(),
+				user: self.user.asPrivate(),
 				expiresAt: self.expiresAt,
 				createdAt: self.createdAt.require()
 			)
