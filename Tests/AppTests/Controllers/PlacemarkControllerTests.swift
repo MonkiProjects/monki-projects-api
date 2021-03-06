@@ -268,8 +268,8 @@ internal final class PlacemarkControllerTests: AppTestCase {
 					let placemark = try res.content.decode(Placemark.Public.self)
 					
 					XCTAssertEqual(placemark.name, create.name)
-					XCTAssertEqual(placemark.latitude, create.latitude)
-					XCTAssertEqual(placemark.longitude, create.longitude)
+					XCTAssertTrue(placemark.latitude.distance(to: create.latitude) < 0.001)
+					XCTAssertTrue(placemark.longitude.distance(to: create.longitude) < 0.001)
 					XCTAssertEqual(placemark.creator, try user.requireID())
 					XCTAssertEqual(placemark.state, .private)
 					XCTAssertEqual(placemark.kind, .trainingSpot)
@@ -580,7 +580,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 	///     - Creating a placemark with an invalid `Bearer` token
 	/// - THEN:
 	///     - `HTTP` status should be `401 Unauthorized`
-	///     - `body` should be `"Unauthorized"`
+	///     - `body` should be `"Invalid authorization token."`
 	func testCreatePlacemarkInvalidBearerToken() throws {
 		let app = try XCTUnwrap(Self.app)
 		
@@ -592,7 +592,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 				req.headers.bearerAuthorization = bearerAuth
 			},
 			afterResponse: { res in
-				try res.assertError(status: .unauthorized, reason: "Unauthorized")
+				try res.assertError(status: .unauthorized, reason: "Invalid authorization token.")
 			}
 		)
 	}

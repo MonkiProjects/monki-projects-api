@@ -402,7 +402,7 @@ internal class UserControllerTests: AppTestCase {
 	///     - Deleting a user with invalid `Bearer` token
 	/// - THEN:
 	///     - `HTTP` status should be `401 Unauthorized`
-	///     - `body` should be `"Unauthorized"`
+	///     - `body` should be `"Invalid authorization token."`
 	func testDeleteUserWithInvalidBearerToken() throws {
 		let app = try XCTUnwrap(Self.app)
 		
@@ -420,7 +420,7 @@ internal class UserControllerTests: AppTestCase {
 				req.headers.bearerAuthorization = bearerAuth
 			},
 			afterResponse: { res in
-				try res.assertError(status: .unauthorized, reason: "Unauthorized")
+				try res.assertError(status: .unauthorized, reason: "Invalid authorization token.")
 			}
 		)
 	}
@@ -433,7 +433,7 @@ internal class UserControllerTests: AppTestCase {
 	///     - Deleting a user with `Basic` auth
 	/// - THEN:
 	///     - `HTTP` status should be `401 Unauthorized`
-	///     - `body` should be `"Unauthorized"`
+	///     - `body` should be `"Invalid authorization token."`
 	func testDeleteUserWithBasicAuth() throws {
 		let app = try XCTUnwrap(Self.app)
 		
@@ -453,7 +453,7 @@ internal class UserControllerTests: AppTestCase {
 				req.headers.basicAuthorization = basicAuth
 			},
 			afterResponse: { res in
-				try res.assertError(status: .unauthorized, reason: "Unauthorized")
+				try res.assertError(status: .unauthorized, reason: "Invalid authorization token.")
 			}
 		)
 	}

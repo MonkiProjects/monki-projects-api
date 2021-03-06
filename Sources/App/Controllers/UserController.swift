@@ -101,7 +101,7 @@ internal struct UserController: RouteCollection {
 	}
 	
 	func deleteUser(req: Request) throws -> EventLoopFuture<HTTPStatus> {
-		let user = try req.auth.require(UserModel.self)
+		let user = try req.auth.require(UserModel.self, with: .bearer, in: req)
 		let userId = try req.parameters.require("userId", as: UUID.self)
 		
 		// Do additional validations

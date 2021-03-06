@@ -22,7 +22,7 @@ internal struct AuthController: RouteCollection {
 	}
 	
 	func login(req: Request) throws -> EventLoopFuture<UserModel.Token.Private> {
-		let user = try req.auth.require(UserModel.self)
+		let user = try req.auth.require(UserModel.self, with: .basic, in: req)
 		let token = try user.generateToken()
 		
 		return token.save(on: req.db)

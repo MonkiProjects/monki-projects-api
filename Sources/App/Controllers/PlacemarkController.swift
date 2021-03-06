@@ -57,7 +57,7 @@ internal struct PlacemarkController: RouteCollection {
 		case .unknown:
 			throw Abort(.forbidden, reason: "Fetching placemarks in 'unknown' state is impossible.")
 		case .draft, .local, .private:
-			let userId = try req.auth.require(UserModel.self).requireID()
+			let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
 			return try listUserPlacemarks(userId: userId, state: state, in: req.db)
 		case .submitted, .published, .rejected:
 			return try listPlacemarks(state: state, in: req.db)
@@ -87,7 +87,7 @@ internal struct PlacemarkController: RouteCollection {
 	}
 	
 	func createPlacemark(req: Request) throws -> EventLoopFuture<Response> {
-		let user = try req.auth.require(UserModel.self)
+		let user = try req.auth.require(UserModel.self, with: .bearer, in: req)
 		// Validate and decode data
 		try Placemark.Create.validate(content: req)
 		let create = try req.content.decode(Placemark.Create.self)
@@ -199,7 +199,7 @@ internal struct PlacemarkController: RouteCollection {
 	}
 	
 	func deletePlacemark(req: Request) throws -> EventLoopFuture<HTTPStatus> {
-		let user = try req.auth.require(UserModel.self)
+		let user = try req.auth.require(UserModel.self, with: .bearer, in: req)
 		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
 		
 		let placemarkFuture = PlacemarkModel.find(placemarkId, on: req.db)

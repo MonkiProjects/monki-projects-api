@@ -77,7 +77,10 @@ internal final class CurrentUserControllerTests: AppTestCase {
 				req.headers.basicAuthorization = basicAuth
 			},
 			afterResponse: { res in
-				try res.assertError(status: .unauthorized, reason: "Unauthorized")
+				try res.assertError(
+					status: .unauthorized,
+					reason: "Invalid credentials for '\(user.username)'."
+				)
 			}
 		)
 	}
@@ -92,7 +95,10 @@ internal final class CurrentUserControllerTests: AppTestCase {
 				req.headers.basicAuthorization = basicAuth
 			},
 			afterResponse: { res in
-				try res.assertError(status: .unauthorized, reason: "Unauthorized")
+				try res.assertError(
+					status: .unauthorized,
+					reason: "Invalid credentials for 'invalid_username'."
+				)
 			}
 		)
 	}
@@ -108,7 +114,7 @@ internal final class CurrentUserControllerTests: AppTestCase {
 				req.headers.bearerAuthorization = bearerAuth
 			},
 			afterResponse: { res in
-				try res.assertError(status: .unauthorized, reason: "Unauthorized")
+				try res.assertError(status: .unauthorized, reason: "Basic authorization required.")
 			}
 		)
 	}

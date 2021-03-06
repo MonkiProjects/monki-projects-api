@@ -47,7 +47,7 @@ internal struct PlacemarkSubmissionController: RouteCollection {
 	// MARK: - Route functions
 	
 	func submitPlacemark(req: Request) throws -> EventLoopFuture<Response> {
-		let userId = try req.auth.require(UserModel.self).requireID()
+		let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
 		let placemarkId = try req.parameters.require("placemarkId", as: PlacemarkModel.IDValue.self)
 		
 		let guardIsCreator = guardCreator(
@@ -99,7 +99,7 @@ internal struct PlacemarkSubmissionController: RouteCollection {
 	}
 	
 	func addPlacemarkSubmissionReview(req: Request) throws -> EventLoopFuture<Review.Public> {
-		let userId = try req.auth.require(UserModel.self).requireID()
+		let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
 		let placemarkId = try req.parameters.require("placemarkId", as: PlacemarkModel.IDValue.self)
 		
 		// Validate and decode data
