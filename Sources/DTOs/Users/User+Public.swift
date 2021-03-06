@@ -20,7 +20,7 @@ extension UserModel {
 			displayName: "<TODO>",
 			avatar: nil,
 			country: nil,
-			type: .user,
+			kind: .user,
 			updatedAt: self.updatedAt.require()
 		)
 	}
