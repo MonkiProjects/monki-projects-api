@@ -118,7 +118,7 @@ internal struct PlacemarkController: RouteCollection {
 		// Add properties
 		let addPropertiesFuture = { (details: PlacemarkModel.Details) -> EventLoopFuture<Void> in
 			req.eventLoop.makeSucceededFuture(create.properties)
-				.sequencedFlatMapEach { (kind, propertyIds) in
+				.sequencedFlatMapEach { kind, propertyIds in
 					req.eventLoop.makeSucceededFuture(propertyIds)
 						.sequencedFlatMapEach { propertyId in
 							PlacemarkModel.Details.Property.query(on: req.db)
