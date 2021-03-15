@@ -45,7 +45,7 @@ internal final class CurrentUserControllerTests: AppTestCase {
 		let expectedUser = try XCTUnwrap(Self.user)
 		
 		try app.test(
-			.POST, "v1/auth/login",
+			.POST, "auth/v1/login",
 			beforeRequest: { req in
 				let basicAuth = BasicAuthorization(username: expectedUser.username, password: Self.password)
 				req.headers.basicAuthorization = basicAuth
@@ -71,7 +71,7 @@ internal final class CurrentUserControllerTests: AppTestCase {
 		let user = try XCTUnwrap(Self.user)
 		
 		try app.test(
-			.POST, "v1/auth/login",
+			.POST, "auth/v1/login",
 			beforeRequest: { req in
 				let basicAuth = BasicAuthorization(username: user.username, password: "invalid_password")
 				req.headers.basicAuthorization = basicAuth
@@ -89,7 +89,7 @@ internal final class CurrentUserControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
-			.POST, "v1/auth/login",
+			.POST, "auth/v1/login",
 			beforeRequest: { req in
 				let basicAuth = BasicAuthorization(username: "invalid_username", password: Self.password)
 				req.headers.basicAuthorization = basicAuth
@@ -108,7 +108,7 @@ internal final class CurrentUserControllerTests: AppTestCase {
 		let userToken = try XCTUnwrap(Self.userToken)
 		
 		try app.test(
-			.POST, "v1/auth/login",
+			.POST, "auth/v1/login",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth

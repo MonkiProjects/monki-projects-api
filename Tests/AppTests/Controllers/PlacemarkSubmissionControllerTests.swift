@@ -89,7 +89,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		XCTAssertEqual(self.placemark?.state, .private)
 		
 		try app.test(
-			.POST, "v1/placemarks/\(Self.placemarkId)/submit",
+			.POST, "placemarks/v1/\(Self.placemarkId)/submit",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: token.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -133,7 +133,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let (_, submissionId, _) = try submitPlacemark(on: app.db)
 		
 		try app.test(
-			.GET, "v1/placemarks/\(Self.placemarkId)/submission",
+			.GET, "placemarks/v1/\(Self.placemarkId)/submission",
 			afterResponse: { res in
 				try res.assertStatus(.ok) {
 					let result = try res.content.decode(Submission.Public.self)
@@ -170,7 +170,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		)
 		
 		try app.test(
-			.POST, "v1/placemarks/\(Self.placemarkId)/submission/reviews",
+			.POST, "placemarks/v1/\(Self.placemarkId)/submission/reviews",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: token.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -231,7 +231,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		)
 		
 		try app.test(
-			.POST, "v1/placemarks/\(Self.placemarkId)/submission/reviews",
+			.POST, "placemarks/v1/\(Self.placemarkId)/submission/reviews",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: token.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -294,7 +294,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		)
 		
 		try app.test(
-			.POST, "v1/placemarks/\(Self.placemarkId)/submission/reviews",
+			.POST, "placemarks/v1/\(Self.placemarkId)/submission/reviews",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: token.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -336,7 +336,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		XCTAssertEqual(self.placemark?.state, .private)
 		
 		try app.test(
-			.POST, "v1/placemarks/\(Self.placemarkId)/submit",
+			.POST, "placemarks/v1/\(Self.placemarkId)/submit",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: token.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -377,7 +377,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let (_, submissionId, _) = try submitPlacemark(on: app.db)
 		
 		try app.test(
-			.POST, "v1/placemarks/\(Self.placemarkId)/submit",
+			.POST, "placemarks/v1/\(Self.placemarkId)/submit",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: token.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -427,7 +427,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		)
 		
 		try app.test(
-			.POST, "v1/placemarks/\(Self.placemarkId)/submission/reviews",
+			.POST, "placemarks/v1/\(Self.placemarkId)/submission/reviews",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: token.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -486,7 +486,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		)
 		
 		try app.test(
-			.POST, "v1/placemarks/\(Self.placemarkId)/submission/reviews",
+			.POST, "placemarks/v1/\(Self.placemarkId)/submission/reviews",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: token.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -545,7 +545,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		)
 		
 		try app.test(
-			.POST, "v1/placemarks/\(Self.placemarkId)/submission/reviews",
+			.POST, "placemarks/v1/\(Self.placemarkId)/submission/reviews",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: secondUserToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -606,7 +606,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		)
 		
 		try app.test(
-			.POST, "v1/placemarks/\(Self.placemarkId)/submission/reviews",
+			.POST, "placemarks/v1/\(Self.placemarkId)/submission/reviews",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: secondUserToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -667,7 +667,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		)
 		
 		try app.test(
-			.POST, "v1/placemarks/\(Self.placemarkId)/submission/reviews",
+			.POST, "placemarks/v1/\(Self.placemarkId)/submission/reviews",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: secondUserToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -718,7 +718,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		)
 		
 		try app.test(
-			.POST, "v1/placemarks/\(Self.placemarkId)/submission/reviews",
+			.POST, "placemarks/v1/\(Self.placemarkId)/submission/reviews",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: token.value)
 				req.headers.bearerAuthorization = bearerAuth

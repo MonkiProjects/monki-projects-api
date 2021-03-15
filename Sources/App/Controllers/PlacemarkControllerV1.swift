@@ -1,5 +1,5 @@
 //
-//  PlacemarkController.swift
+//  PlacemarkControllerV1.swift
 //  App
 //
 //  Created by Rémi Bardon on 09/01/2021.
@@ -12,39 +12,37 @@ import Models
 import Jobs
 import MonkiMapModel
 
-internal struct PlacemarkController: RouteCollection {
+internal struct PlacemarkControllerV1: RouteCollection {
 	
 	func boot(routes: RoutesBuilder) throws {
-		let placemarks = routes.grouped("placemarks")
-		
-		let tokenProtected = placemarks.grouped(UserModel.Token.authenticator())
-		// POST /placemarks
+		let tokenProtected = routes.grouped(UserModel.Token.authenticator())
+		// POST /placemarks/v1
 		tokenProtected.post(use: createPlacemark)
 		
-		// GET /placemarks
+		// GET /placemarks/v1
 		tokenProtected
 			.grouped(RequireAuthForPrivatePlacemarkStates())
 			.get(use: listPlacemarks)
 		
-		try placemarks.group(":placemarkId") { placemark in
-			// GET /placemarks/{placemarkId}
+		try routes.group(":placemarkId") { placemark in
+			// GET /placemarks/v1/{placemarkId}
 			placemark.get(use: getPlacemark)
 			
 			let tokenProtected = placemark.grouped(UserModel.Token.authenticator())
-			// DELETE /placemarks/{placemarkId}
+			// DELETE /placemarks/v1/{placemarkId}
 			tokenProtected.delete(use: deletePlacemark)
 			
-			try placemark.register(collection: PlacemarkSubmissionController())
+			try placemark.register(collection: PlacemarkSubmissionControllerV1())
 		}
 		
-		// GET /placemarks/features
-		placemarks.get("features", use: listPlacemarkFeatures)
-		// GET /placemarks/techniques
-		placemarks.get("techniques", use: listPlacemarkTechniques)
-		// GET /placemarks/benefits
-		placemarks.get("benefits", use: listPlacemarkBenefits)
-		// GET /placemarks/hazards
-		placemarks.get("hazards", use: listPlacemarkHazards)
+		// GET /placemarks/v1/features
+		routes.get("features", use: listPlacemarkFeatures)
+		// GET /placemarks/v1/techniques
+		routes.get("techniques", use: listPlacemarkTechniques)
+		// GET /placemarks/v1/benefits
+		routes.get("benefits", use: listPlacemarkBenefits)
+		// GET /placemarks/v1/hazards
+		routes.get("hazards", use: listPlacemarkHazards)
 	}
 	
 	func listPlacemarks(req: Request) throws -> EventLoopFuture<[Placemark.Public]> {

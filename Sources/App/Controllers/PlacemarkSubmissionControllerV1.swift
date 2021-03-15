@@ -11,7 +11,7 @@ import Vapor
 import Models
 import MonkiMapModel
 
-internal struct PlacemarkSubmissionController: RouteCollection {
+internal struct PlacemarkSubmissionControllerV1: RouteCollection {
 	
 	typealias Submission = Placemark.Submission
 	typealias Review = Submission.Review
@@ -22,25 +22,25 @@ internal struct PlacemarkSubmissionController: RouteCollection {
 	
 	// MARK: - Routes
 	
-	/// Routes start at `/placemarks/{placemarkId}`
+	/// Routes start at `/placemarks/v1/{placemarkId}`
 	func boot(routes: RoutesBuilder) throws {
 		let tokenProtected = routes.grouped(UserModel.Token.authenticator())
 		
-		// POST /placemarks/{placemarkId}/submit
+		// POST /placemarks/v1/{placemarkId}/submit
 		tokenProtected.post("submit", use: submitPlacemark)
 		
 		let submission = routes.grouped("submission")
 		
-		// GET /placemarks/{placemarkId}/submission
+		// GET /placemarks/v1/{placemarkId}/submission
 		submission.get(use: getPlacemarkSubmissionReport)
 		
 		let reviews = submission.grouped("reviews")
 		
-		// GET /placemarks/{placemarkId}/submission/reviews
+		// GET /placemarks/v1/{placemarkId}/submission/reviews
 		reviews.get(use: listPlacemarkSubmissionReviews)
 		
 		let tokenProtectedReviews = reviews.grouped(UserModel.Token.authenticator())
-		// POST /placemarks/{placemarkId}/submission/reviews
+		// POST /placemarks/v1/{placemarkId}/submission/reviews
 		tokenProtectedReviews.post(use: addPlacemarkSubmissionReview)
 	}
 	

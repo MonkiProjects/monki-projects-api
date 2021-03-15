@@ -1,5 +1,5 @@
 //
-//  AuthController.swift
+//  AuthControllerV1.swift
 //  App
 //
 //  Created by Rémi Bardon on 08/01/2021.
@@ -11,13 +11,11 @@ import Vapor
 import Models
 import DTOs
 
-internal struct AuthController: RouteCollection {
+internal struct AuthControllerV1: RouteCollection {
 	
 	func boot(routes: RoutesBuilder) throws {
-		let auth = routes.grouped("auth")
-		
-		let passwordProtected = auth.grouped(UserModel.authenticator())
-		// POST /auth/login
+		let passwordProtected = routes.grouped(UserModel.authenticator())
+		// POST /auth/v1/login
 		passwordProtected.post("login", use: login)
 	}
 	

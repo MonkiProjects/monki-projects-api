@@ -15,10 +15,8 @@ internal func routes(_ app: Application) throws {
 		req.redirect(to: "https://github.com/MonkiProjects/mp-api-specs")
 	}
 	
-	let v1 = app.routes.grouped("v1")
-	
-	try v1.register(collection: UserController())
-	try v1.register(collection: AuthController())
-	try v1.register(collection: PlacemarkController())
+	try app.routes.grouped("users").grouped("v1").register(collection: UserControllerV1())
+	try app.routes.grouped("auth").grouped("v1").register(collection: AuthControllerV1())
+	try app.routes.grouped("placemarks").grouped("v1").register(collection: PlacemarkControllerV1())
 	
 }

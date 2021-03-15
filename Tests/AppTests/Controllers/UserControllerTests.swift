@@ -33,7 +33,7 @@ internal class UserControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
-			.GET, "v1/users") { res in
+			.GET, "users/v1") { res in
 			try res.assertStatus(.ok) {
 				XCTAssertEqual(res.body.string, "[]")
 			}
@@ -58,7 +58,7 @@ internal class UserControllerTests: AppTestCase {
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
 		try app.test(
-			.GET, "v1/users") { res in
+			.GET, "users/v1") { res in
 			try res.assertStatus(.ok) {
 				let users = try res.content.decode([User.Public.Small].self)
 				
@@ -94,7 +94,7 @@ internal class UserControllerTests: AppTestCase {
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: username, on: app.db)
 		try app.test(
-			.POST, "v1/users",
+			.POST, "users/v1",
 			beforeRequest: { req in
 				try req.content.encode(user)
 			},
@@ -139,7 +139,7 @@ internal class UserControllerTests: AppTestCase {
 		deleteUserTokenAfterTestFinishes(token, on: app.db)
 		
 		try app.test(
-			.DELETE, "v1/users/\(userId)",
+			.DELETE, "users/v1/\(userId)",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: token.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -189,7 +189,7 @@ internal class UserControllerTests: AppTestCase {
 		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
 		
 		try app.test(
-			.POST, "v1/users",
+			.POST, "users/v1",
 			beforeRequest: { req in
 				try req.content.encode(user)
 			},
@@ -212,7 +212,7 @@ internal class UserControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
-			.GET, "v1/users/\(UUID())") { res in
+			.GET, "users/v1/\(UUID())") { res in
 			try res.assertError(status: .notFound, reason: "Not Found")
 		}
 	}
@@ -246,7 +246,7 @@ internal class UserControllerTests: AppTestCase {
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: user2.username, on: app.db)
 		try app.test(
-			.POST, "v1/users",
+			.POST, "users/v1",
 			beforeRequest: { req in
 				try req.content.encode(user2)
 			},
@@ -285,7 +285,7 @@ internal class UserControllerTests: AppTestCase {
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: user2.username, on: app.db)
 		try app.test(
-			.POST, "v1/users",
+			.POST, "users/v1",
 			beforeRequest: { req in
 				try req.content.encode(user2)
 			},
@@ -316,7 +316,7 @@ internal class UserControllerTests: AppTestCase {
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
 		try app.test(
-			.POST, "v1/users",
+			.POST, "users/v1",
 			beforeRequest: { req in
 				try req.content.encode(user)
 			},
@@ -350,7 +350,7 @@ internal class UserControllerTests: AppTestCase {
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
 		try app.test(
-			.POST, "v1/users",
+			.POST, "users/v1",
 			beforeRequest: { req in
 				try req.content.encode(user)
 			},
@@ -381,7 +381,7 @@ internal class UserControllerTests: AppTestCase {
 		)
 		deletePossiblyCreatedUserAfterTestFinishes(username: user.username, on: app.db)
 		try app.test(
-			.POST, "v1/users",
+			.POST, "users/v1",
 			beforeRequest: { req in
 				try req.content.encode(user)
 			},
@@ -413,7 +413,7 @@ internal class UserControllerTests: AppTestCase {
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
 		try app.test(
-			.DELETE, "v1/users/\(userId)",
+			.DELETE, "users/v1/\(userId)",
 			beforeRequest: { req in
 				let invalidToken = [UInt8].random(count: 16).base64
 				let bearerAuth = BearerAuthorization(token: invalidToken)
@@ -447,7 +447,7 @@ internal class UserControllerTests: AppTestCase {
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
 		try app.test(
-			.DELETE, "v1/users/\(userId)",
+			.DELETE, "users/v1/\(userId)",
 			beforeRequest: { req in
 				let basicAuth = BasicAuthorization(username: user.username, password: password)
 				req.headers.basicAuthorization = basicAuth

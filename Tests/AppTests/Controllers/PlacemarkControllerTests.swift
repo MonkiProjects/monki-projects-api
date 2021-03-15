@@ -56,14 +56,14 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
-			.GET, "v1/placemarks") { res in
+			.GET, "placemarks/v1") { res in
 			try res.assertStatus(.ok) {
 				XCTAssertEqual(res.body.string, "[]")
 			}
 		}
 	}
 	
-	/// Tests `GET /v1/placemarks`.
+	/// Tests `GET /placemarks/v1`.
 	///
 	/// - GIVEN:
 	///     - A submitted placemark
@@ -95,7 +95,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
 		try app.test(
-			.GET, "v1/placemarks") { res in
+			.GET, "placemarks/v1") { res in
 			try res.assertStatus(.ok) {
 				let placemarks = try res.content.decode([Placemark.Public].self)
 				
@@ -110,7 +110,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		}
 	}
 	
-	/// Tests `GET /v1/placemarks?state=submitted`.
+	/// Tests `GET /placemarks/v1?state=submitted`.
 	///
 	/// - GIVEN:
 	///     - A submitted placemark
@@ -143,7 +143,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		deletePlacemarkAfterTestFinishes(publishedPlacemark, on: app.db)
 		
 		try app.test(
-			.GET, "v1/placemarks?state=submitted") { res in
+			.GET, "placemarks/v1?state=submitted") { res in
 			try res.assertStatus(.ok) {
 				let placemarks = try res.content.decode([Placemark.Public].self)
 				
@@ -158,7 +158,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		}
 	}
 	
-	/// Tests `GET /v1/placemarks?state=submitted` when unauthorized.
+	/// Tests `GET /placemarks/v1?state=submitted` when unauthorized.
 	///
 	/// - GIVEN:
 	///     - Nothing
@@ -169,12 +169,12 @@ internal final class PlacemarkControllerTests: AppTestCase {
 	func testListSubmittedPlacemarks_Unauthorized() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "v1/placemarks?state=submitted") { res in
+		try app.test(.GET, "placemarks/v1?state=submitted") { res in
 			try res.assertStatus(.ok) {}
 		}
 	}
 	
-	/// Tests `GET /v1/placemarks?state=submitted` when authorized.
+	/// Tests `GET /placemarks/v1?state=submitted` when authorized.
 	///
 	/// - GIVEN:
 	///     - A user
@@ -188,7 +188,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		let userToken = try XCTUnwrap(Self.userToken)
 		
 		try app.test(
-			.GET, "v1/placemarks?state=submitted",
+			.GET, "placemarks/v1?state=submitted",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -199,7 +199,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		)
 	}
 	
-	/// Tests `GET /v1/placemarks?state=private` when authorized.
+	/// Tests `GET /placemarks/v1?state=private` when authorized.
 	///
 	/// - GIVEN:
 	///     - A user
@@ -213,7 +213,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		let userToken = try XCTUnwrap(Self.userToken)
 		
 		try app.test(
-			.GET, "v1/placemarks?state=private",
+			.GET, "placemarks/v1?state=private",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -251,7 +251,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
 		
 		try app.test(
-			.POST, "v1/placemarks",
+			.POST, "placemarks/v1",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -293,7 +293,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		)
 	}
 	
-	/// Tests `GET /v1/placemarks/{placemarkId}`.
+	/// Tests `GET /placemarks/v1/{placemarkId}`.
 	///
 	/// - GIVEN:
 	///     - A placemark
@@ -317,7 +317,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
 		try app.test(
-			.GET, "v1/placemarks/\(placemarkId)") { res in
+			.GET, "placemarks/v1/\(placemarkId)") { res in
 			try res.assertStatus(.ok) {
 				let placemarkResponse = try res.content.decode(Placemark.Public.self)
 				XCTAssertEqual(placemarkResponse.id, placemark.id)
@@ -325,7 +325,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		}
 	}
 	
-	/// Tests `DELETE /v1/placemarks/{placemarkId}`.
+	/// Tests `DELETE /placemarks/v1/{placemarkId}`.
 	///
 	/// - GIVEN:
 	///     - A placemark
@@ -350,7 +350,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
 		try app.test(
-			.DELETE, "v1/placemarks/\(placemarkId)",
+			.DELETE, "placemarks/v1/\(placemarkId)",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -363,7 +363,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		)
 	}
 	
-	/// Tests `GET /v1/placemarks/features`.
+	/// Tests `GET /placemarks/v1/features`.
 	///
 	/// - GIVEN:
 	///     - Nothing
@@ -376,7 +376,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
-			.GET, "v1/placemarks/features") { res in
+			.GET, "placemarks/v1/features") { res in
 			try res.assertStatus(.ok) {
 				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 31)
@@ -384,7 +384,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		}
 	}
 	
-	/// Tests `GET /v1/placemarks/techniques`.
+	/// Tests `GET /placemarks/v1/techniques`.
 	///
 	/// - GIVEN:
 	///     - Nothing
@@ -397,7 +397,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
-			.GET, "v1/placemarks/techniques") { res in
+			.GET, "placemarks/v1/techniques") { res in
 			try res.assertStatus(.ok) {
 				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 12)
@@ -405,7 +405,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		}
 	}
 	
-	/// Tests `GET /v1/placemarks/benefits`.
+	/// Tests `GET /placemarks/v1/benefits`.
 	///
 	/// - GIVEN:
 	///     - Nothing
@@ -418,7 +418,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
-			.GET, "v1/placemarks/benefits") { res in
+			.GET, "placemarks/v1/benefits") { res in
 			try res.assertStatus(.ok) {
 				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 8)
@@ -426,7 +426,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		}
 	}
 	
-	/// Tests `GET /v1/placemarks/hazards`.
+	/// Tests `GET /placemarks/v1/hazards`.
 	///
 	/// - GIVEN:
 	///     - Nothing
@@ -439,7 +439,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
-			.GET, "v1/placemarks/hazards") { res in
+			.GET, "placemarks/v1/hazards") { res in
 			try res.assertStatus(.ok) {
 				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 8)
@@ -476,7 +476,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
 		
 		try app.test(
-			.POST, "v1/placemarks",
+			.POST, "placemarks/v1",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -521,7 +521,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
 		
 		try app.test(
-			.POST, "v1/placemarks",
+			.POST, "placemarks/v1",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -537,7 +537,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		)
 	}
 	
-	/// Tests `GET /v1/placemarks?state=private` when unauthorized.
+	/// Tests `GET /placemarks/v1?state=private` when unauthorized.
 	///
 	/// - GIVEN:
 	///     - Nothing
@@ -549,7 +549,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 	func testListPrivatePlacemarks_Unauthorized() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "v1/placemarks?state=private") { res in
+		try app.test(.GET, "placemarks/v1?state=private") { res in
 			try res.assertError(status: .unauthorized, reason: "Unauthorized")
 		}
 	}
@@ -567,7 +567,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
-			.GET, "v1/placemarks/\(UUID())") { res in
+			.GET, "placemarks/v1/\(UUID())") { res in
 			try res.assertError(status: .notFound, reason: "Placemark not found")
 		}
 	}
@@ -585,7 +585,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
-			.POST, "v1/placemarks",
+			.POST, "placemarks/v1",
 			beforeRequest: { req in
 				let invalidToken = [UInt8].random(count: 16).base64
 				let bearerAuth = BearerAuthorization(token: invalidToken)
@@ -627,7 +627,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		deletePlacemarkAfterTestFinishes(placemark, on: app.db)
 		
 		try app.test(
-			.DELETE, "v1/placemarks/\(placemarkId)",
+			.DELETE, "placemarks/v1/\(placemarkId)",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth

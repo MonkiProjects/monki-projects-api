@@ -1,5 +1,5 @@
 //
-//  UserController.swift
+//  UserControllerV1.swift
 //  App
 //
 //  Created by Rémi Bardon on 07/01/2021.
@@ -11,21 +11,20 @@ import Vapor
 import Models
 import MonkiProjectsModel
 
-internal struct UserController: RouteCollection {
+internal struct UserControllerV1: RouteCollection {
 	
 	func boot(routes: RoutesBuilder) throws {
-		let users = routes.grouped("users")
+		// GET users/v1
+		routes.get(use: listUsers)
+		// POST users/v1
+		routes.post(use: createUser)
 		
-		// GET /users
-		users.get(use: listUsers)
-		// POST /users
-		users.post(use: createUser)
-		users.group(":userId") { user in
-			// GET /users/{userId}
+		routes.group(":userId") { user in
+			// GET users/v1/{userId}
 			user.get(use: getUser)
 			
 			let tokenProtected = user.grouped(UserModel.Token.authenticator())
-			// DELETE /users/{userId}
+			// DELETE users/v1/{userId}
 			tokenProtected.delete(use: deleteUser)
 		}
 	}
