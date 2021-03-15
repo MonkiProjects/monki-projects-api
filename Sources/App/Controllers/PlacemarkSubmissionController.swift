@@ -26,8 +26,8 @@ internal struct PlacemarkSubmissionController: RouteCollection {
 	func boot(routes: RoutesBuilder) throws {
 		let tokenProtected = routes.grouped(UserModel.Token.authenticator())
 		
-		// GET /placemarks/{placemarkId}/submit
-		tokenProtected.get("submit", use: submitPlacemark)
+		// POST /placemarks/{placemarkId}/submit
+		tokenProtected.post("submit", use: submitPlacemark)
 		
 		let submission = routes.grouped("submission")
 		
