@@ -21,10 +21,10 @@ internal class UserControllerTests: AppTestCase {
 	/// - GIVEN:
 	///     - The empty database
 	/// - WHEN:
-	///     - Fetching all users
+	///     - Fetching all users (paginated)
 	/// - THEN:
 	///     - `HTTP` status should be `200 OK`
-	///     - `body` should be an empty array
+	///     - `body` should be an empty paginated array
 	///
 	/// # Notes: #
 	/// 1. Route will trigger a fatalError if the `"users"` schema doesn't exist
@@ -32,10 +32,13 @@ internal class UserControllerTests: AppTestCase {
 	func testSchemaExists() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(
-			.GET, "users/v1") { res in
+		try app.test(.GET, "users/v1") { res in
 			try res.assertStatus(.ok) {
-				XCTAssertEqual(res.body.string, "[]")
+				let page = try res.content.decode(Page<User.Public.Small>.self)
+				let users = page.items
+				
+				XCTAssertEqual(users.count, 0)
+				XCTAssertEqual(page.metadata.total, 0)
 			}
 		}
 	}
@@ -45,10 +48,10 @@ internal class UserControllerTests: AppTestCase {
 	/// - GIVEN:
 	///     - A user
 	/// - WHEN:
-	///     - Fetching all users
+	///     - Fetching all users (paginated)
 	/// - THEN:
 	///     - `HTTP` status should be `200 OK`
-	///     - `body` should be an array containing only the user
+	///     - `body` should be a paginated array containing only the user
 	func testIndexReturnsListOfUsers() throws {
 		let app = try XCTUnwrap(Self.app)
 		
@@ -57,12 +60,13 @@ internal class UserControllerTests: AppTestCase {
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
 		
-		try app.test(
-			.GET, "users/v1") { res in
+		try app.test(.GET, "users/v1") { res in
 			try res.assertStatus(.ok) {
-				let users = try res.content.decode([User.Public.Small].self)
+				let page = try res.content.decode(Page<User.Public.Small>.self)
+				let users = page.items
 				
 				XCTAssertEqual(users.count, 1)
+				XCTAssertEqual(page.metadata.total, 1)
 				let userResponse = try XCTUnwrap(users.first)
 				
 				XCTAssertEqual(userResponse.id, user.id)

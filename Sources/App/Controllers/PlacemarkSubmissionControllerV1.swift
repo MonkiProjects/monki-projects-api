@@ -90,12 +90,17 @@ internal struct PlacemarkSubmissionControllerV1: RouteCollection {
 			.flatMap { $0.asPublic(on: req.db) }
 	}
 	
-	func listPlacemarkSubmissionReviews(req: Request) throws -> EventLoopFuture<[Review.Public]> {
+	func listPlacemarkSubmissionReviews(req: Request) throws -> EventLoopFuture<Page<Review.Public>> {
 		let placemarkId = try req.parameters.require("placemarkId", as: PlacemarkModel.IDValue.self)
 		
 		return getLastSubmission(for: placemarkId, in: req.db)
-			.map { $0.reviews }
-			.flatMapEach(on: req.eventLoop) { $0.asPublic(on: req.db) }
+			.flatMapThrowing { try $0.requireID() }
+			.flatMap { submissionId in
+				ReviewModel.query(on: req.db)
+					.filter(\.$submission.$id == submissionId)
+					.paginate(for: req)
+					.asPublic(on: req.db)
+			}
 	}
 	
 	func addPlacemarkSubmissionReview(req: Request) throws -> EventLoopFuture<Review.Public> {
@@ -106,9 +111,11 @@ internal struct PlacemarkSubmissionControllerV1: RouteCollection {
 		try Review.Create.validate(content: req)
 		let create = try req.content.decode(Review.Create.self)
 		
-		let updateSubmissionState = getLastSubmission(for: placemarkId, in: req.db)
-			// FIXME: Set isModerator to true if user is a moderator
-			.flatMap { $0.review(opinion: create.opinion, isModerator: false, on: req.db) }
+		let updateSubmissionState = { () -> EventLoopFuture<SubmissionModel> in
+			getLastSubmission(for: placemarkId, in: req.db)
+				// FIXME: Set isModerator to true if user is a moderator
+				.flatMap { $0.review(opinion: create.opinion, isModerator: false, on: req.db) }
+		}
 		let publishPlacemarkIfNeeded = { (submission: SubmissionModel) -> EventLoopFuture<Void?>? in
 			if submission.state == .accepted {
 				return PlacemarkModel.find(placemarkId, on: req.db)
@@ -143,7 +150,7 @@ internal struct PlacemarkSubmissionControllerV1: RouteCollection {
 		.transform(to: guardNoDoubleReview(by: userId, for: placemarkId, in: req.db))
 		
 		let future = guards
-			.transform(to: updateSubmissionState)
+			.flatMap(updateSubmissionState)
 			.passthrough(publishPlacemarkIfNeeded)
 			.flatMapThrowing(addReview)
 			.flatMap { $0 }
@@ -161,20 +168,6 @@ internal struct PlacemarkSubmissionControllerV1: RouteCollection {
 	) -> EventLoopFuture<SubmissionModel> {
 		SubmissionModel.query(on: database)
 			.with(\.$placemark)
-			.with(\.$reviews) { review in
-				review.with(\.$submission) { submission in
-					submission.with(\.$placemark)
-				}
-				review.with(\.$reviewer)
-				review.with(\.$issues) { issue in
-					issue.with(\.$review) { review in
-						review.with(\.$submission) { submission in
-							submission.with(\.$placemark)
-						}
-						review.with(\.$reviewer)
-					}
-				}
-			}
 			.filter(\.$placemark.$id == placemarkId)
 			// Get last submission
 			.sort(\.$createdAt, .descending)

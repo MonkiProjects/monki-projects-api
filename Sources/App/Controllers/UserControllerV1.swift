@@ -29,10 +29,12 @@ internal struct UserControllerV1: RouteCollection {
 		}
 	}
 	
-	func listUsers(req: Request) throws -> EventLoopFuture<[User.Public.Small]> {
+	func listUsers(req: Request) throws -> EventLoopFuture<Page<User.Public.Small>> {
 		UserModel.query(on: req.db)
-			.all()
-			.flatMapEachThrowing { try $0.asPublicSmall() }
+			.paginate(for: req)
+			.flatMapThrowing { page in
+				try page.map { try $0.asPublicSmall() }
+			}
 	}
 	
 	func createUser(req: Request) throws -> EventLoopFuture<Response> {

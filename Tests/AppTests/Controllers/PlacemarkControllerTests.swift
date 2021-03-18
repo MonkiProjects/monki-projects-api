@@ -44,10 +44,10 @@ internal final class PlacemarkControllerTests: AppTestCase {
 	/// - GIVEN:
 	///     - The empty database
 	/// - WHEN:
-	///     - Fetching all placemarks
+	///     - Fetching all placemarks (paginated)
 	/// - THEN:
 	///     - `HTTP` status should be `200 OK`
-	///     - `body` should be an empty array
+	///     - `body` should be an empty paginated array
 	///
 	/// # Notes: #
 	/// 1. Route will trigger a fatalError if the `"placemarks"` schema doesn't exist
@@ -55,10 +55,13 @@ internal final class PlacemarkControllerTests: AppTestCase {
 	func testSchemaExists() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(
-			.GET, "placemarks/v1") { res in
+		try app.test(.GET, "placemarks/v1") { res in
 			try res.assertStatus(.ok) {
-				XCTAssertEqual(res.body.string, "[]")
+				let page = try res.content.decode(Page<Placemark.Public>.self)
+				let placemarks = page.items
+				
+				XCTAssertEqual(placemarks.count, 0)
+				XCTAssertEqual(page.metadata.total, 0)
 			}
 		}
 	}
@@ -69,10 +72,10 @@ internal final class PlacemarkControllerTests: AppTestCase {
 	///     - A submitted placemark
 	///     - A published placemark
 	/// - WHEN:
-	///     - Fetching all published placemarks
+	///     - Fetching all published placemarks (paginated)
 	/// - THEN:
 	///     - `HTTP` status should be `200 OK`
-	///     - `body` should be an array containing only the published placemark
+	///     - `body` should be a paginated array containing only the published placemark
 	func testIndexReturnsTheListOfPublishedPlacemarks() throws {
 		let app = try XCTUnwrap(Self.app)
 		let user = try XCTUnwrap(Self.user)
@@ -97,7 +100,8 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		try app.test(
 			.GET, "placemarks/v1") { res in
 			try res.assertStatus(.ok) {
-				let placemarks = try res.content.decode([Placemark.Public].self)
+				let page = try res.content.decode(Page<Placemark.Public>.self)
+				let placemarks = page.items
 				
 				XCTAssertEqual(placemarks.count, 1)
 				guard let placemarkResponse = placemarks.first else {
@@ -116,10 +120,10 @@ internal final class PlacemarkControllerTests: AppTestCase {
 	///     - A submitted placemark
 	///     - A published placemark
 	/// - WHEN:
-	///     - Fetching all submitted placemarks
+	///     - Fetching all submitted placemarks (paginated)
 	/// - THEN:
 	///     - `HTTP` status should be `200 OK`
-	///     - `body` should be an array containing only the submitted placemark
+	///     - `body` should be a paginated array containing only the submitted placemark
 	func testListSubmittedReturnsTheListOfSubmittedPlacemarks() throws {
 		let app = try XCTUnwrap(Self.app)
 		let user = try XCTUnwrap(Self.user)
@@ -145,7 +149,8 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		try app.test(
 			.GET, "placemarks/v1?state=submitted") { res in
 			try res.assertStatus(.ok) {
-				let placemarks = try res.content.decode([Placemark.Public].self)
+				let page = try res.content.decode(Page<Placemark.Public>.self)
+				let placemarks = page.items
 				
 				XCTAssertEqual(placemarks.count, 1)
 				guard let placemarkResponse = placemarks.first else {
