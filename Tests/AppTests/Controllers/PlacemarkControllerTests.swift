@@ -10,8 +10,10 @@
 import XCTVapor
 import Fluent
 import Models
+import GEOSwift
 
 // swiftlint:disable closure_body_length
+// swiftlint:disable:next type_body_length
 internal final class PlacemarkControllerTests: AppTestCase {
 	
 	private static var user: UserModel?
@@ -100,7 +102,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		try app.test(
 			.GET, "placemarks/v1") { res in
 			try res.assertStatus(.ok) {
-				let page = try res.content.decode(Page<Placemark.Public>.self)
+				let page = try res.content.decode(Page<GEOSwift.Feature>.self)
 				let placemarks = page.items
 				
 				XCTAssertEqual(placemarks.count, 1)
@@ -109,7 +111,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 					return
 				}
 				
-				XCTAssertEqual(placemarkResponse.id, publishedPlacemark.id)
+				try XCTAssertEqual(placemarkResponse.id, .string(publishedPlacemark.requireID().uuidString))
 			}
 		}
 	}
@@ -149,7 +151,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		try app.test(
 			.GET, "placemarks/v1?state=submitted") { res in
 			try res.assertStatus(.ok) {
-				let page = try res.content.decode(Page<Placemark.Public>.self)
+				let page = try res.content.decode(Page<GEOSwift.Feature>.self)
 				let placemarks = page.items
 				
 				XCTAssertEqual(placemarks.count, 1)
@@ -158,7 +160,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 					return
 				}
 				
-				XCTAssertEqual(placemarkResponse.id, submittedPlacemark.id)
+				try XCTAssertEqual(placemarkResponse.id, .string(submittedPlacemark.requireID().uuidString))
 			}
 		}
 	}
@@ -270,28 +272,51 @@ internal final class PlacemarkControllerTests: AppTestCase {
 					"Redis not started"
 				)
 				try res.assertStatus(.created) {
-					let placemark = try res.content.decode(Placemark.Public.self)
+					let placemark = try res.content.decode(GEOSwift.Feature.self)
 					
-					XCTAssertEqual(placemark.name, create.name)
-					XCTAssertTrue(placemark.latitude.distance(to: create.latitude) < 0.001)
-					XCTAssertTrue(placemark.longitude.distance(to: create.longitude) < 0.001)
-					XCTAssertEqual(placemark.creator, try user.requireID())
-					XCTAssertEqual(placemark.state, .private)
-					XCTAssertEqual(placemark.kind, .trainingSpot)
-					XCTAssertEqual(placemark.category, .spot)
-					XCTAssertEqual(placemark.details.caption, create.caption)
-					XCTAssertEqual(placemark.details.images, [])
-					XCTAssertEqual(placemark.details.properties[.feature]?.count, 2)
-					XCTAssertEqual(placemark.details.properties[.technique]?.count, 1)
-					XCTAssertEqual(placemark.details.properties[.benefit]?.count, 1)
-					XCTAssertEqual(placemark.details.properties[.hazard]?.count, 1)
-					XCTAssertNotNil(placemark.details.satelliteImage)
-					XCTAssertNil(placemark.details.location)
-					XCTAssertNotNil(placemark.createdAt)
-					XCTAssertNotNil(placemark.updatedAt)
+					let data = try placemark.properties.require()
+					XCTAssertEqual(data["name"], .string(create.name))
+					let geometry = try placemark.geometry.require()
+					guard case let .point(point) = geometry else {
+						return XCTFail("Invalid type for '\(geometry)'")
+					}
+					XCTAssertTrue(point.x.distance(to: create.latitude) < 0.001)
+					XCTAssertTrue(point.y.distance(to: create.longitude) < 0.001)
+					XCTAssertEqual(data["creator"], try .string(user.requireID().uuidString))
+					XCTAssertEqual(data["state"], .string(Placemark.State.private.rawValue))
+					XCTAssertEqual(data["kind"], .string(Placemark.Kind.trainingSpot.rawValue))
+					XCTAssertEqual(data["category"], .string(Placemark.Category.spot.rawValue))
+					guard case let .object(details) = data["details"] else {
+						return XCTFail("Invalid type for '\(data["details"] ?? "nil")'")
+					}
+					XCTAssertEqual(details["caption"], .string(create.caption))
+					XCTAssertEqual(details["images"], .array([]))
+					guard case let .object(properties) = details["properties"] else {
+						return XCTFail("Invalid type for '\(details["properties"] ?? "nil")'")
+					}
+					let expectedPropertiesCount = [
+						"feature": 2,
+						"technique": 1,
+						"benefit": 1,
+						"hazard": 1,
+					]
+					for (key, count) in expectedPropertiesCount {
+						guard case let .array(array) = properties[key] else {
+							return XCTFail("Invalid type for '\(properties[key] ?? "nil")'")
+						}
+						XCTAssertEqual(array.count, count)
+					}
+					XCTAssertNotNil(details["satelliteImage"])
+					XCTAssertEqual(details["location"], .null)
+					XCTAssertNotNil(data["createdAt"])
+					XCTAssertNotNil(data["updatedAt"])
 					
 					// Test creation on DB
-					let storedPlacemark = try PlacemarkModel.find(placemark.id, on: app.db).wait()
+					guard case let .string(id) = placemark.id else {
+						return XCTFail("Invalid type for '\(placemark.id ?? "nil")'")
+					}
+					let uuid = try UUID(uuidString: id).require()
+					let storedPlacemark = try PlacemarkModel.find(uuid, on: app.db).wait()
 					XCTAssertNotNil(storedPlacemark)
 				}
 			}
@@ -324,8 +349,8 @@ internal final class PlacemarkControllerTests: AppTestCase {
 		try app.test(
 			.GET, "placemarks/v1/\(placemarkId)") { res in
 			try res.assertStatus(.ok) {
-				let placemarkResponse = try res.content.decode(Placemark.Public.self)
-				XCTAssertEqual(placemarkResponse.id, placemark.id)
+				let placemarkResponse = try res.content.decode(GEOSwift.Feature.self)
+				try XCTAssertEqual(placemarkResponse.id, .string(placemark.id.require().uuidString))
 			}
 		}
 	}
