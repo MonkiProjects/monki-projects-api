@@ -91,6 +91,7 @@ let package = Package(
 				.product(name: "Fluent", package: "fluent"),
 				.product(name: "MonkiMapModel", package: "monki-map-model"),
 				.target(name: "Models"),
+				.product(name: "GEOSwift", package: "GEOSwift"),
 			]
 		),
 		.target(

@@ -11,6 +11,7 @@ import Vapor
 import Models
 import Jobs
 import MonkiMapModel
+import GEOSwift
 
 internal struct PlacemarkControllerV1: RouteCollection {
 	
@@ -45,7 +46,7 @@ internal struct PlacemarkControllerV1: RouteCollection {
 		routes.get("hazards", use: listPlacemarkHazards)
 	}
 	
-	func listPlacemarks(req: Request) throws -> EventLoopFuture<Page<Placemark.Public>> {
+	func listPlacemarksRaw(req: Request) throws -> EventLoopFuture<Page<Placemark.Public>> {
 		struct Params: Content {
 			let state: Placemark.State?
 		}
@@ -59,6 +60,12 @@ internal struct PlacemarkControllerV1: RouteCollection {
 			return try listUserPlacemarks(userId: userId, state: state, on: req)
 		case .submitted, .published, .rejected:
 			return try listPlacemarks(state: state, on: req)
+		}
+	}
+	
+	func listPlacemarks(req: Request) throws -> EventLoopFuture<Page<GEOSwift.Feature>> {
+		try listPlacemarksRaw(req: req).flatMapThrowing { page in
+			try Page(items: page.items.map { try $0.asGeoJSON() }, metadata: page.metadata)
 		}
 	}
 	
@@ -84,7 +91,7 @@ internal struct PlacemarkControllerV1: RouteCollection {
 			.asPublic(on: req.db)
 	}
 	
-	func createPlacemark(req: Request) throws -> EventLoopFuture<Response> {
+	func createPlacemarkRaw(req: Request) throws -> EventLoopFuture<Placemark.Public> {
 		let user = try req.auth.require(UserModel.self, with: .bearer, in: req)
 		// Validate and decode data
 		try Placemark.Create.validate(content: req)
@@ -186,14 +193,24 @@ internal struct PlacemarkControllerV1: RouteCollection {
 		
 		return reverseGeocodeLocationFuture
 			.flatMap { $0.asPublic(on: req.db) }
+//			.flatMap { $0.encodeResponse(status: .created, for: req) }
+	}
+	
+	func createPlacemark(req: Request) throws -> EventLoopFuture<Response> {
+		try self.createPlacemarkRaw(req: req)
+			.flatMapThrowing { try $0.asGeoJSON() }
 			.flatMap { $0.encodeResponse(status: .created, for: req) }
 	}
 	
-	func getPlacemark(req: Request) throws -> EventLoopFuture<Placemark.Public> {
+	func getPlacemarkRaw(req: Request) throws -> EventLoopFuture<Placemark.Public> {
 		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
 		return PlacemarkModel.find(placemarkId, on: req.db)
 			.unwrap(or: Abort(.notFound, reason: "Placemark not found"))
 			.flatMap { $0.asPublic(on: req.db) }
+	}
+	
+	func getPlacemark(req: Request) throws -> EventLoopFuture<GEOSwift.Feature> {
+		try getPlacemarkRaw(req: req).flatMapThrowing { try $0.asGeoJSON() }
 	}
 	
 	func deletePlacemark(req: Request) throws -> EventLoopFuture<HTTPStatus> {
