@@ -19,7 +19,7 @@ let package = Package(
 			url: "https://github.com/MonkiProjects/monki-map-model-swift.git",
 			.branch("main")
 		),
-		.package(url: "https://github.com/GEOSwift/GEOSwift.git", from: "8.0.0")
+		.package(url: "https://github.com/GEOSwift/GEOSwift.git", from: "8.0.0"),
 	],
 	targets: [
 		.target(
