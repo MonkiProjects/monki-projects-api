@@ -47,6 +47,7 @@ internal struct PlacemarkControllerV1: RouteCollection {
 	}
 	
 	func listPlacemarksRaw(req: Request) throws -> EventLoopFuture<Page<Placemark.Public>> {
+		let pageRequest = try req.query.decode(PageRequest.self)
 		struct Params: Content {
 			let state: Placemark.State?
 		}
@@ -57,9 +58,9 @@ internal struct PlacemarkControllerV1: RouteCollection {
 			throw Abort(.forbidden, reason: "Fetching placemarks in 'unknown' state is impossible.")
 		case .draft, .local, .private:
 			let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
-			return try listUserPlacemarks(userId: userId, state: state, on: req)
+			return req.placemarks.paged(state: state, creator: userId, pageRequest)
 		case .submitted, .published, .rejected:
-			return try listPlacemarks(state: state, on: req)
+			return req.placemarks.paged(state: state, creator: nil, pageRequest)
 		}
 	}
 	
@@ -67,28 +68,6 @@ internal struct PlacemarkControllerV1: RouteCollection {
 		try listPlacemarksRaw(req: req).flatMapThrowing { page in
 			try Page(items: page.items.map { try $0.asGeoJSON() }, metadata: page.metadata)
 		}
-	}
-	
-	func listPlacemarks(
-		state: Placemark.State,
-		on req: Request
-	) throws -> EventLoopFuture<Page<Placemark.Public>> {
-		PlacemarkModel.query(on: req.db)
-			.filter(\.$state == state)
-			.paginate(for: req)
-			.asPublic(on: req.db)
-	}
-	
-	func listUserPlacemarks(
-		userId: UserModel.IDValue,
-		state: Placemark.State,
-		on req: Request
-	) throws -> EventLoopFuture<Page<Placemark.Public>> {
-		PlacemarkModel.query(on: req.db)
-			.filter(\.$creator.$id == userId)
-			.filter(\.$state == state)
-			.paginate(for: req)
-			.asPublic(on: req.db)
 	}
 	
 	func createPlacemarkRaw(req: Request) throws -> EventLoopFuture<Placemark.Public> {

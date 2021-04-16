@@ -32,6 +32,7 @@ let package = Package(
 				.product(name: "MonkiMapModel", package: "monki-map-model"),
 				.target(name: "Migrations"),
 				.target(name: "DTOs"),
+				.target(name: "Repositories"),
 				.target(name: "Jobs"),
 				.product(name: "GEOSwift", package: "GEOSwift"),
 			],
@@ -92,6 +93,13 @@ let package = Package(
 				.product(name: "MonkiMapModel", package: "monki-map-model"),
 				.target(name: "Models"),
 				.product(name: "GEOSwift", package: "GEOSwift"),
+			]
+		),
+		.target(
+			name: "Repositories",
+			dependencies: [
+				.product(name: "Fluent", package: "fluent"),
+				.product(name: "MonkiMapModel", package: "monki-map-model"),
 			]
 		),
 		.target(
