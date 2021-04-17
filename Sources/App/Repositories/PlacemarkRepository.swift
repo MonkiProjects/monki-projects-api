@@ -12,7 +12,7 @@ import Fluent
 import MonkiMapModel
 import Models
 
-public struct PlacemarkRepository: PlacemarkRepositoryProtocol {
+internal struct PlacemarkRepository: PlacemarkRepositoryProtocol {
 	
 	let database: Database
 	
@@ -20,13 +20,13 @@ public struct PlacemarkRepository: PlacemarkRepositoryProtocol {
 		self.database = database
 	}
 	
-	public func all() -> EventLoopFuture<[Placemark.Public]> {
+	func all() -> EventLoopFuture<[Placemark.Public]> {
 		PlacemarkModel.query(on: database)
 			.all()
 			.asPublic(on: database)
 	}
 	
-	public func paged(
+	func paged(
 		_ pageRequest: PageRequest
 	) -> EventLoopFuture<Page<Placemark.Public>> {
 		PlacemarkModel.query(on: database)
@@ -34,7 +34,7 @@ public struct PlacemarkRepository: PlacemarkRepositoryProtocol {
 			.asPublic(on: database)
 	}
 	
-	public func all(
+	func all(
 		state: Placemark.State?,
 		creator: UUID?
 	) -> EventLoopFuture<[Placemark.Public]> {
@@ -51,7 +51,7 @@ public struct PlacemarkRepository: PlacemarkRepositoryProtocol {
 			.asPublic(on: database)
 	}
 	
-	public func paged(
+	func paged(
 		state: Placemark.State?,
 		creator: UUID?,
 		_ pageRequest: PageRequest
