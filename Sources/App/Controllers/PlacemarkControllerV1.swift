@@ -9,7 +9,6 @@
 import Fluent
 import Vapor
 import Models
-import Jobs
 import MonkiMapModel
 import GEOSwift
 
