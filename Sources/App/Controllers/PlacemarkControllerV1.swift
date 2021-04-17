@@ -46,28 +46,11 @@ internal struct PlacemarkControllerV1: RouteCollection {
 		routes.get("hazards", use: listPlacemarkHazards)
 	}
 	
-	func listPlacemarksRaw(req: Request) throws -> EventLoopFuture<Page<Placemark.Public>> {
-		let pageRequest = try req.query.decode(PageRequest.self)
-		struct Params: Content {
-			let state: Placemark.State?
-		}
-		let state = try req.query.decode(Params.self).state ?? .published
-		
-		switch state {
-		case .unknown:
-			throw Abort(.forbidden, reason: "Fetching placemarks in 'unknown' state is impossible.")
-		case .draft, .local, .private:
-			let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
-			return req.placemarks.paged(state: state, creator: userId, pageRequest)
-		case .submitted, .published, .rejected:
-			return req.placemarks.paged(state: state, creator: nil, pageRequest)
-		}
-	}
-	
 	func listPlacemarks(req: Request) throws -> EventLoopFuture<Page<GEOSwift.Feature>> {
-		try listPlacemarksRaw(req: req).flatMapThrowing { page in
-			try Page(items: page.items.map { try $0.asGeoJSON() }, metadata: page.metadata)
-		}
+		try PlacemarkService(req: req).listPlacemarks()
+			.flatMapThrowing { page in
+				try page.map { try $0.asGeoJSON() }
+			}
 	}
 	
 	func createPlacemarkRaw(req: Request) throws -> EventLoopFuture<Placemark.Public> {
