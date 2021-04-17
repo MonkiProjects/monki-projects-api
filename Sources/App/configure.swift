@@ -63,10 +63,10 @@ public func configure(_ app: Application) throws {
 	}
 	
 	// Configure queues
+	try app.queues.use(.redis(url: Environment.get("REDIS_URL") ?? "redis://127.0.0.1:6379"))
+	
 	if app.environment != .testing {
-		try app.queues.use(.redis(url: Environment.get("REDIS_URL") ?? "redis://127.0.0.1:6379"))
-		
-		// Start jobs
+		// Start workers
 		Jobs.addAll(to: app)
 		try app.queues.startInProcessJobs(on: .default)
 		try app.queues.startInProcessJobs(on: .placemarks)
