@@ -7,26 +7,29 @@
 //
 
 import Foundation
-import MonkiMapModel
 import Fluent
+import MonkiMapModel
+import Models
 
 public protocol PlacemarkRepositoryProtocol {
 	
-	func all() -> EventLoopFuture<[Placemark.Public]>
+	func getAll() -> EventLoopFuture<[PlacemarkModel]>
 	
-	func paged(
+	func getAllPaged(
 		_ pageRequest: PageRequest
-	) -> EventLoopFuture<Page<Placemark.Public>>
+	) -> EventLoopFuture<Page<PlacemarkModel>>
 	
-	func all(
+	func getAll(
 		state: Placemark.State?,
 		creator: UUID?
-	) -> EventLoopFuture<[Placemark.Public]>
+	) -> EventLoopFuture<[PlacemarkModel]>
 	
-	func paged(
+	func getAllPaged(
 		state: Placemark.State?,
 		creator: UUID?,
 		_ pageRequest: PageRequest
-	) -> EventLoopFuture<Page<Placemark.Public>>
+	) -> EventLoopFuture<Page<PlacemarkModel>>
+	
+	func get(_ placemarkId: UUID) -> EventLoopFuture<PlacemarkModel>
 	
 }

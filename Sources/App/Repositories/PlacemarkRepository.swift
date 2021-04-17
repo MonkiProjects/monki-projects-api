@@ -20,24 +20,22 @@ internal struct PlacemarkRepository: PlacemarkRepositoryProtocol {
 		self.database = database
 	}
 	
-	func all() -> EventLoopFuture<[Placemark.Public]> {
+	func getAll() -> EventLoopFuture<[PlacemarkModel]> {
 		PlacemarkModel.query(on: database)
 			.all()
-			.asPublic(on: database)
 	}
 	
-	func paged(
+	func getAllPaged(
 		_ pageRequest: PageRequest
-	) -> EventLoopFuture<Page<Placemark.Public>> {
+	) -> EventLoopFuture<Page<PlacemarkModel>> {
 		PlacemarkModel.query(on: database)
 			.paginate(pageRequest)
-			.asPublic(on: database)
 	}
 	
-	func all(
+	func getAll(
 		state: Placemark.State?,
 		creator: UUID?
-	) -> EventLoopFuture<[Placemark.Public]> {
+	) -> EventLoopFuture<[PlacemarkModel]> {
 		var queryBuilder = PlacemarkModel.query(on: database)
 		
 		if let creator = creator {
@@ -48,14 +46,13 @@ internal struct PlacemarkRepository: PlacemarkRepositoryProtocol {
 		}
 		
 		return queryBuilder.all()
-			.asPublic(on: database)
 	}
 	
-	func paged(
+	func getAllPaged(
 		state: Placemark.State?,
 		creator: UUID?,
 		_ pageRequest: PageRequest
-	) -> EventLoopFuture<Page<Placemark.Public>> {
+	) -> EventLoopFuture<Page<PlacemarkModel>> {
 		var queryBuilder = PlacemarkModel.query(on: database)
 		
 		if let creator = creator {
@@ -66,7 +63,11 @@ internal struct PlacemarkRepository: PlacemarkRepositoryProtocol {
 		}
 		
 		return queryBuilder.paginate(pageRequest)
-			.asPublic(on: database)
+	}
+	
+	func get(_ placemarkId: UUID) -> EventLoopFuture<PlacemarkModel> {
+		PlacemarkModel.find(placemarkId, on: database)
+			.unwrap(or: Abort(.notFound, reason: "Placemark not found"))
 	}
 	
 }

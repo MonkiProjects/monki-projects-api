@@ -28,9 +28,11 @@ internal struct PlacemarkService {
 			throw Abort(.forbidden, reason: "Fetching placemarks in 'unknown' state is impossible.")
 		case .draft, .local, .private:
 			let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
-			return req.placemarks.paged(state: state, creator: userId, pageRequest)
+			return req.placemarks.getAllPaged(state: state, creator: userId, pageRequest)
+				.asPublic(on: req.db)
 		case .submitted, .published, .rejected:
-			return req.placemarks.paged(state: state, creator: nil, pageRequest)
+			return req.placemarks.getAllPaged(state: state, creator: nil, pageRequest)
+				.asPublic(on: req.db)
 		}
 	}
 	
@@ -43,10 +45,7 @@ internal struct PlacemarkService {
 		// Do additional validations
 		// TODO: Check for near spots (e.g. < 20m)
 		
-		let placemarkKindFuture = PlacemarkModel.Kind.query(on: req.db)
-			.filter(\.$humanId == create.kind.rawValue)
-			.first()
-			.unwrap(or: Abort(.notFound, reason: "Placemark type not found"))
+		let placemarkKindFuture = req.placemarkKinds.get(humanId: create.kind.rawValue)
 		
 		// Create Placemark object
 		let placemarkFuture = placemarkKindFuture.flatMapThrowing { kind in
@@ -66,17 +65,17 @@ internal struct PlacemarkService {
 		// Add properties
 		let addPropertiesFuture = { (details: PlacemarkModel.Details) -> EventLoopFuture<Void> in
 			req.eventLoop.makeSucceededFuture(create.properties)
-				.sequencedFlatMapEach { kind, propertyIds in
+				.sequencedFlatMapEach { kind, propertyIds -> EventLoopFuture<Void> in
 					req.eventLoop.makeSucceededFuture(propertyIds)
-						.sequencedFlatMapEach { propertyId in
-							PlacemarkModel.Details.Property.query(on: req.db)
-								.filter(\.$kind == kind)
-								.filter(\.$humanId == propertyId)
-								.first()
+						.sequencedFlatMapEach { propertyId -> EventLoopFuture<Void> in
+							// Find property
+							req.placemarkProperties.unsafeGet(kind: kind, humanId: propertyId)
+								// Abort if invalid
 								.unwrap(or: Abort(
 									.badRequest,
 									reason: "Invalid property: { \"kind\": \"\(kind)\", \"id\": \"\(propertyId)\" }"
 								))
+								// Add property
 								.flatMap { property in
 									details.$properties.attach(property, method: .ifNotExists, on: req.db)
 								}
@@ -141,8 +140,7 @@ internal struct PlacemarkService {
 	func getPlacemark() throws -> EventLoopFuture<Placemark.Public> {
 		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
 		
-		return PlacemarkModel.find(placemarkId, on: req.db)
-			.unwrap(or: Abort(.notFound, reason: "Placemark not found"))
+		return req.placemarks.get(placemarkId)
 			.flatMap { $0.asPublic(on: req.db) }
 	}
 	
@@ -150,8 +148,7 @@ internal struct PlacemarkService {
 		let user = try req.auth.require(UserModel.self, with: .bearer, in: req)
 		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
 		
-		let placemarkFuture = PlacemarkModel.find(placemarkId, on: req.db)
-			.unwrap(or: Abort(.notFound, reason: "Placemark not found"))
+		let placemarkFuture = req.placemarks.get(placemarkId)
 		
 		// Do additional validations
 		let guardAuthorizedFuture = placemarkFuture.guard({ placemark in
@@ -160,11 +157,7 @@ internal struct PlacemarkService {
 		
 		let deleteDetailsFuture = guardAuthorizedFuture
 			.passthroughAfter { _ in
-				PlacemarkModel.Details.query(on: req.db)
-					.with(\.$placemark)
-					.filter(\.$placemark.$id == placemarkId)
-					.all()
-					.flatMap { $0.delete(on: req.db) }
+				req.placemarkDetails.delete(for: placemarkId, force: false)
 			}
 		
 		return deleteDetailsFuture
@@ -175,9 +168,7 @@ internal struct PlacemarkService {
 	func listProperties() throws -> EventLoopFuture<[Placemark.Property.Localized]> {
 		let kind = try req.query.get(Placemark.Property.Kind.self, at: "kind")
 		
-		return PlacemarkModel.Property.query(on: req.db)
-			.filter(\.$kind == kind)
-			.all()
+		return req.placemarkProperties.getAll(kind: kind)
 			.flatMapEachThrowing { try $0.localized(in: .en) }
 	}
 	

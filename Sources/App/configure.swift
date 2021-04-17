@@ -52,6 +52,15 @@ public func configure(_ app: Application) throws {
 	app.placemarks.use { req in
 		PlacemarkRepository(database: req.db)
 	}
+	app.placemarkKinds.use { req in
+		PlacemarkKindRepository(database: req.db)
+	}
+	app.placemarkDetails.use { req in
+		PlacemarkDetailsRepository(database: req.db)
+	}
+	app.placemarkProperties.use { req in
+		PlacemarkPropertyRepository(database: req.db)
+	}
 	
 	// Configure queues
 	if app.environment != .testing {
