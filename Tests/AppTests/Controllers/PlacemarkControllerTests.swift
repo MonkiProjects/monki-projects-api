@@ -405,8 +405,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 	func testGetFeatures() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(
-			.GET, "placemarks/v1/features") { res in
+		try app.test(.GET, "placemarks/v1/properties?kind=feature") { res in
 			try res.assertStatus(.ok) {
 				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 31)
@@ -426,8 +425,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 	func testGetTechniques() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(
-			.GET, "placemarks/v1/techniques") { res in
+		try app.test(.GET, "placemarks/v1/properties?kind=technique") { res in
 			try res.assertStatus(.ok) {
 				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 12)
@@ -447,8 +445,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 	func testGetBenefits() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(
-			.GET, "placemarks/v1/benefits") { res in
+		try app.test(.GET, "placemarks/v1/properties?kind=benefit") { res in
 			try res.assertStatus(.ok) {
 				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 8)
@@ -468,8 +465,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 	func testGetHazards() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(
-			.GET, "placemarks/v1/hazards") { res in
+		try app.test(.GET, "placemarks/v1/properties?kind=hazard") { res in
 			try res.assertStatus(.ok) {
 				let features = try res.content.decode([Placemark.Property.Localized].self)
 				XCTAssertEqual(features.count, 8)
