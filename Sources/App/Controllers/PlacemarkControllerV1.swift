@@ -10,7 +10,6 @@ import Fluent
 import Vapor
 import Models
 import MonkiMapModel
-import GEOSwift
 
 internal struct PlacemarkControllerV1: RouteCollection {
 	
@@ -39,22 +38,17 @@ internal struct PlacemarkControllerV1: RouteCollection {
 		routes.get("properties", use: listPlacemarkProperties)
 	}
 	
-	func listPlacemarks(req: Request) throws -> EventLoopFuture<Page<GEOSwift.Feature>> {
+	func listPlacemarks(req: Request) throws -> EventLoopFuture<Page<Placemark.Public>> {
 		try PlacemarkService(req: req).listPlacemarks()
-			.flatMapThrowing { page in
-				try page.map { try $0.asGeoJSON() }
-			}
 	}
 	
 	func createPlacemark(req: Request) throws -> EventLoopFuture<Response> {
 		try PlacemarkService(req: req).createPlacemark()
-			.flatMapThrowing { try $0.asGeoJSON() }
 			.flatMap { $0.encodeResponse(status: .created, for: req) }
 	}
 	
-	func getPlacemark(req: Request) throws -> EventLoopFuture<GEOSwift.Feature> {
+	func getPlacemark(req: Request) throws -> EventLoopFuture<Placemark.Public> {
 		try PlacemarkService(req: req).getPlacemark()
-			.flatMapThrowing { try $0.asGeoJSON() }
 	}
 	
 	func deletePlacemark(req: Request) throws -> EventLoopFuture<HTTPStatus> {

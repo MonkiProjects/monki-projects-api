@@ -19,7 +19,6 @@ let package = Package(
 			url: "https://github.com/MonkiProjects/monki-map-model-swift.git",
 			.branch("main")
 		),
-		.package(url: "https://github.com/GEOSwift/GEOSwift.git", from: "8.0.0"),
 	],
 	targets: [
 		.target(
@@ -34,7 +33,6 @@ let package = Package(
 				.target(name: "DTOs"),
 				.target(name: "Repositories"),
 				.target(name: "Jobs"),
-				.product(name: "GEOSwift", package: "GEOSwift"),
 			],
 			swiftSettings: [
 				// Enable better optimizations when building in Release configuration. Despite the use of
@@ -92,7 +90,6 @@ let package = Package(
 				.product(name: "Fluent", package: "fluent"),
 				.product(name: "MonkiMapModel", package: "monki-map-model"),
 				.target(name: "Models"),
-				.product(name: "GEOSwift", package: "GEOSwift"),
 			]
 		),
 		.target(
@@ -100,6 +97,7 @@ let package = Package(
 			dependencies: [
 				.product(name: "Fluent", package: "fluent"),
 				.product(name: "MonkiMapModel", package: "monki-map-model"),
+				.target(name: "Models"),
 			]
 		),
 		.target(

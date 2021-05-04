@@ -65,24 +65,6 @@
         }
       },
       {
-        "package": "geos",
-        "repositoryURL": "https://github.com/GEOSwift/geos.git",
-        "state": {
-          "branch": null,
-          "revision": "b7d9efe82815490402171d8c0cdfcfe21a71d194",
-          "version": "6.0.2"
-        }
-      },
-      {
-        "package": "GEOSwift",
-        "repositoryURL": "https://github.com/GEOSwift/GEOSwift.git",
-        "state": {
-          "branch": null,
-          "revision": "c103f5058e6ca287ad04df5cb87a3bfaed403d02",
-          "version": "8.0.2"
-        }
-      },
-      {
         "package": "monki-map-model",
         "repositoryURL": "https://github.com/MonkiProjects/monki-map-model-swift.git",
         "state": {
