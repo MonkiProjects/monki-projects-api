@@ -29,10 +29,6 @@ let package = Package(
 				.product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
 				.product(name: "QueuesRedisDriver", package: "queues-redis-driver"),
 				.product(name: "MonkiMapModel", package: "monki-map-model"),
-				.target(name: "Migrations"),
-				.target(name: "DTOs"),
-				.target(name: "Repositories"),
-				.target(name: "Jobs"),
 			],
 			swiftSettings: [
 				// Enable better optimizations when building in Release configuration. Despite the use of
@@ -41,73 +37,13 @@ let package = Package(
 				.unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
 			]
 		),
-		.target(name: "Run", dependencies: [.target(name: "App")]),
+		.target(name: "Run", dependencies: ["App"]),
 		.testTarget(
 			name: "AppTests",
 			dependencies: [
 				.target(name: "App"),
 				.product(name: "XCTVapor", package: "vapor"),
 				.product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
-			]
-		),
-		.target(
-			name: "Helpers",
-			dependencies: [
-				.product(name: "Vapor", package: "vapor"),
-				.product(name: "Fluent", package: "fluent"),
-				.product(name: "MonkiMapModel", package: "monki-map-model"),
-			]
-		),
-		.target(
-			name: "APIs",
-			dependencies: [
-				.product(name: "Vapor", package: "vapor"),
-			]
-		),
-		.target(
-			name: "Models",
-			dependencies: [
-				.product(name: "Vapor", package: "vapor"),
-				.product(name: "Fluent", package: "fluent"),
-				.product(name: "MonkiMapModel", package: "monki-map-model"),
-				.target(name: "APIs"),
-				.target(name: "Helpers"),
-			]
-		),
-		.target(
-			name: "Migrations",
-			dependencies: [
-				.product(name: "Vapor", package: "vapor"),
-				.product(name: "Fluent", package: "fluent"),
-				.product(name: "MonkiMapModel", package: "monki-map-model"),
-				.target(name: "Models"),
-			]
-		),
-		.target(
-			name: "DTOs",
-			dependencies: [
-				.product(name: "Vapor", package: "vapor"),
-				.product(name: "Fluent", package: "fluent"),
-				.product(name: "MonkiMapModel", package: "monki-map-model"),
-				.target(name: "Models"),
-			]
-		),
-		.target(
-			name: "Repositories",
-			dependencies: [
-				.product(name: "Fluent", package: "fluent"),
-				.product(name: "MonkiMapModel", package: "monki-map-model"),
-				.target(name: "Models"),
-			]
-		),
-		.target(
-			name: "Jobs",
-			dependencies: [
-				.product(name: "Fluent", package: "fluent"),
-				.product(name: "Vapor", package: "vapor"),
-				.product(name: "MonkiMapModel", package: "monki-map-model"),
-				.target(name: "APIs"),
-				.target(name: "Models"),
 			]
 		),
 	]

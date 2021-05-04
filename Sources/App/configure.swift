@@ -10,9 +10,6 @@ import Vapor
 import Fluent
 import FluentPostgresDriver
 import QueuesRedisDriver
-import Models
-import Migrations
-import Jobs
 
 /// Configures your application
 public func configure(_ app: Application) throws {

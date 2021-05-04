@@ -8,7 +8,6 @@
 
 import Vapor
 import Fluent
-import Models
 import MonkiMapModel
 
 extension EventLoopFuture where Value == [PlacemarkModel] {

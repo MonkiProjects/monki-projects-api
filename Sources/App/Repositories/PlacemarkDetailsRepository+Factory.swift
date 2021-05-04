@@ -6,7 +6,6 @@
 //  Copyright © 2021 Monki Projects. All rights reserved.
 //
 
-import Repositories
 import Vapor
 
 // For more information, see <https://docs.vapor.codes/4.0/upgrading/#repositories>

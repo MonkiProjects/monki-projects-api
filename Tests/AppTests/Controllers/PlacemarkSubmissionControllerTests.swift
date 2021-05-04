@@ -9,7 +9,6 @@
 @testable import App
 import XCTVapor
 import Fluent
-import Models
 
 // swiftlint:disable:next type_body_length
 internal final class PlacemarkSubmissionControllerTests: AppTestCase {

@@ -7,7 +7,6 @@
 //
 
 import Vapor
-import Models
 import MonkiMapModel
 
 internal struct RequireAuthForPrivatePlacemarkStates: Middleware {

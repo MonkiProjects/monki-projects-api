@@ -8,7 +8,6 @@
 
 import Fluent
 import Vapor
-import Models
 import MonkiProjectsModel
 
 internal struct UserControllerV1: RouteCollection {

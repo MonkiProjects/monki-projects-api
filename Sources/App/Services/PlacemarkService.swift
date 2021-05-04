@@ -9,8 +9,6 @@
 import Vapor
 import Fluent
 import MonkiMapModel
-import Models
-import Jobs
 
 internal struct PlacemarkService {
 	

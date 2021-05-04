@@ -9,7 +9,6 @@
 @testable import App
 import XCTVapor
 import Fluent
-import Models
 
 // swiftlint:disable closure_body_length
 // swiftlint:disable:next type_body_length

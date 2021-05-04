@@ -9,7 +9,6 @@
 @testable import App
 import XCTVapor
 import Fluent
-import Models
 import MonkiProjectsModel
 
 internal class UserControllerTests: AppTestCase {
