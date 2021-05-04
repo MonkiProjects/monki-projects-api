@@ -1,0 +1,11 @@
+{
+  "apps": [
+    {
+      "app_id": "app_9e2b2d75-e6f2-45b7-88d7-5662af4199b6",
+      "org_id": "orga_835b8484-d141-478f-9749-5045872cfcf4",
+      "deploy_url": "https://github.com/MonkiProjects/monki-projects-api.git",
+      "name": "MP API (prod)",
+      "alias": "api-prod"
+    }
+  ]
+}
