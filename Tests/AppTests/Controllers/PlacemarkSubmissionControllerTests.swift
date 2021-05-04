@@ -164,8 +164,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let create = Review.Create(
 			opinion: .positive,
 			comment: "Test comment",
-			issues: [],
-			moderated: false
+			issues: []
 		)
 		
 		try app.test(
@@ -225,8 +224,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 					reason: .coordinates,
 					comment: "The placemark is not correcly located"
 				),
-			],
-			moderated: false
+			]
 		)
 		
 		try app.test(
@@ -288,8 +286,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let create = Review.Create(
 			opinion: .positive,
 			comment: "Looks great!",
-			issues: [],
-			moderated: false
+			issues: []
 		)
 		
 		try app.test(
@@ -421,8 +418,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let create = Review.Create(
 			opinion: .positive,
 			comment: "Test comment",
-			issues: [],
-			moderated: false
+			issues: []
 		)
 		
 		try app.test(
@@ -480,8 +476,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let create = Review.Create(
 			opinion: .positive,
 			comment: "Test comment 2",
-			issues: [],
-			moderated: false
+			issues: []
 		)
 		
 		try app.test(
@@ -539,8 +534,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let create = Review.Create(
 			opinion: .positive,
 			comment: "Test comment 2",
-			issues: [],
-			moderated: false
+			issues: []
 		)
 		
 		try app.test(
@@ -600,8 +594,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let create = Review.Create(
 			opinion: .positive,
 			comment: "Test comment 2",
-			issues: [],
-			moderated: false
+			issues: []
 		)
 		
 		try app.test(
@@ -661,8 +654,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let create = Review.Create(
 			opinion: .positive,
 			comment: "Test comment 2",
-			issues: [],
-			moderated: false
+			issues: []
 		)
 		
 		try app.test(
@@ -712,8 +704,7 @@ internal final class PlacemarkSubmissionControllerTests: AppTestCase {
 		let create = Review.Create(
 			opinion: .positive,
 			comment: "Test comment",
-			issues: [],
-			moderated: false
+			issues: []
 		)
 		
 		try app.test(

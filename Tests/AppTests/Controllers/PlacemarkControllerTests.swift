@@ -11,7 +11,6 @@ import XCTVapor
 import Fluent
 
 // swiftlint:disable closure_body_length
-// swiftlint:disable:next type_body_length
 internal final class PlacemarkControllerTests: AppTestCase {
 	
 	private static var user: UserModel?
@@ -244,7 +243,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 			longitude: Double.random(in: -180...180),
 			kind: .trainingSpot,
 			caption: "Test caption",
-			images: nil,
+			images: [],
 			properties: [
 				.feature: ["small_wall", "medium_wall"],
 				.technique: ["double_kong"],
@@ -470,7 +469,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 			longitude: Double.random(in: -180...180),
 			kind: .trainingSpot,
 			caption: "Test caption",
-			images: nil,
+			images: [],
 			properties: [:]
 		)
 		// Delete possibly created placemark
@@ -513,7 +512,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 			longitude: Double.random(in: -180...180),
 			kind: .trainingSpot,
 			caption: "Test caption",
-			images: nil,
+			images: [],
 			properties: [
 				.feature: ["123"],
 			]

@@ -28,7 +28,7 @@ internal struct UserControllerV1: RouteCollection {
 		}
 	}
 	
-	func listUsers(req: Request) throws -> EventLoopFuture<Page<User.Public.Small>> {
+	func listUsers(req: Request) throws -> EventLoopFuture<Fluent.Page<User.Public.Small>> {
 		UserModel.query(on: req.db)
 			.paginate(for: req)
 			.flatMapThrowing { page in

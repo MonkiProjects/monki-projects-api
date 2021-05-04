@@ -87,7 +87,7 @@ internal struct PlacemarkService {
 				let details = try PlacemarkModel.Details(
 					placemarkId: placemark.requireID(),
 					caption: create.caption,
-					images: (create.images ?? []).map { $0.absoluteString }
+					images: create.images.map { $0.absoluteString }
 				)
 				
 				return details.create(on: req.db)

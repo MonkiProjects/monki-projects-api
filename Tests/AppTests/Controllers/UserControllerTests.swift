@@ -33,7 +33,7 @@ internal class UserControllerTests: AppTestCase {
 		
 		try app.test(.GET, "users/v1") { res in
 			try res.assertStatus(.ok) {
-				let page = try res.content.decode(Page<User.Public.Small>.self)
+				let page = try res.content.decode(Fluent.Page<User.Public.Small>.self)
 				let users = page.items
 				
 				XCTAssertEqual(users.count, 0)
@@ -61,7 +61,7 @@ internal class UserControllerTests: AppTestCase {
 		
 		try app.test(.GET, "users/v1") { res in
 			try res.assertStatus(.ok) {
-				let page = try res.content.decode(Page<User.Public.Small>.self)
+				let page = try res.content.decode(Fluent.Page<User.Public.Small>.self)
 				let users = page.items
 				
 				XCTAssertEqual(users.count, 1)
