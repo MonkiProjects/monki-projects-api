@@ -28,10 +28,33 @@ internal struct PlacemarkPropertyRepository: PlacemarkPropertyRepositoryProtocol
 			.first()
 	}
 	
+	func get(
+		kind: Placemark.Property.Kind,
+		humanId: String
+	) -> EventLoopFuture<PlacemarkModel.Property> {
+		self.unsafeGet(kind: kind, humanId: humanId)
+			.unwrap(or: Abort(
+				.badRequest,
+				reason: "Invalid property: { \"kind\": \"\(kind)\", \"id\": \"\(humanId)\" }"
+			))
+	}
+	
 	func getAll(kind: Placemark.Property.Kind) -> EventLoopFuture<[PlacemarkModel.Property]> {
 		PlacemarkModel.Property.query(on: database)
 			.filter(\.$kind == kind)
 			.all()
+	}
+	
+	func getAll(dict: [Placemark.Property.Kind: [String]]) -> EventLoopFuture<[PlacemarkModel.Property]> {
+		var pairs = [(Placemark.Property.Kind, String)]()
+		for (key, values) in dict {
+			for value in values {
+				pairs.append((key, value))
+			}
+		}
+		
+		return database.eventLoop.makeSucceededFuture(pairs)
+			.flatMapEach(on: database.eventLoop, get(kind:humanId:))
 	}
 	
 }

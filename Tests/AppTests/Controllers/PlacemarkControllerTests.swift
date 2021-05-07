@@ -245,10 +245,11 @@ internal final class PlacemarkControllerTests: AppTestCase {
 			caption: "Test caption",
 			images: [],
 			properties: [
-				.feature: ["small_wall", "medium_wall"],
-				.technique: ["double_kong"],
-				.benefit: ["covered_area"],
-				.hazard: ["high_drop"],
+				.feature("small_wall"),
+				.feature("medium_wall"),
+				.technique("double_kong"),
+				.benefit("covered_area"),
+				.hazard("high_drop"),
 			]
 		)
 		// Delete possibly created placemark
@@ -280,10 +281,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 					XCTAssertEqual(placemark.category, .spot)
 					XCTAssertEqual(placemark.details.caption, create.caption)
 					XCTAssertEqual(placemark.details.images, [])
-					XCTAssertEqual(placemark.details.properties[.feature]?.count, 2)
-					XCTAssertEqual(placemark.details.properties[.technique]?.count, 1)
-					XCTAssertEqual(placemark.details.properties[.benefit]?.count, 1)
-					XCTAssertEqual(placemark.details.properties[.hazard]?.count, 1)
+					XCTAssertEqual(placemark.details.properties.count, 5)
 					XCTAssertNotNil(placemark.details.satelliteImage)
 					XCTAssertNil(placemark.details.location)
 					XCTAssertNotNil(placemark.createdAt)
@@ -468,9 +466,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 			latitude: Double.random(in: -90...90),
 			longitude: Double.random(in: -180...180),
 			kind: .trainingSpot,
-			caption: "Test caption",
-			images: [],
-			properties: [:]
+			caption: "Test caption"
 		)
 		// Delete possibly created placemark
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)
@@ -512,10 +508,7 @@ internal final class PlacemarkControllerTests: AppTestCase {
 			longitude: Double.random(in: -180...180),
 			kind: .trainingSpot,
 			caption: "Test caption",
-			images: [],
-			properties: [
-				.feature: ["123"],
-			]
+			properties: [.feature("123")]
 		)
 		// Delete possibly created placemark
 		deletePossiblyCreatedPlacemarkAfterTestFinishes(name: create.name, on: app.db)

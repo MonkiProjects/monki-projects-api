@@ -136,7 +136,8 @@ internal struct PlacemarkSubmissionControllerV1: RouteCollection {
 				.transform(to: review)
 		}
 		let addIssues = { (review: ReviewModel) -> EventLoopFuture<Void> in
-			let issuesObjects = create.issues.map { IssueModel(reviewId: userId, reason: $0.reason, comment: $0.comment) }
+			let issuesObjects = create.issues
+				.map { IssueModel(reviewId: userId, reason: $0.reason, comment: $0.comment) }
 			return review.$issues.create(issuesObjects, on: req.db)
 		}
 		

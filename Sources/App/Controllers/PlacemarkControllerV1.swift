@@ -38,24 +38,52 @@ internal struct PlacemarkControllerV1: RouteCollection {
 	}
 	
 	func listPlacemarks(req: Request) throws -> EventLoopFuture<Page<Placemark.Public>> {
-		try PlacemarkService(req: req).listPlacemarks()
+		let pageRequest = try req.query.decode(PageRequest.self)
+		struct Params: Content {
+			let state: Placemark.State?
+		}
+		let state = try req.query.decode(Params.self).state ?? .published
+		
+		return req.placemarkService
+			.listPlacemarks(
+				state: state,
+				pageRequest: pageRequest,
+				userId: { try req.auth.require(UserModel.self, with: .bearer, in: req).requireID() }
+			)
+			.asPublic(on: req.db)
 	}
 	
 	func createPlacemark(req: Request) throws -> EventLoopFuture<Response> {
-		try PlacemarkService(req: req).createPlacemark()
+		let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
+		// Validate and decode data
+		try Placemark.Create.validate(content: req)
+		let create = try req.content.decode(Placemark.Create.self)
+		
+		return req.placemarkService.createPlacemark(create, by: userId)
+			.flatMap { $0.asPublic(on: req.db) }
 			.flatMap { $0.encodeResponse(status: .created, for: req) }
 	}
 	
 	func getPlacemark(req: Request) throws -> EventLoopFuture<Placemark.Public> {
-		try PlacemarkService(req: req).getPlacemark()
+		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
+		
+		return req.placemarkRepository.get(placemarkId)
+			.flatMap { $0.asPublic(on: req.db) }
 	}
 	
 	func deletePlacemark(req: Request) throws -> EventLoopFuture<HTTPStatus> {
-		try PlacemarkService(req: req).deletePlacemark()
+		let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
+		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
+		
+		return req.placemarkService.deletePlacemark(placemarkId, userId: userId)
+			.transform(to: .noContent)
 	}
 	
 	func listPlacemarkProperties(req: Request) throws -> EventLoopFuture<[Placemark.Property.Localized]> {
-		try PlacemarkService(req: req).listProperties()
+		let kind = try req.query.get(Placemark.Property.Kind.self, at: "kind")
+		
+		return req.placemarkPropertyRepository.getAll(kind: kind)
+			.flatMapEachThrowing { try $0.localized(in: .en) }
 	}
 	
 }

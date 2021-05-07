@@ -24,22 +24,12 @@ extension PlacemarkModel.Details {
 			.passthroughAfter { _ in self.$properties.load(on: database) }
 		
 		return loadRelationsFuture.flatMapThrowing { location in
-			typealias Properties = [MonkiMapModel.Placemark.Property.Localized]
-			
-			var properties: [MonkiMapModel.Placemark.Property.Kind: Properties] = [:]
-			MonkiMapModel.Placemark.Property.Kind.allCases.forEach { properties[$0] = [] }
-			
-			for property in self.properties {
-				let localized = try property.localized(in: .en)
-				properties[localized.kind]?.append(localized)
-			}
-			
-			return try MonkiMapModel.Placemark.Details.Public(
+			try MonkiMapModel.Placemark.Details.Public(
 				caption: self.caption,
 				satelliteImage: cloudinary.image(withId: self.satelliteImageId).requireURL(),
 				images: self.images.map(URL.init(string:)).compactMap { $0 },
 				location: location?.asPublic(),
-				properties: properties
+				properties: self.properties.map { try $0.localized(in: .en) }
 			)
 		}
 	}

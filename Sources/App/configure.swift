@@ -46,18 +46,14 @@ public func configure(_ app: Application) throws {
 	try app.autoMigrate().wait()
 	
 	// Configure Repositories
-	app.placemarks.use { req in
-		PlacemarkRepository(database: req.db)
-	}
-	app.placemarkKinds.use { req in
-		PlacemarkKindRepository(database: req.db)
-	}
-	app.placemarkDetails.use { req in
-		PlacemarkDetailsRepository(database: req.db)
-	}
-	app.placemarkProperties.use { req in
-		PlacemarkPropertyRepository(database: req.db)
-	}
+	app.placemarkRepository.use(PlacemarkRepository.init(database:))
+	app.placemarkKindRepository.use(PlacemarkKindRepository.init(database:))
+	app.placemarkDetailsRepository.use(PlacemarkDetailsRepository.init(database:))
+	app.placemarkPropertyRepository.use(PlacemarkPropertyRepository.init(database:))
+	
+	// Configure Services
+	app.placemarkService.use(PlacemarkService.init(db:app:eventLoop:logger:))
+	app.placemarkDetailsService.use(PlacemarkDetailsService.init(db:app:eventLoop:logger:))
 	
 	// Configure queues
 	try app.queues.use(.redis(url: Environment.get("REDIS_URL") ?? "redis://127.0.0.1:6379"))

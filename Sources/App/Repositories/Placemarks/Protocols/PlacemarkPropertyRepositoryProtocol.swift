@@ -16,6 +16,13 @@ public protocol PlacemarkPropertyRepositoryProtocol {
 		humanId: String
 	) -> EventLoopFuture<PlacemarkModel.Property?>
 	
+	func get(
+		kind: Placemark.Property.Kind,
+		humanId: String
+	) -> EventLoopFuture<PlacemarkModel.Property>
+	
 	func getAll(kind: Placemark.Property.Kind) -> EventLoopFuture<[PlacemarkModel.Property]>
+	
+	func getAll(dict: [Placemark.Property.Kind: [String]]) -> EventLoopFuture<[PlacemarkModel.Property]>
 	
 }
