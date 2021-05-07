@@ -6,7 +6,7 @@
 //  Copyright © 2020 Monki Projects. All rights reserved.
 //
 
-@testable import App
+@testable import MonkiProjectsAPI
 import XCTVapor
 import Fluent
 

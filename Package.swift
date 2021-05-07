@@ -22,7 +22,7 @@ let package = Package(
 	],
 	targets: [
 		.target(
-			name: "App",
+			name: "MonkiProjectsAPI",
 			dependencies: [
 				.product(name: "Vapor", package: "vapor"),
 				.product(name: "Fluent", package: "fluent"),
@@ -38,11 +38,11 @@ let package = Package(
 				.unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
 			]
 		),
-		.target(name: "Run", dependencies: ["App"]),
+		.target(name: "Run", dependencies: ["MonkiProjectsAPI"]),
 		.testTarget(
-			name: "AppTests",
+			name: "MonkiProjectsAPITests",
 			dependencies: [
-				.target(name: "App"),
+				.target(name: "MonkiProjectsAPI"),
 				.product(name: "XCTVapor", package: "vapor"),
 				.product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
 			]

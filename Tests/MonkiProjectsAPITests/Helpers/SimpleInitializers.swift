@@ -6,7 +6,7 @@
 //  Copyright © 2021 Monki Projects. All rights reserved.
 //
 
-@testable import App
+@testable import MonkiProjectsAPI
 import Foundation
 
 extension UserModel {

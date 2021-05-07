@@ -6,7 +6,7 @@
 //  Copyright © 2021 Monki Projects. All rights reserved.
 //
 
-import App
+import MonkiProjectsAPI
 import Vapor
 
 internal var env = try Environment.detect()
