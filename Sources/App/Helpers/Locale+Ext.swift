@@ -1,6 +1,6 @@
 //
 //  Locale+Ext.swift
-//  Helpers
+//  MonkiProjectsAPI
 //
 //  Created by Rémi Bardon on 29/09/2020.
 //  Copyright © 2020 Monki Projects. All rights reserved.

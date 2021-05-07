@@ -1,6 +1,6 @@
 //
 //  Placemark+Details.swift
-//  Models
+//  PlacemarksAPI
 //
 //  Created by Rémi Bardon on 16/02/2021.
 //  Copyright © 2021 Monki Projects. All rights reserved.

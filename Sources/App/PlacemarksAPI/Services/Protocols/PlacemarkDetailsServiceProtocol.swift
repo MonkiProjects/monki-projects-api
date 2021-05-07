@@ -1,6 +1,6 @@
 //
 //  PlacemarkDetailsServiceProtocol.swift
-//  App
+//  PlacemarksAPI
 //
 //  Created by Rémi Bardon on 07/05/2021.
 //  Copyright © 2021 Monki Projects. All rights reserved.

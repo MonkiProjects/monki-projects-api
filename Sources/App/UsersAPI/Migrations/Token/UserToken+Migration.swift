@@ -1,6 +1,6 @@
 //
 //  UserToken+Migration.swift
-//  Migrations
+//  UsersAPI
 //
 //  Created by Rémi Bardon on 08/01/2021.
 //  Copyright © 2021 Monki Projects. All rights reserved.

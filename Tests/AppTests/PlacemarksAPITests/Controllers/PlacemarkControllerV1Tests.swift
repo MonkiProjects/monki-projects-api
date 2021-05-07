@@ -1,6 +1,6 @@
 //
 //  PlacemarkControllerV1Tests.swift
-//  AppTests
+//  PlacemarksAPITests
 //
 //  Created by BARDON Rémi on 24/06/2020.
 //  Copyright © 2020 Monki Projects. All rights reserved.

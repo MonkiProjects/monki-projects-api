@@ -1,6 +1,6 @@
 //
 //  Optional+Require.swift
-//  Helpers
+//  MonkiProjectsAPI
 //
 //  Created by Rémi Bardon on 14/10/2020.
 //  Copyright © 2020 Monki Projects. All rights reserved.

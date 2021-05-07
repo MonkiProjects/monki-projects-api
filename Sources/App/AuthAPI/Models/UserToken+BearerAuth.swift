@@ -1,6 +1,6 @@
 //
 //  UserToken+BearerAuth.swift
-//  Models
+//  AuthAPI
 //
 //  Created by Rémi Bardon on 08/06/2020.
 //  Copyright © 2020 Monki Projects. All rights reserved.

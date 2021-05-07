@@ -1,6 +1,6 @@
 //
 //  Future+Passthrough.swift
-//  Helpers
+//  MonkiProjectsAPI
 //
 //  Created by Rémi Bardon on 19/01/2021.
 //  Copyright © 2021 Monki Projects. All rights reserved.

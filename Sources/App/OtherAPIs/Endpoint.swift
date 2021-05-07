@@ -1,6 +1,6 @@
 //
 //  Endpoint.swift
-//  APIs
+//  MonkiProjectsAPI
 //
 //  Created by Rémi Bardon on 24/06/2020.
 //  Copyright © 2020 Monki Projects. All rights reserved.
