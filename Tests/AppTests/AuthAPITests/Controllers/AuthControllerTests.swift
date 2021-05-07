@@ -1,5 +1,5 @@
 //
-//  AuthControllerTests.swift
+//  AuthControllerV1Tests.swift
 //  AppTests
 //
 //  Created by Rémi Bardon on 23/06/2020.
@@ -10,7 +10,7 @@
 import XCTVapor
 import Fluent
 
-internal final class CurrentUserControllerTests: AppTestCase {
+internal final class AuthControllerV1Tests: AppTestCase {
 	
 	private static let userId = UUID()
 	private static let password = "password"

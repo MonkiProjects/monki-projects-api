@@ -1,5 +1,5 @@
 //
-//  PlacemarkControllerTests.swift
+//  PlacemarkControllerV1Tests.swift
 //  AppTests
 //
 //  Created by BARDON Rémi on 24/06/2020.
@@ -11,7 +11,7 @@ import XCTVapor
 import Fluent
 
 // swiftlint:disable closure_body_length
-internal final class PlacemarkControllerTests: AppTestCase {
+internal final class PlacemarkControllerV1Tests: AppTestCase {
 	
 	private static var user: UserModel?
 	private static var userToken: UserModel.Token?

@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  PlacemarkSubmissionControllerV1Tests.swift
 //  App
 //
 //  Created by Rémi Bardon on 12/01/2021.
@@ -11,7 +11,7 @@ import XCTVapor
 import Fluent
 
 // swiftlint:disable:next type_body_length
-internal final class PlacemarkSubmissionControllerTests: AppTestCase {
+internal final class PlacemarkSubmissionControllerV1Tests: AppTestCase {
 	
 	typealias SubmissionModel = PlacemarkModel.Submission
 	typealias ReviewModel = SubmissionModel.Review

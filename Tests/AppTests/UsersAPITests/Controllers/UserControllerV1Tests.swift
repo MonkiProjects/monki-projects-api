@@ -1,5 +1,5 @@
 //
-//  UserControllerTests.swift
+//  UserControllerV1Tests.swift
 //  AppTests
 //
 //  Created by Rémi Bardon on 23/06/2020.
@@ -11,7 +11,7 @@ import XCTVapor
 import Fluent
 import MonkiProjectsModel
 
-internal class UserControllerTests: AppTestCase {
+internal class UserControllerV1Tests: AppTestCase {
 	
 	// MARK: - Valid Domain
 	
