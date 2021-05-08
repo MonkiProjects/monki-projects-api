@@ -1,6 +1,6 @@
 # Monki Projects API
 
-![Test workflow badge](https://github.com/MonkiProjects/monki-projects-api/workflows/Test/badge.svg)
+[![Tests](https://github.com/MonkiProjects/monki-projects-api/actions/workflows/test.yml/badge.svg)](https://github.com/MonkiProjects/monki-projects-api/actions/workflows/test.yml)
 
 ## Overview
 
