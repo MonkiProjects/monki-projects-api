@@ -126,6 +126,11 @@ internal struct PlacemarkService: PlacemarkServiceProtocol {
 	}
 	
 	func triggerSatelliteViewLoading(for placemark: PlacemarkModel) -> EventLoopFuture<Void> {
+		guard Environment.get("ENABLE_JOBS") == "true" else {
+			logger.info("Skipping placemark satellite view loading")
+			return self.eventLoop.makeSucceededVoidFuture()
+		}
+		
 		do {
 			return self.app.queues.queue(.placemarks, logger: self.logger, on: self.eventLoop)
 				.dispatch(
@@ -142,6 +147,11 @@ internal struct PlacemarkService: PlacemarkServiceProtocol {
 	}
 	
 	func triggerLocationReverseGeocoding(for placemark: PlacemarkModel) -> EventLoopFuture<Void> {
+		guard Environment.get("ENABLE_JOBS") == "true" else {
+			logger.info("Skipping placemark location reverse geocoding")
+			return self.eventLoop.makeSucceededVoidFuture()
+		}
+		
 		do {
 			return self.app.queues.queue(.placemarks, logger: self.logger, on: self.eventLoop)
 				.dispatch(

@@ -6,6 +6,18 @@
 
 All of Monki Projects' [APIs](https://en.wikipedia.org/wiki/API) specifications (including this one's) are available in the [mp-api-specs](https://github.com/MonkiProjects/mp-api-specs) repository.
 
+## Environment variables
+
+| Environment variable    |
+| ----------------------- |
+| `DATABASE_PORT`         |
+| `DATABASE_USERNAME`     |
+| `DATABASE_PASSWORD`     |
+| `DATABASE_NAME`         |
+| `ENABLE_JOBS`           |
+| `START_IN_PROCESS_JOBS` |
+| `START_SCHEDULED_JOBS`  |
+
 ## How To Contribute
 
 ### Run the project

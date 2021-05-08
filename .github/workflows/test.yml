@@ -1,4 +1,4 @@
-name: Test
+name: Tests
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 
 jobs:
   test:
+    name: Test on ubuntu-latest
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code

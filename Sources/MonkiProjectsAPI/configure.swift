@@ -45,25 +45,30 @@ public func configure(_ app: Application) throws {
 	app.migrations.add(PlacemarkModel.Migrations.all)
 	try app.autoMigrate().wait()
 	
-	// Configure Repositories
+	// Configure repositories
 	app.placemarkRepository.use(PlacemarkRepository.init(database:))
 	app.placemarkKindRepository.use(PlacemarkKindRepository.init(database:))
 	app.placemarkDetailsRepository.use(PlacemarkDetailsRepository.init(database:))
 	app.placemarkPropertyRepository.use(PlacemarkPropertyRepository.init(database:))
 	
-	// Configure Services
+	// Configure services
 	app.placemarkService.use(PlacemarkService.init(db:app:eventLoop:logger:))
 	app.placemarkDetailsService.use(PlacemarkDetailsService.init(db:app:eventLoop:logger:))
 	
-	// Configure queues
+	// Configure jobs
 	try app.queues.use(.redis(url: Environment.get("REDIS_URL") ?? "redis://127.0.0.1:6379"))
+	Jobs.addAll(to: app)
 	
-	if app.environment != .testing {
-		// Start workers
-		Jobs.addAll(to: app)
+	if Environment.get("START_IN_PROCESS_JOBS") == "true" {
 		try app.queues.startInProcessJobs(on: .default)
 		try app.queues.startInProcessJobs(on: .placemarks)
-//		try app.queues.startScheduledJobs()
+	} else {
+		app.logger.info("Not starting in process jobs, enable them with `START_IN_PROCESS_JOBS`")
+	}
+	if Environment.get("START_SCHEDULED_JOBS") == "true" {
+		try app.queues.startScheduledJobs()
+	} else {
+		app.logger.info("Not starting scheduled jobs, enable them with `START_SCHEDULED_JOBS`")
 	}
 	
 	// Register routes
