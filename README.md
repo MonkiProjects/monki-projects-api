@@ -8,15 +8,16 @@ All of Monki Projects' [APIs](https://en.wikipedia.org/wiki/API) specifications 
 
 ## Environment variables
 
-| Environment variable    |
-| ----------------------- |
-| `DATABASE_PORT`         |
-| `DATABASE_USERNAME`     |
-| `DATABASE_PASSWORD`     |
-| `DATABASE_NAME`         |
-| `ENABLE_JOBS`           |
-| `START_IN_PROCESS_JOBS` |
-| `START_SCHEDULED_JOBS`  |
+| Variable name           | Description |
+| ----------------------: | :---------- |
+| `DATABASE_PORT`         |             |
+| `DATABASE_USERNAME`     |             |
+| `DATABASE_PASSWORD`     |             |
+| `DATABASE_NAME`         |             |
+| `ENABLE_JOBS`           |             |
+| `START_IN_PROCESS_JOBS` |             |
+| `START_SCHEDULED_JOBS`  |             |
+| `WIPE_DATABASE`         | Wipe database before running (can only be used in development) |
 
 ## How To Contribute
 

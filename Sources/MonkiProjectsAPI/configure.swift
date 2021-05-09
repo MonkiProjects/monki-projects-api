@@ -12,7 +12,7 @@ import FluentPostgresDriver
 import QueuesRedisDriver
 
 /// Configures your application
-public func configure(_ app: Application) throws {
+public func configure(_ app: Application) throws { // swiftlint:disable:this function_body_length
 	// Configure encoder & decoder
 	let encoder = JSONEncoder()
 	encoder.keyEncodingStrategy = .convertToSnakeCase
@@ -43,6 +43,9 @@ public func configure(_ app: Application) throws {
 	// Migrate database
 	app.migrations.add(UserModel.Migrations.all)
 	app.migrations.add(PlacemarkModel.Migrations.all)
+	if app.environment == .development && Environment.get("WIPE_DATABASE") == "true" {
+		try app.autoRevert().wait()
+	}
 	try app.autoMigrate().wait()
 	
 	// Configure repositories
