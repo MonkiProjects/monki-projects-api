@@ -51,13 +51,9 @@ internal final class AuthControllerV1Tests: AppTestCase {
 			},
 			afterResponse: { res in
 				try res.assertStatus(.ok) {
-					// Test user value in token
-					do {
-						let token = try res.content.decode(UserModel.Token.self)
-						XCTAssertEqual(token.$user.id, Self.userId)
-					} catch {
-						XCTFail(error.localizedDescription)
-					}
+					let token = try res.content.decode(UserModel.Token.Private.self)
+					
+					XCTAssertNotNil(token.expiresAt)
 				}
 			}
 		)
