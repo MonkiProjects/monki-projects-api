@@ -16,7 +16,7 @@ extension User.Create: Content, Validatable {
 		validations.add("username", as: String.self, is: .count(3...32))
 		let allowedChars = CharacterSet.lowercaseLetters	// [a-z]
 			.union(.decimalDigits)							// [0-9]
-			.union(.init(charactersIn: "._"))				// [._]
+			.union(.init(charactersIn: "._-"))				// [._-]
 		validations.add("username", as: String.self, is: .characterSet(allowedChars))
 		validations.add("displayName", as: String.self, is: .count(3...32))
 		validations.add("password", as: String.self, is: .count(8...))
