@@ -18,18 +18,12 @@ extension UserModel.Token {
 		let createdAt: Date
 	}
 	
-	public func asPrivate(on eventLoop: EventLoop) -> EventLoopFuture<Private> {
-		do {
-			let content = try Private(
-				value: self.value,
-				expiresAt: self.expiresAt,
-				createdAt: self.createdAt.require()
-			)
-			return eventLoop.makeSucceededFuture(content)
-		} catch {
-			return eventLoop.makeFailedFuture(error)
-		}
-		
+	public func asPrivate() throws -> Private {
+		try Private(
+			value: self.value,
+			expiresAt: self.expiresAt,
+			createdAt: self.createdAt.require()
+		)
 	}
 	
 }

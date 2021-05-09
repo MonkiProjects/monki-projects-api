@@ -22,7 +22,7 @@ internal struct AuthControllerV1: RouteCollection {
 		let token = try user.generateToken()
 		
 		return token.save(on: req.db)
-			.flatMap { token.asPrivate(on: req.eventLoop) }
+			.flatMapThrowing { try token.asPrivate() }
 	}
 	
 }
