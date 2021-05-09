@@ -106,7 +106,13 @@ internal class UserControllerV1Tests: AppTestCase {
 					let createdUser = try res.content.decode(User.Private.self)
 					
 					XCTAssertEqual(createdUser.username, user.username)
+					XCTAssertEqual(createdUser.displayName, user.displayName)
 					XCTAssertEqual(createdUser.email, user.email)
+					XCTAssertEqual(createdUser.kind, .user)
+					XCTAssertNil(createdUser.details.bio)
+					XCTAssertNil(createdUser.details.location)
+					XCTAssertEqual(createdUser.details.experience, [:])
+					XCTAssertEqual(createdUser.details.socialUsernames, [:])
 					
 					// Test creation on DB
 					let storedUser = try UserModel.find(createdUser.id, on: app.db).wait()

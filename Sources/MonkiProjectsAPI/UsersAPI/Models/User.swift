@@ -19,6 +19,9 @@ public final class UserModel: Model {
 	@Field(key: "username")
 	public var username: String
 	
+	@Field(key: "display_name")
+	public var displayName: String
+	
 	@Field(key: "email")
 	public var email: String
 	
@@ -36,9 +39,16 @@ public final class UserModel: Model {
 	
 	public init() {}
 	
-	public init(id: IDValue? = nil, username: String, email: String, passwordHash: String) {
+	public init(
+		id: IDValue? = nil,
+		username: String,
+		displayName: String,
+		email: String,
+		passwordHash: String
+	) {
 		self.id = id
 		self.username = username
+		self.displayName = displayName
 		self.email = email
 		self.passwordHash = passwordHash
 	}

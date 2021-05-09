@@ -18,6 +18,7 @@ extension UserModel.Migrations {
 			database.schema("users")
 				.id()
 				.field("username", .string, .required)
+				.field("display_name", .string, .required)
 				.field("email", .string, .required)
 				.field("password_hash", .string, .required)
 				.field("created_at", .datetime, .required)

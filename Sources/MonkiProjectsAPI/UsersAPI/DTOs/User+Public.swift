@@ -16,7 +16,7 @@ extension UserModel {
 		return try .init(
 			id: self.requireID(),
 			username: self.username,
-			displayName: "<TODO>",
+			displayName: self.displayName,
 			avatar: nil,
 			country: nil,
 			kind: .user,

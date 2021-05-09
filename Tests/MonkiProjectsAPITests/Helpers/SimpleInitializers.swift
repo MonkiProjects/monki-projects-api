@@ -14,10 +14,17 @@ extension UserModel {
 	static func dummy(
 		id: UUID = UUID(),
 		username: String = UUID().uuidString,
+		displayName: String = UUID().uuidString,
 		email: String = "\(UUID())@example.com",
 		passwordHash: String = "password" // Do not hash for speed purposes
 	) -> Self {
-		self.init(id: id, username: username, email: email, passwordHash: passwordHash)
+		self.init(
+			id: id,
+			username: username,
+			displayName: displayName,
+			email: email,
+			passwordHash: passwordHash
+		)
 	}
 	
 }

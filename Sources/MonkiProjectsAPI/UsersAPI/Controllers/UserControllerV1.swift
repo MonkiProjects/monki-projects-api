@@ -80,6 +80,7 @@ internal struct UserControllerV1: RouteCollection {
 		let newUserFuture = usernameCheckFuture.flatMapThrowing { _ in
 			try UserModel(
 				username: create.username,
+				displayName: create.displayName,
 				email: create.email,
 				passwordHash: Bcrypt.hash(create.password)
 			)
