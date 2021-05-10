@@ -6,8 +6,9 @@
 //  Copyright © 2021 Monki Projects. All rights reserved.
 //
 
-import Fluent
 import Vapor
+import Fluent
+import MonkiProjectsModel
 
 internal struct AuthControllerV1: RouteCollection {
 	
@@ -17,7 +18,7 @@ internal struct AuthControllerV1: RouteCollection {
 		passwordProtected.post("login", use: login)
 	}
 	
-	func login(req: Request) throws -> EventLoopFuture<UserModel.Token.Private> {
+	func login(req: Request) throws -> EventLoopFuture<User.Token.Private> {
 		let user = try req.auth.require(UserModel.self, with: .basic, in: req)
 		let token = try user.generateToken()
 		

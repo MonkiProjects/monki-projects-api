@@ -7,19 +7,12 @@
 //
 
 import Vapor
-import Fluent
 import MonkiProjectsModel
 
 extension UserModel.Token {
 	
-	public struct Private: Content {
-		let value: String
-		let expiresAt: Date?
-		let createdAt: Date
-	}
-	
-	public func asPrivate() throws -> Private {
-		try Private(
+	public func asPrivate() throws -> MonkiProjectsModel.User.Token.Private {
+		try .init(
 			value: self.value,
 			expiresAt: self.expiresAt,
 			createdAt: self.createdAt.require()
@@ -27,3 +20,5 @@ extension UserModel.Token {
 	}
 	
 }
+
+extension User.Token.Private: Content {}

@@ -9,6 +9,7 @@
 @testable import MonkiProjectsAPI
 import XCTVapor
 import Fluent
+import MonkiProjectsModel
 
 internal final class AuthControllerV1Tests: AppTestCase {
 	
@@ -51,7 +52,7 @@ internal final class AuthControllerV1Tests: AppTestCase {
 			},
 			afterResponse: { res in
 				try res.assertStatus(.ok) {
-					let token = try res.content.decode(UserModel.Token.Private.self)
+					let token = try res.content.decode(User.Token.Private.self)
 					
 					XCTAssertNotNil(token.expiresAt)
 				}
