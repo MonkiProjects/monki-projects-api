@@ -33,7 +33,7 @@ extension UserModel {
 				location: nil,
 				experience: [:],
 				socialUsernames: [:],
-				createdAt: Date()
+				createdAt: self.createdAt.require()
 			)
 		)
 	}
