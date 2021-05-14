@@ -44,15 +44,10 @@ extension EventLoopFuture where Value == [PlacemarkModel.Submission.Review] {
 	
 	func asPublic(on database: Database) -> EventLoopFuture<[Placemark.Submission.Review.Public]> {
 		self
-			.mapEach {
+			.flatMapEachCompact(on: database.eventLoop) {
 				$0.asPublic(on: database)
-					// Map `Review.Public` to `Review.Public?` to allow `nil` recover
-					.map(Optional.init)
-					// Recover errors by mapping to `nil`
-					.recover { _ in nil }
+					.recoverWithNil()
 			}
-			// Skip `nil` values
-			.flatMapEachCompact(on: database.eventLoop) { $0 }
 	}
 	
 }
