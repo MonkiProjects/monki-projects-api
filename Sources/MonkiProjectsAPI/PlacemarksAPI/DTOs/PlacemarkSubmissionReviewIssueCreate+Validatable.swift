@@ -1,5 +1,5 @@
 //
-//  PlacemarkSubmissionReviewIssue+Create.swift
+//  PlacemarkSubmissionReviewIssueCreate+Validatable.swift
 //  PlacemarksAPI
 //
 //  Created by Rémi Bardon on 11/01/2021.
