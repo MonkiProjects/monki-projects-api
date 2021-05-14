@@ -13,12 +13,12 @@ import MonkiMapModel
 extension PlacemarkModel.Submission {
 	
 	public func asPublic(
-		on database: Database
+		on req: Request
 	) -> EventLoopFuture<MonkiMapModel.Placemark.Submission.Public> {
-		let loadRelationsFuture = self.$reviews.load(on: database)
+		let loadRelationsFuture = self.$reviews.load(on: req.db)
 		
 		let reviewsFuture = loadRelationsFuture.transform(to: self.reviews)
-			.flatMapEach(on: database.eventLoop) { $0.asPublic(on: database) }
+			.flatMapEach(on: req.eventLoop) { $0.asPublic(on: req) }
 		
 		return reviewsFuture.flatMapThrowing { reviews in
 			try .init(

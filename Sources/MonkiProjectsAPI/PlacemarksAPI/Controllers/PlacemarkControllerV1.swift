@@ -50,7 +50,7 @@ internal struct PlacemarkControllerV1: RouteCollection {
 				pageRequest: pageRequest,
 				requesterId: { try req.auth.require(UserModel.self, with: .bearer, in: req).requireID() }
 			)
-			.asPublic(on: req.db)
+			.asPublic(on: req)
 	}
 	
 	func createPlacemark(req: Request) throws -> EventLoopFuture<Response> {
@@ -60,7 +60,7 @@ internal struct PlacemarkControllerV1: RouteCollection {
 		let create = try req.content.decode(Placemark.Create.self)
 		
 		return req.placemarkService.createPlacemark(create, creatorId: userId)
-			.flatMap { $0.asPublic(on: req.db) }
+			.flatMap { $0.asPublic(on: req) }
 			.flatMap { $0.encodeResponse(status: .created, for: req) }
 	}
 	
@@ -68,7 +68,7 @@ internal struct PlacemarkControllerV1: RouteCollection {
 		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
 		
 		return req.placemarkRepository.get(placemarkId)
-			.flatMap { $0.asPublic(on: req.db) }
+			.flatMap { $0.asPublic(on: req) }
 	}
 	
 	func deletePlacemark(req: Request) throws -> EventLoopFuture<HTTPStatus> {

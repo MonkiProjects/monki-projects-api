@@ -78,7 +78,7 @@ internal struct PlacemarkSubmissionControllerV1: RouteCollection {
 			}
 		
 		return createSubmissionFuture
-			.flatMap { $0.asPublic(on: req.db) }
+			.flatMap { $0.asPublic(on: req) }
 			.flatMap { $0.encodeResponse(status: .created, for: req) }
 	}
 	
@@ -86,7 +86,7 @@ internal struct PlacemarkSubmissionControllerV1: RouteCollection {
 		let placemarkId = try req.parameters.require("placemarkId", as: PlacemarkModel.IDValue.self)
 		
 		return getLastSubmission(for: placemarkId, in: req.db)
-			.flatMap { $0.asPublic(on: req.db) }
+			.flatMap { $0.asPublic(on: req) }
 	}
 	
 	func listPlacemarkSubmissionReviews(req: Request) throws -> EventLoopFuture<Page<Review.Public>> {
@@ -98,7 +98,7 @@ internal struct PlacemarkSubmissionControllerV1: RouteCollection {
 				ReviewModel.query(on: req.db)
 					.filter(\.$submission.$id == submissionId)
 					.paginate(for: req)
-					.asPublic(on: req.db)
+					.asPublic(on: req)
 			}
 	}
 	
@@ -156,7 +156,7 @@ internal struct PlacemarkSubmissionControllerV1: RouteCollection {
 			.passthrough(addIssues)
 		
 		return future
-			.flatMap { $0.asPublic(on: req.db) }
+			.flatMap { $0.asPublic(on: req) }
 	}
 	
 	// MARK: - Helper functions

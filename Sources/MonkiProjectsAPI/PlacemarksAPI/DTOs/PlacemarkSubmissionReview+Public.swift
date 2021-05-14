@@ -13,24 +13,18 @@ import MonkiMapModel
 extension PlacemarkModel.Submission.Review {
 	
 	public func asPublic(
-		on database: Database
+		on req: Request
 	) -> EventLoopFuture<MonkiMapModel.Placemark.Submission.Review.Public> {
-		let loadRelationsFuture = self.$submission.load(on: database)
-			.flatMap { self.$issues.load(on: database) }
-			.map { self.issues }
-			.flatMapEach(on: database.eventLoop) { issue in
-				issue.$review.load(on: database)
-					.transform(to: issue.review)
-			}
-			.flatMapEach(on: database.eventLoop) { review in
-				review.$submission.load(on: database)
-					.flatMap { review.$reviewer.load(on: database) }
-					.transform(to: review.submission)
-			}
-			.flatMapEach(on: database.eventLoop) { $0.$placemark.load(on: database) }
-			.transform(to: ())
+		let loadRelationsFuture = EventLoopFuture.andAllSucceed([
+			self.$submission.load(on: req.db),
+			self.$issues.load(on: req.db),
+		], on: req.eventLoop)
 		
-		return loadRelationsFuture.flatMapThrowing {
+		let issuesFuture = loadRelationsFuture
+			.transform(to: self.issues)
+			.flatMapEach(on: req.eventLoop) { $0.asPublic(on: req) }
+		
+		return issuesFuture.flatMapThrowing { issues in
 			try .init(
 				id: self.requireID(),
 				submission: self.$submission.id,
@@ -38,7 +32,7 @@ extension PlacemarkModel.Submission.Review {
 				reviewer: self.$reviewer.id,
 				opinion: self.opinion,
 				comment: self.comment,
-				issues: self.issues.map { try $0.asPublic() },
+				issues: issues,
 				moderated: self.moderated,
 				createdAt: self.createdAt.require()
 			)
