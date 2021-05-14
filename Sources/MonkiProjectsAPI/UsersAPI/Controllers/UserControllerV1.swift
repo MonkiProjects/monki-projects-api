@@ -13,19 +13,19 @@ import MonkiProjectsModel
 internal struct UserControllerV1: RouteCollection {
 	
 	func boot(routes: RoutesBuilder) throws {
-		// GET users/v1
+		// GET /users/v1
 		routes.get(use: listUsers)
-		// POST users/v1
+		// POST /users/v1
 		routes.post(use: createUser)
 		
 		routes.group(":userId") { user in
-			// GET users/v1/{userId}
+			// GET /users/v1/{userId}
 			user.get(use: getUser)
 			
 			let tokenProtected = user.grouped(UserModel.Token.authenticator())
 			// PATCH /users/v1/{userId}
 			tokenProtected.patch(use: updateUser)
-			// DELETE users/v1/{userId}
+			// DELETE /users/v1/{userId}
 			tokenProtected.delete(use: deleteUser)
 		}
 	}
