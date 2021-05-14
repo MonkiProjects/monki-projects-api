@@ -14,17 +14,17 @@ public protocol PlacemarkServiceProtocol {
 	func listPlacemarks(
 		state: Placemark.State,
 		pageRequest: PageRequest,
-		userId: (() throws -> UserModel.IDValue)?
+		requesterId: (() throws -> UserModel.IDValue)?
 	) -> EventLoopFuture<Page<PlacemarkModel>>
 	
 	func createPlacemark(
 		_ create: Placemark.Create,
-		by userId: UserModel.IDValue
+		creatorId: UserModel.IDValue
 	) -> EventLoopFuture<PlacemarkModel>
 	
 	func deletePlacemark(
 		_ placemarkId: PlacemarkModel.IDValue,
-		userId: UserModel.IDValue
+		requesterId: UserModel.IDValue
 	) -> EventLoopFuture<Void>
 	
 	func triggerSatelliteViewLoading(for placemark: PlacemarkModel) -> EventLoopFuture<Void>

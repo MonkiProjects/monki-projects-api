@@ -48,7 +48,7 @@ internal struct PlacemarkControllerV1: RouteCollection {
 			.listPlacemarks(
 				state: state,
 				pageRequest: pageRequest,
-				userId: { try req.auth.require(UserModel.self, with: .bearer, in: req).requireID() }
+				requesterId: { try req.auth.require(UserModel.self, with: .bearer, in: req).requireID() }
 			)
 			.asPublic(on: req.db)
 	}
@@ -59,7 +59,7 @@ internal struct PlacemarkControllerV1: RouteCollection {
 		try Placemark.Create.validate(content: req)
 		let create = try req.content.decode(Placemark.Create.self)
 		
-		return req.placemarkService.createPlacemark(create, by: userId)
+		return req.placemarkService.createPlacemark(create, creatorId: userId)
 			.flatMap { $0.asPublic(on: req.db) }
 			.flatMap { $0.encodeResponse(status: .created, for: req) }
 	}
@@ -75,7 +75,7 @@ internal struct PlacemarkControllerV1: RouteCollection {
 		let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
 		let placemarkId = try req.parameters.require("placemarkId", as: UUID.self)
 		
-		return req.placemarkService.deletePlacemark(placemarkId, userId: userId)
+		return req.placemarkService.deletePlacemark(placemarkId, requesterId: userId)
 			.transform(to: .noContent)
 	}
 	

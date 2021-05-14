@@ -20,14 +20,14 @@ internal struct PlacemarkService: PlacemarkServiceProtocol {
 	func listPlacemarks(
 		state: Placemark.State,
 		pageRequest: PageRequest,
-		userId: (() throws -> UserModel.IDValue)? = nil
+		requesterId: (() throws -> UserModel.IDValue)? = nil
 	) -> EventLoopFuture<Page<PlacemarkModel>> {
 		do {
 			switch state {
 			case .unknown:
 				throw Abort(.badRequest, reason: "Fetching placemarks in 'unknown' state is impossible.")
 			case .draft, .local, .private:
-				guard let userId = try userId?() else {
+				guard let userId = try requesterId?() else {
 					throw Abort(
 						.forbidden,
 						reason: "You must be authenticated to list your draft, local or private placemarks."
@@ -46,7 +46,7 @@ internal struct PlacemarkService: PlacemarkServiceProtocol {
 	
 	func createPlacemark(
 		_ create: Placemark.Create,
-		by userId: UserModel.IDValue
+		creatorId: UserModel.IDValue
 	) -> EventLoopFuture<PlacemarkModel> {
 		// TODO: Check for near spots (e.g. < 20m)
 		
@@ -60,7 +60,7 @@ internal struct PlacemarkService: PlacemarkServiceProtocol {
 				longitude: create.longitude,
 				kindId: kind.requireID(),
 				state: .private,
-				creatorId: userId
+				creatorId: creatorId
 			)
 		}
 		
@@ -107,13 +107,13 @@ internal struct PlacemarkService: PlacemarkServiceProtocol {
 	
 	func deletePlacemark(
 		_ placemarkId: PlacemarkModel.IDValue,
-		userId: UserModel.IDValue
+		requesterId: UserModel.IDValue
 	) -> EventLoopFuture<Void> {
 		let placemarkFuture = self.app.placemarkRepository(for: self.db).get(placemarkId)
 		
 		// Do additional validations
 		let guardAuthorizedFuture = placemarkFuture.guard({ placemark in
-			placemark.$creator.id == userId
+			placemark.$creator.id == requesterId
 		}, else: Abort(.forbidden, reason: "You cannot delete someone else's placemark!"))
 		
 		let deleteDetailsFuture = guardAuthorizedFuture
