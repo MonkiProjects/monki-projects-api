@@ -184,7 +184,7 @@ internal class UserControllerV1Tests: AppTestCase {
 	/// - WHEN:
 	///     - Deleting a user
 	/// - THEN:
-	///     - `HTTP` status should be `200 OK`
+	///     - `HTTP` status should be `204 No Content`
 	///     - `body` should be empty
 	///     - user tokens should all be deleted from database
 	///     - user should be deleted from database
@@ -209,7 +209,7 @@ internal class UserControllerV1Tests: AppTestCase {
 				req.headers.bearerAuthorization = bearerAuth
 			},
 			afterResponse: { res in
-				try res.assertStatus(.ok) {
+				try res.assertStatus(.noContent) {
 					XCTAssertEqual(res.body.string, "")
 					
 					// Test if user is really deleted
@@ -271,13 +271,13 @@ internal class UserControllerV1Tests: AppTestCase {
 	///     - Trying to fetch a user with a random `id`
 	/// - THEN:
 	///     - `HTTP` status should be `404 Not Found`
-	///     - `body` should be `"Not Found"`
+	///     - `body` should be `"User not found"`
 	func testGetUserWithInexistentId() throws {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
 			.GET, "users/v1/\(UUID())") { res in
-			try res.assertError(status: .notFound, reason: "Not Found")
+			try res.assertError(status: .notFound, reason: "User not found")
 		}
 	}
 	
@@ -289,7 +289,7 @@ internal class UserControllerV1Tests: AppTestCase {
 	///     - Creating another user with the same email address
 	/// - THEN:
 	///     - `HTTP` status should be `403 Forbidden`
-	///     - `body` should be `"Email or username already taken"`
+	///     - `body` should be `"Email already taken"`
 	func testCreateUserWithExistingEmail() throws {
 		let app = try XCTUnwrap(Self.app)
 		
@@ -315,7 +315,7 @@ internal class UserControllerV1Tests: AppTestCase {
 				try req.content.encode(user2)
 			},
 			afterResponse: { res in
-				try res.assertError(status: .forbidden, reason: "Email or username already taken")
+				try res.assertError(status: .forbidden, reason: "Email already taken")
 			}
 		)
 	}
@@ -328,7 +328,7 @@ internal class UserControllerV1Tests: AppTestCase {
 	///     - Creating another user with the same username
 	/// - THEN:
 	///     - `HTTP` status should be `403 Forbidden`
-	///     - `body` should be `"Email or username already taken"`
+	///     - `body` should be `"Username already taken"`
 	func testCreateUserWithExistingUsername() throws {
 		let app = try XCTUnwrap(Self.app)
 		
@@ -354,7 +354,7 @@ internal class UserControllerV1Tests: AppTestCase {
 				try req.content.encode(user2)
 			},
 			afterResponse: { res in
-				try res.assertError(status: .forbidden, reason: "Email or username already taken")
+				try res.assertError(status: .forbidden, reason: "Username already taken")
 			}
 		)
 	}

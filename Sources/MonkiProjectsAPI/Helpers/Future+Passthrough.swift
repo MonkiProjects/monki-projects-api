@@ -25,6 +25,12 @@ extension EventLoopFuture {
 	}
 	
 	public func passthroughAfter<T>(
+		_ future: EventLoopFuture<T>
+	) -> EventLoopFuture<Value> {
+		self.flatMap { _ in future }.transform(to: self)
+	}
+	
+	public func passthroughAfter<T>(
 		_ callback: @escaping (Value) throws -> EventLoopFuture<T>
 	) -> EventLoopFuture<Value> {
 		self.flatMapThrowing(callback).flatMap { $0 }.transform(to: self)

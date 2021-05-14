@@ -49,12 +49,14 @@ public func configure(_ app: Application) throws { // swiftlint:disable:this fun
 	try app.autoMigrate().wait()
 	
 	// Configure repositories
+	app.userRepository.use(UserRepository.init(database:))
 	app.placemarkRepository.use(PlacemarkRepository.init(database:))
 	app.placemarkKindRepository.use(PlacemarkKindRepository.init(database:))
 	app.placemarkDetailsRepository.use(PlacemarkDetailsRepository.init(database:))
 	app.placemarkPropertyRepository.use(PlacemarkPropertyRepository.init(database:))
 	
 	// Configure services
+	app.userService.use(UserService.init(db:app:eventLoop:logger:))
 	app.placemarkService.use(PlacemarkService.init(db:app:eventLoop:logger:))
 	app.placemarkDetailsService.use(PlacemarkDetailsService.init(db:app:eventLoop:logger:))
 	
