@@ -40,20 +40,7 @@ internal struct UserControllerV1: RouteCollection {
 	}
 	
 	func createUser(req: Request) throws -> EventLoopFuture<Response> {
-		// Validate and decode data
-		do {
-			try User.Create.validate(content: req)
-		} catch {
-			// Fix error message not showing '.' and '_' for some reason
-			var message = String(describing: error)
-			let suffix = "(allowed: a-z, 0-9)"
-			if message.hasSuffix(suffix) {
-				message.removeLast(suffix.count)
-				message.append("(allowed: a-z, 0-9, '.', '_')")
-				throw Abort(.badRequest, reason: message)
-			}
-			throw error
-		}
+		try User.Create.validate(content: req)
 		let create = try req.content.decode(User.Create.self)
 		
 		return req.userService.createUser(create)
