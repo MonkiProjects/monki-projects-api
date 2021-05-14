@@ -122,6 +122,61 @@ internal class UserControllerV1Tests: AppTestCase {
 		)
 	}
 	
+	/// Test if `PATCH` actually updates the user details.
+	///
+	/// - GIVEN:
+	///     - A user
+	/// - WHEN:
+	///     - Updating the user's username
+	///     - Updating the user's display name
+	/// - THEN:
+	///     - `HTTP` status should be `200 OK`
+	///     - `body` should be the updated user's data
+	///     - user details should be updated in database
+	func testUpdateUser() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		// Create user
+		let userId = UUID()
+		let user = UserModel.dummy(id: userId)
+		try user.create(on: app.db).wait()
+		deleteUserAfterTestFinishes(user, on: app.db)
+		
+		// Create new token
+		let token = try user.generateToken()
+		try token.create(on: app.db).wait()
+		deleteUserTokenAfterTestFinishes(token, on: app.db)
+		
+		let updateBody = User.Update(
+			username: UUID().uuidString,
+			displayName: UUID().uuidString
+		)
+		try app.test(
+			.PATCH, "users/v1/\(userId)",
+			beforeRequest: { req in
+				let bearerAuth = BearerAuthorization(token: token.value)
+				req.headers.bearerAuthorization = bearerAuth
+				
+				try req.content.encode(updateBody)
+			},
+			afterResponse: { res in
+				try res.assertStatus(.ok) {
+					let details = try res.content.decode(User.Public.Full.self)
+					
+					// Test response content
+					XCTAssertEqual(details.username, updateBody.username)
+					XCTAssertEqual(details.displayName, updateBody.displayName)
+					
+					// Test stored user
+					let userId = try user.requireID()
+					let storedUser = try XCTUnwrap(UserModel.find(userId, on: app.db).wait())
+					XCTAssertEqual(storedUser.username, updateBody.username)
+					XCTAssertEqual(storedUser.displayName, updateBody.displayName)
+				}
+			}
+		)
+	}
+	
 	/// Test if `DELETE` actually deletes the user and its tokens.
 	///
 	/// - GIVEN:

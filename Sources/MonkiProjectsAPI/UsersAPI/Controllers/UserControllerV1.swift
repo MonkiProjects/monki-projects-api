@@ -23,6 +23,8 @@ internal struct UserControllerV1: RouteCollection {
 			user.get(use: getUser)
 			
 			let tokenProtected = user.grouped(UserModel.Token.authenticator())
+			// PATCH /users/v1/{userId}
+			tokenProtected.patch(use: updateUser)
 			// DELETE users/v1/{userId}
 			tokenProtected.delete(use: deleteUser)
 		}
@@ -98,6 +100,36 @@ internal struct UserControllerV1: RouteCollection {
 		let userId = try req.parameters.require("userId", as: UUID.self)
 		return UserModel.find(userId, on: req.db)
 			.unwrap(or: Abort(.notFound))
+			.flatMapThrowing { try $0.asPublicFull() }
+	}
+	
+	func updateUser(req: Request) throws -> EventLoopFuture<User.Public.Full> {
+		let caller = try req.auth.require(UserModel.self, with: .bearer, in: req)
+		let userId = try req.parameters.require("userId", as: UUID.self)
+		
+		// Do additional validations
+		guard caller.id == userId else {
+			throw Abort(.forbidden, reason: "You cannot update someone else's account!")
+		}
+		
+		let params = try req.content.decode(User.Update.self)
+		
+		let userFuture = UserModel.find(userId, on: req.db)
+			.unwrap(or: Abort(.notFound))
+		
+		let userUpdateFuture = userFuture.map { user -> UserModel in
+			if let username = params.username {
+				user.username = username
+			}
+			if let displayName = params.displayName {
+				user.displayName = displayName
+			}
+			
+			return user
+		}
+		
+		return userUpdateFuture
+			.passthroughAfter { $0.update(on: req.db) }
 			.flatMapThrowing { try $0.asPublicFull() }
 	}
 	
