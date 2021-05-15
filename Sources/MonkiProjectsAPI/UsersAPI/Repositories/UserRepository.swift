@@ -35,4 +35,26 @@ internal struct UserRepository: UserRepositoryProtocol {
 			.unwrap(or: Abort(.notFound, reason: "User not found"))
 	}
 	
+	func unsafeGet(email: String) -> EventLoopFuture<UserModel?> {
+		UserModel.query(on: self.database)
+			.filter(\.$email == email)
+			.first()
+	}
+	
+	func get(email: String) -> EventLoopFuture<UserModel> {
+		self.unsafeGet(email: email)
+			.unwrap(or: Abort(.notFound, reason: "No user with email '\(email)' found."))
+	}
+	
+	func unsafeGet(username: String) -> EventLoopFuture<UserModel?> {
+		UserModel.query(on: self.database)
+			.filter(\.$username == username)
+			.first()
+	}
+	
+	func get(username: String) -> EventLoopFuture<UserModel> {
+		self.unsafeGet(username: username)
+			.unwrap(or: Abort(.notFound, reason: "No user with username '\(username)' found."))
+	}
+	
 }

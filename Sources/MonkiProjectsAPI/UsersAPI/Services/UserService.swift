@@ -18,8 +18,7 @@ internal struct UserService: UserServiceProtocol {
 	let logger: Logger
 	
 	func listUsers(pageRequest: PageRequest) -> EventLoopFuture<Fluent.Page<UserModel>> {
-		UserModel.query(on: self.db)
-			.paginate(pageRequest)
+		self.app.userRepository(for: self.db).getAllPaged(pageRequest)
 	}
 	
 	func createUser(_ create: User.Create) -> EventLoopFuture<UserModel> {
@@ -60,8 +59,7 @@ internal struct UserService: UserServiceProtocol {
 			)
 		}
 		
-		let userFuture = UserModel.find(userId, on: self.db)
-			.unwrap(or: Abort(.notFound))
+		let userFuture = self.app.userRepository(for: self.db).get(userId)
 		
 		let userUpdateFuture = userFuture.map { user -> UserModel in
 			if let username = update.username {
@@ -102,10 +100,8 @@ internal struct UserService: UserServiceProtocol {
 	
 	/// Check for existing email
 	func checkEmailAvailable(_ email: String) -> EventLoopFuture<Void> {
-		UserModel.query(on: self.db)
-			// Get User with same email
-			.filter(\.$email == email)
-			.first()
+		self.app.userRepository(for: self.db)
+			.unsafeGet(email: email)
 			// Abort if existing email
 			.guard(\.isNil, else: Abort(.forbidden, reason: "Email already taken"))
 			.transform(to: ())
@@ -113,10 +109,8 @@ internal struct UserService: UserServiceProtocol {
 	
 	/// Check for existing username
 	func checkUsernameAvailable(_ username: String) -> EventLoopFuture<Void> {
-		UserModel.query(on: self.db)
-			// Get User with same username
-			.filter(\.$username == username)
-			.first()
+		self.app.userRepository(for: self.db)
+			.unsafeGet(username: username)
 			// Abort if existing username
 			.guard(\.isNil, else: Abort(.forbidden, reason: "Username already taken"))
 			.transform(to: ())

@@ -20,4 +20,16 @@ public protocol UserRepositoryProtocol {
 	
 	func get(_ userId: UserModel.IDValue) -> EventLoopFuture<UserModel>
 	
+	/// Get user with email, or `nil` if email doesn't exist.
+	func unsafeGet(email: String) -> EventLoopFuture<UserModel?>
+	
+	/// Get user with email.
+	func get(email: String) -> EventLoopFuture<UserModel>
+	
+	/// Get user with username, or `nil` if username doesn't exist.
+	func unsafeGet(username: String) -> EventLoopFuture<UserModel?>
+	
+	/// Get user with username.
+	func get(username: String) -> EventLoopFuture<UserModel>
+	
 }
