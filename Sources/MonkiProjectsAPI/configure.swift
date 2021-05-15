@@ -50,6 +50,7 @@ public func configure(_ app: Application) throws { // swiftlint:disable:this fun
 	
 	// Configure repositories
 	app.userRepository.use(UserRepository.init(database:))
+	app.userTokenRepository.use(UserTokenRepository.init(database:))
 	app.placemarkRepository.use(PlacemarkRepository.init(database:))
 	app.placemarkKindRepository.use(PlacemarkKindRepository.init(database:))
 	app.placemarkDetailsRepository.use(PlacemarkDetailsRepository.init(database:))

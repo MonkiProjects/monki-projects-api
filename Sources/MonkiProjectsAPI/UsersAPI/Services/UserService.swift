@@ -87,10 +87,8 @@ internal struct UserService: UserServiceProtocol {
 			user.id == requesterId
 		}, else: Abort(.forbidden, reason: "You cannot delete someone else's account!"))
 		
-		let deleteTokensFuture = UserModel.Token.query(on: self.db)
-			.with(\.$user)
-			.filter(\.$user.$id == userId)
-			.all()
+		let deleteTokensFuture = self.app.userTokenRepository(for: self.db)
+			.getAll(for: userId)
 			.flatMap { $0.delete(on: self.db) }
 		
 		return guardAuthorizedFuture
