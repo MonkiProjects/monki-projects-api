@@ -10,7 +10,7 @@ import Vapor
 import Fluent
 import MonkiProjectsModel
 
-internal struct UserTokenService: UserTokenServiceProtocol {
+internal struct UserTokenService: Service, UserTokenServiceProtocol {
 	
 	let db: Database
 	let app: Application
@@ -21,19 +21,20 @@ internal struct UserTokenService: UserTokenServiceProtocol {
 		for userId: UserModel.IDValue,
 		requesterId: UserModel.IDValue
 	) -> EventLoopFuture<Void> {
-		let userFuture = self.app.userRepository(for: self.db).get(userId)
+		let validationsFuture = EventLoopFuture.andAllSucceed([
+			self.make(self.app.authorizationService)
+				.user(requesterId, can: .delete, user: userId)
+				.guard(else: Abort(.forbidden, reason: "You cannot delete someone else's tokens!")),
+		], on: self.eventLoop)
 		
-		// Do additional validations
-		let guardAuthorizedFuture = userFuture.guard({ user in
-			user.id == requesterId
-		}, else: Abort(.forbidden, reason: "You cannot delete someone else's tokens!"))
+		func deleteTokensFuture() -> EventLoopFuture<Void> {
+			self.make(self.app.userTokenRepository)
+				.getAll(for: userId)
+				.flatMap { $0.delete(on: self.db) }
+		}
 		
-		let deleteTokensFuture = self.app.userTokenRepository(for: self.db)
-			.getAll(for: userId)
-			.flatMap { $0.delete(on: self.db) }
-		
-		return guardAuthorizedFuture
-			.flatMap { _ in deleteTokensFuture }
+		return validationsFuture
+			.flatMap(deleteTokensFuture)
 	}
 	
 }

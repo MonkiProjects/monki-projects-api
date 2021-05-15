@@ -10,7 +10,7 @@ import Vapor
 import Fluent
 import MonkiMapModel
 
-internal struct PlacemarkDetailsService: PlacemarkDetailsServiceProtocol {
+internal struct PlacemarkDetailsService: Service, PlacemarkDetailsServiceProtocol {
 	
 	let db: Database
 	let app: Application
@@ -23,7 +23,7 @@ internal struct PlacemarkDetailsService: PlacemarkDetailsServiceProtocol {
 	) -> EventLoopFuture<Void> {
 		self.eventLoop.makeSucceededFuture(properties)
 			.flatMapEach(on: self.eventLoop) { property in
-				self.app.placemarkPropertyRepository(for: self.db)
+				self.make(self.app.placemarkPropertyRepository)
 					.get(kind: property.kind, humanId: property.id)
 					.flatMap { property in
 						details.$properties.attach(property, method: .ifNotExists, on: self.db)

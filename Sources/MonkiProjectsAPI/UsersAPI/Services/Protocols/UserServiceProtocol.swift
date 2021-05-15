@@ -26,8 +26,10 @@ public protocol UserServiceProtocol {
 		requesterId: UserModel.IDValue
 	) -> EventLoopFuture<Void>
 	
+	/// Check for existing email
 	func checkEmailAvailable(_ email: String) -> EventLoopFuture<Void>
 	
+	/// Check for existing username
 	func checkUsernameAvailable(_ username: String) -> EventLoopFuture<Void>
 	
 }

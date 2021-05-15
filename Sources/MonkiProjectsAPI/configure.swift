@@ -59,6 +59,7 @@ public func configure(_ app: Application) throws { // swiftlint:disable:this fun
 	// Configure services
 	app.userService.use(UserService.init(db:app:eventLoop:logger:))
 	app.userTokenService.use(UserTokenService.init(db:app:eventLoop:logger:))
+	app.authorizationService.use(AuthorizationService.init(db:app:eventLoop:logger:))
 	app.placemarkService.use(PlacemarkService.init(db:app:eventLoop:logger:))
 	app.placemarkDetailsService.use(PlacemarkDetailsService.init(db:app:eventLoop:logger:))
 	

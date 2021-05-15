@@ -10,7 +10,7 @@ import Vapor
 import Fluent
 import MonkiProjectsModel
 
-internal struct UserService: UserServiceProtocol {
+internal struct UserService: Service, UserServiceProtocol {
 	
 	let db: Database
 	let app: Application
@@ -18,32 +18,35 @@ internal struct UserService: UserServiceProtocol {
 	let logger: Logger
 	
 	func listUsers(pageRequest: PageRequest) -> EventLoopFuture<Fluent.Page<UserModel>> {
-		self.app.userRepository(for: self.db).getAllPaged(pageRequest)
+		self.make(self.app.userRepository).getAllPaged(pageRequest)
 	}
 	
 	func createUser(_ create: User.Create) -> EventLoopFuture<UserModel> {
-		// Do additional validations
-		guard create.password == create.confirmPassword else {
-			return self.eventLoop.makeFailedFuture(Abort(.badRequest, reason: "Passwords do not match"))
-		}
-		
-		let checksFuture = EventLoopFuture.andAllSucceed([
+		let validationsFuture = EventLoopFuture.andAllSucceed([
+			self.eventLoop.tryFuture {
+				guard create.password == create.confirmPassword else {
+					throw Abort(.badRequest, reason: "Passwords do not match")
+				}
+			},
 			self.checkEmailAvailable(create.email),
 			self.checkUsernameAvailable(create.username),
 		], on: self.eventLoop)
 		
-		// Create User object
-		let newUserFuture = checksFuture.flatMapThrowing { _ in
-			try UserModel(
-				username: create.username,
-				displayName: create.displayName,
-				email: create.email,
-				passwordHash: Bcrypt.hash(create.password)
-			)
+		func newUserFuture() -> EventLoopFuture<UserModel> {
+			self.eventLoop.tryFuture {
+				try UserModel(
+					username: create.username,
+					displayName: create.displayName,
+					email: create.email,
+					passwordHash: Bcrypt.hash(create.password)
+				)
+			}
 		}
 		
-		// Save User in database
-		return newUserFuture
+		return validationsFuture
+			// Create user object
+			.flatMap(newUserFuture)
+			// Save user in database
 			.passthroughAfter { $0.create(on: self.db) }
 	}
 	
@@ -52,16 +55,24 @@ internal struct UserService: UserServiceProtocol {
 		with update: User.Update,
 		requesterId: UserModel.IDValue
 	) -> EventLoopFuture<UserModel> {
-		// Do additional validations
-		guard requesterId == userId else {
-			return self.eventLoop.makeFailedFuture(
-				Abort(.forbidden, reason: "You cannot update someone else's account!")
-			)
+		var validations: [EventLoopFuture<Void>] = [
+			self.make(self.app.authorizationService)
+				.user(requesterId, can: .update, user: userId)
+				.guard(else: Abort(.forbidden, reason: "You cannot update someone else's account!"))
+				.transform(to: ()),
+		]
+		if let username = update.username {
+			validations.append(self.checkUsernameAvailable(username))
+			// FIXME: Validate username
+		}
+		// FIXME: Validate displayName
+		let validationsFuture = EventLoopFuture.andAllSucceed(validations, on: self.eventLoop)
+		
+		func userFuture() -> EventLoopFuture<UserModel> {
+			self.make(self.app.userRepository).get(userId)
 		}
 		
-		let userFuture = self.app.userRepository(for: self.db).get(userId)
-		
-		let userUpdateFuture = userFuture.map { user -> UserModel in
+		func updateUser(_ user: UserModel) -> UserModel {
 			if let username = update.username {
 				user.username = username
 			}
@@ -72,7 +83,9 @@ internal struct UserService: UserServiceProtocol {
 			return user
 		}
 		
-		return userUpdateFuture
+		return validationsFuture
+			.flatMap(userFuture)
+			.map(updateUser)
 			.passthroughAfter { $0.update(on: self.db) }
 	}
 	
@@ -80,38 +93,37 @@ internal struct UserService: UserServiceProtocol {
 		_ userId: UserModel.IDValue,
 		requesterId: UserModel.IDValue
 	) -> EventLoopFuture<Void> {
-		let userFuture = self.app.userRepository(for: self.db).get(userId)
+		let validationsFuture = EventLoopFuture.andAllSucceed([
+			self.make(self.app.authorizationService)
+				.user(requesterId, can: .delete, user: userId)
+				.guard(else: Abort(.forbidden, reason: "You cannot delete someone else's account!")),
+		], on: self.eventLoop)
 		
-		// Do additional validations
-		let guardAuthorizedFuture = userFuture.guard({ user in
-			user.id == requesterId
-		}, else: Abort(.forbidden, reason: "You cannot delete someone else's account!"))
+		func userFuture() -> EventLoopFuture<UserModel> {
+			self.make(self.app.userRepository).get(userId)
+		}
 		
-		let deleteTokensFuture = self.app.userTokenService(
-			database: self.db,
-			application: self.app,
-			eventLoop: self.eventLoop,
-			logger: self.logger
-		)
-		.deleteAllTokens(for: userId, requesterId: requesterId)
+		func deleteTokensFuture(for user: UserModel) -> EventLoopFuture<Void> {
+			self.make(self.app.userTokenService)
+				.deleteAllTokens(for: userId, requesterId: requesterId)
+		}
 		
-		return guardAuthorizedFuture
+		return validationsFuture
+			.flatMap(userFuture)
 			.passthroughAfter(deleteTokensFuture)
 			.flatMap { $0.delete(on: self.db) }
 	}
 	
-	/// Check for existing email
 	func checkEmailAvailable(_ email: String) -> EventLoopFuture<Void> {
-		self.app.userRepository(for: self.db)
+		self.make(self.app.userRepository)
 			.unsafeGet(email: email)
 			// Abort if existing email
 			.guard(\.isNil, else: Abort(.forbidden, reason: "Email already taken"))
 			.transform(to: ())
 	}
 	
-	/// Check for existing username
 	func checkUsernameAvailable(_ username: String) -> EventLoopFuture<Void> {
-		self.app.userRepository(for: self.db)
+		self.make(self.app.userRepository)
 			.unsafeGet(username: username)
 			// Abort if existing username
 			.guard(\.isNil, else: Abort(.forbidden, reason: "Username already taken"))

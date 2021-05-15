@@ -10,7 +10,7 @@ import Vapor
 import Fluent
 import MonkiMapModel
 
-internal struct PlacemarkService: PlacemarkServiceProtocol {
+internal struct PlacemarkService: Service, PlacemarkServiceProtocol {
 	
 	let db: Database
 	let app: Application
@@ -33,10 +33,10 @@ internal struct PlacemarkService: PlacemarkServiceProtocol {
 						reason: "You must be authenticated to list your draft, local or private placemarks."
 					)
 				}
-				return self.app.placemarkRepository(for: self.db)
+				return self.make(self.app.placemarkRepository)
 					.getAllPaged(state: state, creator: userId, pageRequest)
 			case .submitted, .published, .rejected:
-				return self.app.placemarkRepository(for: self.db)
+				return self.make(self.app.placemarkRepository)
 					.getAllPaged(state: state, creator: nil, pageRequest)
 			}
 		} catch {
@@ -51,7 +51,7 @@ internal struct PlacemarkService: PlacemarkServiceProtocol {
 		// TODO: Check for near spots (e.g. < 20m)
 		
 		// Find placemark kind in database
-		let placemarkKindFuture = self.app.placemarkKindRepository(for: self.db).get(humanId: create.kind.rawValue)
+		let placemarkKindFuture = self.make(self.app.placemarkKindRepository).get(humanId: create.kind.rawValue)
 		
 		func placemarkModel(_ kind: PlacemarkModel.Kind) throws -> PlacemarkModel {
 			try PlacemarkModel(
@@ -84,13 +84,8 @@ internal struct PlacemarkService: PlacemarkServiceProtocol {
 					.flatMapThrowing(placemarkDetails)
 					.passthroughAfter { $0.create(on: self.db) }
 					.flatMap { details in
-						self.app.placemarkDetailsService(
-							database: self.db,
-							application: self.app,
-							eventLoop: self.eventLoop,
-							logger: self.logger
-						)
-						.addProperties(create.properties, to: details)
+						self.make(self.app.placemarkDetailsService)
+							.addProperties(create.properties, to: details)
 					}
 			}
 		
@@ -109,19 +104,23 @@ internal struct PlacemarkService: PlacemarkServiceProtocol {
 		_ placemarkId: PlacemarkModel.IDValue,
 		requesterId: UserModel.IDValue
 	) -> EventLoopFuture<Void> {
-		let placemarkFuture = self.app.placemarkRepository(for: self.db).get(placemarkId)
+		let validationsFuture = EventLoopFuture.andAllSucceed([
+			self.make(self.app.authorizationService)
+				.user(requesterId, can: .delete, placemark: placemarkId)
+				.guard(else: Abort(.forbidden, reason: "You cannot delete someone else's placemark!")),
+		], on: self.eventLoop)
 		
-		// Do additional validations
-		let guardAuthorizedFuture = placemarkFuture.guard({ placemark in
-			placemark.$creator.id == requesterId
-		}, else: Abort(.forbidden, reason: "You cannot delete someone else's placemark!"))
+		func placemarkFuture() -> EventLoopFuture<PlacemarkModel> {
+			self.make(self.app.placemarkRepository).get(placemarkId)
+		}
 		
-		let deleteDetailsFuture = guardAuthorizedFuture
-			.passthroughAfter { _ in
-				self.app.placemarkDetailsRepository(for: self.db).delete(for: placemarkId, force: false)
-			}
+		func deleteDetailsFuture() -> EventLoopFuture<Void> {
+			self.make(self.app.placemarkDetailsRepository).delete(for: placemarkId, force: false)
+		}
 		
-		return deleteDetailsFuture
+		return validationsFuture
+			.flatMap(deleteDetailsFuture)
+			.flatMap(placemarkFuture)
 			.flatMap { $0.delete(on: self.db) }
 	}
 	
