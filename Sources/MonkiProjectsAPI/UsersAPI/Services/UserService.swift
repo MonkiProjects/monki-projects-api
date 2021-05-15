@@ -87,10 +87,13 @@ internal struct UserService: UserServiceProtocol {
 			user.id == requesterId
 		}, else: Abort(.forbidden, reason: "You cannot delete someone else's account!"))
 		
-		// TODO: Refactor this in `UserTokenService`
-		let deleteTokensFuture = self.app.userTokenRepository(for: self.db)
-			.getAll(for: userId)
-			.flatMap { $0.delete(on: self.db) }
+		let deleteTokensFuture = self.app.userTokenService(
+			database: self.db,
+			application: self.app,
+			eventLoop: self.eventLoop,
+			logger: self.logger
+		)
+		.deleteAllTokens(for: userId, requesterId: requesterId)
 		
 		return guardAuthorizedFuture
 			.passthroughAfter(deleteTokensFuture)
