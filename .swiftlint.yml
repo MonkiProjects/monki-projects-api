@@ -145,6 +145,7 @@ file_header:
     \/\/  Created by .*? on \d{2}\/\d{2}\/\d{4}\.
     \/\/  Copyright (©|\(c\)) \d{4} Monki Projects\. All rights reserved\.
     \/\/
+  severity: error
 
 line_length:
   warning: 110
