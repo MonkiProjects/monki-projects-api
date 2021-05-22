@@ -8,6 +8,7 @@
 
 import Vapor
 import Fluent
+import FluentSQL
 import MonkiProjectsModel
 
 internal struct UserService: Service, UserServiceProtocol {
@@ -17,7 +18,7 @@ internal struct UserService: Service, UserServiceProtocol {
 	let eventLoop: EventLoop
 	let logger: Logger
 	
-	func listUsers(pageRequest: PageRequest) -> EventLoopFuture<Fluent.Page<UserModel>> {
+	func listUsers(pageRequest: Fluent.PageRequest) -> EventLoopFuture<Fluent.Page<UserModel>> {
 		self.make(self.app.userRepository).getAllPaged(pageRequest)
 	}
 	
@@ -87,6 +88,34 @@ internal struct UserService: Service, UserServiceProtocol {
 			.flatMap(userFuture)
 			.map(updateUser)
 			.passthroughAfter { $0.update(on: self.db) }
+	}
+	
+	func findUsers(
+		with filters: User.QueryFilters,
+		pageRequest: Fluent.PageRequest
+	) -> EventLoopFuture<Fluent.Page<UserModel>> {
+		var query = UserModel.query(on: self.db)
+		
+		do {
+			if let username = filters.username?.lowercased() {
+				if self.db is SQLDatabase {
+					query = query.filter(.sql(raw: "LOWER(username) LIKE '%\(username)%'"))
+				} else {
+					throw Abort(.internalServerError, reason: "Database is not SQL")
+				}
+			}
+			if let displayName = filters.displayName?.lowercased() {
+				if self.db is SQLDatabase {
+					query = query.filter(.sql(raw: "LOWER(display_name) LIKE '%\(displayName)%'"))
+				} else {
+					throw Abort(.internalServerError, reason: "Database is not SQL")
+				}
+			}
+		} catch {
+			return self.eventLoop.makeFailedFuture(error)
+		}
+		
+		return query.paginate(pageRequest)
 	}
 	
 	func deleteUser(

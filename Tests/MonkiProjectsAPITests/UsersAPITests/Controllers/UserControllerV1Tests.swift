@@ -73,6 +73,90 @@ internal class UserControllerV1Tests: AppTestCase {
 		}
 	}
 	
+	/// Tests username filtering on `GET /users/v1/`.
+	///
+	/// - GIVEN:
+	///     - Multiple users
+	/// - WHEN:
+	///     - Searching for a user with matching username
+	/// - THEN:
+	///     - `HTTP` status should be `200 OK`
+	///     - `body` should be a paginated array containing matching users
+	///     - Matching users should be the ones where username starts with,
+	///       contains or ends with the given part, case insensitive.
+	func testFindingUsersByUsername() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		let existing: Set<String> = ["def", "defghi", "abcdef", "bcdefgh", "abc", "ghi", "de"]
+		let cases: [(filter: String, matches: Set<String>)] = [
+			(filter: "def", matches: ["def", "defghi", "abcdef", "bcdefgh"]),
+		]
+		
+		// Create users
+		let creationFutures = existing.map { username -> EventLoopFuture<Void> in
+			let user = UserModel.dummy(username: username)
+			deleteUserAfterTestFinishes(user, on: app.db)
+			return user.create(on: app.db)
+		}
+		try EventLoopFuture.andAllSucceed(creationFutures, on: app.db.eventLoop).wait()
+		
+		for (filter, matches) in cases {
+			try app.test(.GET, "users/v1?username=\(filter)") { res in
+				try res.assertStatus(.ok) {
+					let page = try res.content.decode(Fluent.Page<User.Public.Small>.self)
+					let users = page.items
+					
+					XCTAssertEqual(users.count, matches.count)
+					XCTAssertEqual(page.metadata.total, matches.count)
+					
+					XCTAssertEqual(Set(users.map(\.username)), matches)
+				}
+			}
+		}
+	}
+	
+	/// Tests display name filtering on `GET /users/v1/`.
+	///
+	/// - GIVEN:
+	///     - Multiple users
+	/// - WHEN:
+	///     - Searching for a user with matching display name
+	/// - THEN:
+	///     - `HTTP` status should be `200 OK`
+	///     - `body` should be a paginated array containing matching users
+	///     - Matching users should be the ones where display name starts with,
+	///       contains or ends with the given part, case insensitive.
+	func testFindingUsersByDisplayName() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		let existing: Set<String> = ["def", "defghi", "abcdef", "bcdefgh", "abc", "ghi", "de"]
+		let cases: [(filter: String, matches: Set<String>)] = [
+			(filter: "def", matches: ["def", "defghi", "abcdef", "bcdefgh"]),
+		]
+		
+		// Create users
+		let creationFutures = existing.map { displayName -> EventLoopFuture<Void> in
+			let user = UserModel.dummy(displayName: displayName)
+			deleteUserAfterTestFinishes(user, on: app.db)
+			return user.create(on: app.db)
+		}
+		try EventLoopFuture.andAllSucceed(creationFutures, on: app.db.eventLoop).wait()
+		
+		for (filter, matches) in cases {
+			try app.test(.GET, "users/v1?display_name=\(filter)") { res in
+				try res.assertStatus(.ok) {
+					let page = try res.content.decode(Fluent.Page<User.Public.Small>.self)
+					let users = page.items
+					
+					XCTAssertEqual(users.count, matches.count)
+					XCTAssertEqual(page.metadata.total, matches.count)
+					
+					XCTAssertEqual(Set(users.map(\.displayName)), matches)
+				}
+			}
+		}
+	}
+	
 	/// Tests `POST /users`.
 	///
 	/// - GIVEN:

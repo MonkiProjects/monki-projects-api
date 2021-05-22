@@ -15,7 +15,7 @@ public protocol UserRepositoryProtocol {
 	func getAll() -> EventLoopFuture<[UserModel]>
 	
 	func getAllPaged(
-		_ pageRequest: PageRequest
+		_ pageRequest: Fluent.PageRequest
 	) -> EventLoopFuture<Fluent.Page<UserModel>>
 	
 	func get(_ userId: UserModel.IDValue) -> EventLoopFuture<UserModel>

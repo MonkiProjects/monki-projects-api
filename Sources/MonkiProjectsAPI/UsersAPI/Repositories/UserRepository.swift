@@ -24,7 +24,7 @@ internal struct UserRepository: UserRepositoryProtocol {
 	}
 	
 	func getAllPaged(
-		_ pageRequest: PageRequest
+		_ pageRequest: Fluent.PageRequest
 	) -> EventLoopFuture<Fluent.Page<UserModel>> {
 		UserModel.query(on: self.database)
 			.paginate(pageRequest)

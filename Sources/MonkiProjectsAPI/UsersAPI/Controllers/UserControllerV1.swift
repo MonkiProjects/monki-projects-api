@@ -32,8 +32,16 @@ internal struct UserControllerV1: RouteCollection {
 	
 	func listUsers(req: Request) throws -> EventLoopFuture<Fluent.Page<User.Public.Small>> {
 		let pageRequest = try req.query.decode(PageRequest.self)
+		let filters = try req.query.decode(User.QueryFilters.self)
 		
-		return req.userService.listUsers(pageRequest: pageRequest)
+		let usersFuture: EventLoopFuture<Fluent.Page<UserModel>>
+		if filters.isEmpty {
+			usersFuture = req.userService.listUsers(pageRequest: pageRequest)
+		} else {
+			usersFuture = req.userService.findUsers(with: filters, pageRequest: pageRequest)
+		}
+		
+		return usersFuture
 			.flatMapThrowing { page in
 				try page.map { try $0.asPublicSmall() }
 			}

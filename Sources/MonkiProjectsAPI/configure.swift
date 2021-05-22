@@ -23,6 +23,9 @@ public func configure(_ app: Application) throws { // swiftlint:disable:this fun
 	decoder.keyDecodingStrategy = .convertFromSnakeCase
 	decoder.dateDecodingStrategy = .iso8601
 	ContentConfiguration.global.use(decoder: decoder, for: .json)
+	let urlDecoder = URLEncodedMappedFormDecoder(jsonEncoder: encoder, jsonDecoder: decoder)
+	ContentConfiguration.global.use(decoder: urlDecoder, for: .urlEncodedForm)
+	ContentConfiguration.global.use(urlDecoder: urlDecoder)
 	
 	// Register middlewares
 	if app.environment == .development {

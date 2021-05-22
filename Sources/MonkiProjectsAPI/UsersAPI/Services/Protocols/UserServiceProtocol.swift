@@ -11,7 +11,7 @@ import MonkiProjectsModel
 
 public protocol UserServiceProtocol {
 	
-	func listUsers(pageRequest: PageRequest) -> EventLoopFuture<Fluent.Page<UserModel>>
+	func listUsers(pageRequest: Fluent.PageRequest) -> EventLoopFuture<Fluent.Page<UserModel>>
 	
 	func createUser(_ create: User.Create) -> EventLoopFuture<UserModel>
 	
@@ -20,6 +20,11 @@ public protocol UserServiceProtocol {
 		with update: User.Update,
 		requesterId: UserModel.IDValue
 	) -> EventLoopFuture<UserModel>
+	
+	func findUsers(
+		with filters: User.QueryFilters,
+		pageRequest: Fluent.PageRequest
+	) -> EventLoopFuture<Fluent.Page<UserModel>>
 	
 	func deleteUser(
 		_ userId: UserModel.IDValue,
