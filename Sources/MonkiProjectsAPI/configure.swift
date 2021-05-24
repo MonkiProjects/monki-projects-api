@@ -12,21 +12,7 @@ import FluentPostgresDriver
 import QueuesRedisDriver
 
 /// Configures your application
-public func configure(_ app: Application) throws { // swiftlint:disable:this function_body_length
-	// Configure encoder & decoder
-	let encoder = JSONEncoder()
-	encoder.keyEncodingStrategy = .convertToSnakeCase
-	encoder.dateEncodingStrategy = .iso8601
-	ContentConfiguration.global.use(encoder: encoder, for: .json)
-	
-	let decoder = JSONDecoder()
-	decoder.keyDecodingStrategy = .convertFromSnakeCase
-	decoder.dateDecodingStrategy = .iso8601
-	ContentConfiguration.global.use(decoder: decoder, for: .json)
-	let urlDecoder = URLEncodedMappedFormDecoder(jsonEncoder: encoder, jsonDecoder: decoder)
-	ContentConfiguration.global.use(decoder: urlDecoder, for: .urlEncodedForm)
-	ContentConfiguration.global.use(urlDecoder: urlDecoder)
-	
+public func configure(_ app: Application) throws {
 	// Register middlewares
 	if app.environment == .development {
 		app.middleware.use(RouteLoggingMiddleware(logLevel: .debug))
