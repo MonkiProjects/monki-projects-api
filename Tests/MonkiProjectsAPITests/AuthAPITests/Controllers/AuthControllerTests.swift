@@ -42,12 +42,12 @@ internal final class AuthControllerV1Tests: AppTestCase {
 	
 	func testLogin() throws {
 		let app = try XCTUnwrap(Self.app)
-		let expectedUser = try XCTUnwrap(Self.user)
+		let user = try XCTUnwrap(Self.user)
 		
 		try app.test(
 			.POST, "auth/v1/login",
 			beforeRequest: { req in
-				let basicAuth = BasicAuthorization(username: expectedUser.username, password: Self.password)
+				let basicAuth = BasicAuthorization(username: user.username, password: Self.password)
 				req.headers.basicAuthorization = basicAuth
 			},
 			afterResponse: { res in
@@ -55,6 +55,27 @@ internal final class AuthControllerV1Tests: AppTestCase {
 					let token = try res.content.decode(User.Token.Private.self)
 					
 					XCTAssertNotNil(token.expiresAt)
+				}
+			}
+		)
+	}
+	
+	func testGetMe() throws {
+		let app = try XCTUnwrap(Self.app)
+		let expectedUser = try XCTUnwrap(Self.user)
+		let userToken = try XCTUnwrap(Self.userToken)
+		
+		try app.test(
+			.GET, "auth/v1/me",
+			beforeRequest: { req in
+				let bearerAuth = BearerAuthorization(token: userToken.value)
+				req.headers.bearerAuthorization = bearerAuth
+			},
+			afterResponse: { res in
+				try res.assertStatus(.ok) {
+					let user = try res.content.decode(User.Private.self)
+					
+					XCTAssertEqual(user.id, expectedUser.id)
 				}
 			}
 		)

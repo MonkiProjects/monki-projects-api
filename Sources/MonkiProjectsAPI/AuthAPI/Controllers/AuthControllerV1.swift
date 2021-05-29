@@ -16,6 +16,10 @@ internal struct AuthControllerV1: RouteCollection {
 		let passwordProtected = routes.grouped(UserModel.authenticator())
 		// POST /auth/v1/login
 		passwordProtected.post("login", use: login)
+		
+		let tokenProtected = routes.grouped(UserModel.Token.authenticator())
+		// GET /auth/v1/me
+		tokenProtected.get("me", use: getMe)
 	}
 	
 	func login(req: Request) throws -> EventLoopFuture<User.Token.Private> {
@@ -24,6 +28,13 @@ internal struct AuthControllerV1: RouteCollection {
 		
 		return token.save(on: req.db)
 			.flatMapThrowing { try token.asPrivate() }
+	}
+	
+	func getMe(req: Request) throws -> EventLoopFuture<User.Private> {
+		let user = try req.auth.require(UserModel.self, with: .bearer, in: req)
+		
+		return req.eventLoop
+			.tryFuture { try user.asPrivate() }
 	}
 	
 }
