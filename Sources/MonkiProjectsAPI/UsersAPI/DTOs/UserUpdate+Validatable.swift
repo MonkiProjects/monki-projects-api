@@ -13,9 +13,10 @@ extension User.Update: Content, Validatable {
 	
 	public static func validations(_ validations: inout Validations) {
 		validations.add("username", as: String.self, is: .count(3...32))
-		let allowedChars = CharacterSet.lowercaseLetters	// [a-z]
-			.union(.decimalDigits)							// [0-9]
-			.union(.init(charactersIn: "._-"))				// [._-]
+		let allowedChars = CharacterSet()
+			.union(.init(charactersIn: "a"..."z"))	// [a-z]
+			.union(.init(charactersIn: "0"..."9"))	// [0-9]
+			.union(.init(charactersIn: "._-"))		// [._-]
 		validations.add("username", as: String.self, is: .characterSet(allowedChars))
 		validations.add("display_name", as: String.self, is: .count(3...32))
 	}

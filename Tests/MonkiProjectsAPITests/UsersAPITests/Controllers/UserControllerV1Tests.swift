@@ -534,10 +534,9 @@ internal class UserControllerV1Tests: AppTestCase {
 				try req.content.encode(user)
 			},
 			afterResponse: { res in
-				// FIXME: Error message not showing '.', '_' and '-' for some reason
 				try res.assertError(
 					status: .badRequest,
-					reason: "username contains 'T' (allowed: a-z, 0-9)"
+					reason: "username contains 'T' (allowed: a-z, 0-9, '.', '_', '-')"
 				)
 			}
 		)

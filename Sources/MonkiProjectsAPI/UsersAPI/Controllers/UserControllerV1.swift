@@ -48,7 +48,16 @@ internal struct UserControllerV1: RouteCollection {
 	}
 	
 	func createUser(req: Request) throws -> EventLoopFuture<Response> {
-		try User.Create.validate(content: req)
+		do {
+			try User.Create.validate(content: req)
+		} catch let error as ValidationsError {
+			if error.failures.contains(where: { $0.key.stringValue == "username" }) {
+				let reason = error.reason
+					.replacingOccurrences(of: "(allowed: )", with: "(allowed: a-z, 0-9, '.', '_', '-')")
+				throw Abort(error.status, headers: error.headers, reason: reason)
+			}
+			throw error
+		}
 		let create = try req.content.decode(User.Create.self)
 		
 		return req.userService.createUser(create)
