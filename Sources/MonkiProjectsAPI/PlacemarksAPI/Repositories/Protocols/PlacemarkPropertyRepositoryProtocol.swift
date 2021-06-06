@@ -12,17 +12,19 @@ import MonkiMapModel
 public protocol PlacemarkPropertyRepositoryProtocol {
 	
 	func unsafeGet(
-		kind: Placemark.Property.Kind,
-		humanId: String
+		kind: Placemark.Property.Kind.ID,
+		humanId: Placemark.Property.ID
 	) -> EventLoopFuture<PlacemarkModel.Property?>
 	
 	func get(
-		kind: Placemark.Property.Kind,
-		humanId: String
+		kind: Placemark.Property.Kind.ID,
+		humanId: Placemark.Property.ID
 	) -> EventLoopFuture<PlacemarkModel.Property>
 	
-	func getAll(kind: Placemark.Property.Kind) -> EventLoopFuture<[PlacemarkModel.Property]>
+	func getAll(kind: Placemark.Property.Kind.ID) -> EventLoopFuture<[PlacemarkModel.Property]>
 	
-	func getAll(dict: [Placemark.Property.Kind: [String]]) -> EventLoopFuture<[PlacemarkModel.Property]>
+	func getAll(
+		dict: [Placemark.Property.Kind.ID: [Placemark.Property.ID]]
+	) -> EventLoopFuture<[PlacemarkModel.Property]>
 	
 }

@@ -173,9 +173,9 @@ internal class UserControllerV1Tests: AppTestCase {
 		// Create user
 		let username = "test_username"
 		let user = User.Create(
-			email: "test@email.com",
 			username: username,
 			displayName: "Test Name",
+			email: "test@email.com",
 			password: "password",
 			confirmPassword: "password"
 		)
@@ -328,9 +328,9 @@ internal class UserControllerV1Tests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		let user = User.Create(
-			email: "test@email.com",
 			username: "test_username",
 			displayName: "Test Name",
+			email: "test@email.com",
 			password: "password1",
 			confirmPassword: "password2"
 		)
@@ -386,9 +386,9 @@ internal class UserControllerV1Tests: AppTestCase {
 		
 		// Try to create other user
 		let user2 = User.Create(
-			email: sameEmail,
 			username: "test_username2",
 			displayName: "Test Name",
+			email: sameEmail,
 			password: "password2",
 			confirmPassword: "password2"
 		)
@@ -425,9 +425,9 @@ internal class UserControllerV1Tests: AppTestCase {
 		
 		// Try to create other user
 		let user2 = User.Create(
-			email: "test2@email.com",
 			username: sameUsername,
 			displayName: "Test Name",
+			email: "test2@email.com",
 			password: "password2",
 			confirmPassword: "password2"
 		)
@@ -456,9 +456,9 @@ internal class UserControllerV1Tests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		let user = User.Create(
-			email: "test@email.com",
 			username: "test_username",
 			displayName: "Test Name",
+			email: "test@email.com",
 			password: "1234567",
 			confirmPassword: "1234567"
 		)
@@ -490,9 +490,9 @@ internal class UserControllerV1Tests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		let user = User.Create(
-			email: "test@email",
 			username: "test_username",
 			displayName: "Test Name",
+			email: "test@email",
 			password: "password",
 			confirmPassword: "password"
 		)
@@ -521,9 +521,9 @@ internal class UserControllerV1Tests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		let user = User.Create(
-			email: "test@email.com",
 			username: "Test_username",
 			displayName: "Test Name",
+			email: "test@email.com",
 			password: "password",
 			confirmPassword: "password"
 		)

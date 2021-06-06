@@ -27,7 +27,7 @@ extension PlacemarkModel {
 			.flatMap { $0 }
 		
 		return detailsFuture.flatMapThrowing { details -> Placemark.Public in
-			let kind = Placemark.Kind(rawValue: self.kind.humanId)
+			let kind = Placemark.Kind.ID(rawValue: self.kind.humanId)
 			
 			return try .init(
 				id: self.requireID(),
@@ -35,7 +35,7 @@ extension PlacemarkModel {
 				latitude: self.latitude,
 				longitude: self.longitude,
 				kind: kind,
-				category: Placemark.Category(for: kind),
+				category: Placemark.Category.ID(for: kind),
 				state: self.state,
 				creator: self.creator.requireID(),
 				details: details,

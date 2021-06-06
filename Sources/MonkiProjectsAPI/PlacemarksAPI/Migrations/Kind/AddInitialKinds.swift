@@ -17,9 +17,9 @@ extension PlacemarkModel.Kind.Migrations {
 		var name: String { "AddInitialKinds" }
 		
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
-			database.eventLoop.future(Placemark.Kind.allCases)
+			database.eventLoop.future(Placemark.Kind.ID.allCases)
 				.flatMapEach(on: database.eventLoop) { kind -> EventLoopFuture<(String, UUID)> in
-					let category = Placemark.Category(for: kind)
+					let category = Placemark.Category.ID(for: kind)
 					return Migrated.Category.query(on: database)
 						.filter(\.$humanId == category.rawValue)
 						.first()
@@ -32,7 +32,7 @@ extension PlacemarkModel.Kind.Migrations {
 		}
 		
 		func revert(on database: Database) -> EventLoopFuture<Void> {
-			database.eventLoop.future(Placemark.Kind.allCases)
+			database.eventLoop.future(Placemark.Kind.ID.allCases)
 				.mapEach { kind in
 					Migrated.query(on: database)
 						.filter(\.$humanId == kind.rawValue)

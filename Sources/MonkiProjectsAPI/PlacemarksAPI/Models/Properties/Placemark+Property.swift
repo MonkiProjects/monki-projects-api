@@ -14,7 +14,7 @@ extension PlacemarkModel {
 	
 	public final class Property: Model {
 		
-		public typealias Kind = Placemark.Property.Kind
+		public typealias Kind = Placemark.Property.Kind.ID
 		
 		public static let schema = "placemark_properties"
 		

@@ -19,8 +19,8 @@ internal struct PlacemarkPropertyRepository: PlacemarkPropertyRepositoryProtocol
 	}
 	
 	func unsafeGet(
-		kind: Placemark.Property.Kind,
-		humanId: String
+		kind: Placemark.Property.Kind.ID,
+		humanId: Placemark.Property.ID
 	) -> EventLoopFuture<PlacemarkModel.Property?> {
 		PlacemarkModel.Details.Property.query(on: database)
 			.filter(\.$kind == kind)
@@ -29,8 +29,8 @@ internal struct PlacemarkPropertyRepository: PlacemarkPropertyRepositoryProtocol
 	}
 	
 	func get(
-		kind: Placemark.Property.Kind,
-		humanId: String
+		kind: Placemark.Property.Kind.ID,
+		humanId: Placemark.Property.ID
 	) -> EventLoopFuture<PlacemarkModel.Property> {
 		self.unsafeGet(kind: kind, humanId: humanId)
 			.unwrap(or: Abort(
@@ -39,14 +39,16 @@ internal struct PlacemarkPropertyRepository: PlacemarkPropertyRepositoryProtocol
 			))
 	}
 	
-	func getAll(kind: Placemark.Property.Kind) -> EventLoopFuture<[PlacemarkModel.Property]> {
+	func getAll(kind: Placemark.Property.Kind.ID) -> EventLoopFuture<[PlacemarkModel.Property]> {
 		PlacemarkModel.Property.query(on: database)
 			.filter(\.$kind == kind)
 			.all()
 	}
 	
-	func getAll(dict: [Placemark.Property.Kind: [String]]) -> EventLoopFuture<[PlacemarkModel.Property]> {
-		var pairs = [(Placemark.Property.Kind, String)]()
+	func getAll(
+		dict: [Placemark.Property.Kind.ID: [Placemark.Property.ID]]
+	) -> EventLoopFuture<[PlacemarkModel.Property]> {
+		var pairs = [(Placemark.Property.Kind.ID, Placemark.Property.ID)]()
 		for (key, values) in dict {
 			for value in values {
 				pairs.append((key, value))

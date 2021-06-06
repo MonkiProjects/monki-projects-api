@@ -16,14 +16,14 @@ extension PlacemarkModel.Category.Migrations {
 		var name: String { "AddInitialCategories" }
 		
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
-			database.eventLoop.future(Placemark.Category.allCases)
+			database.eventLoop.future(Placemark.Category.ID.allCases)
 				.mapEach { Migrated(humanId: $0.rawValue) }
 				.mapEach { $0.save(on: database) }
 				.transform(to: ())
 		}
 		
 		func revert(on database: Database) -> EventLoopFuture<Void> {
-			database.eventLoop.future(Placemark.Category.allCases)
+			database.eventLoop.future(Placemark.Category.ID.allCases)
 				.mapEach { category in
 					Migrated.query(on: database)
 						.filter(\.$humanId == category.rawValue)

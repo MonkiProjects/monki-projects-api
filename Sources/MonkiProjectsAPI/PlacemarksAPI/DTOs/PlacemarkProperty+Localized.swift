@@ -13,7 +13,7 @@ extension PlacemarkModel.Property {
 	
 	// FIXME: Localize in custom language
 	public func localized(in locale: Locale) throws -> Placemark.Property.Localized {
-		switch Placemark.Property.Kind(rawValue: self.kind.rawValue) {
+		switch Placemark.Property.Kind.ID(rawValue: self.kind.rawValue) {
 		case .feature:
 			return try Placemark.Property.feature(self.humanId).localized(in: locale)
 		case .technique:

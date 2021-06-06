@@ -17,7 +17,7 @@ let package = Package(
 		.package(
 			name: "monki-projects-model",
 			url: "https://github.com/MonkiProjects/monki-projects-model-swift.git",
-			.branch("main")
+			from: "0.3.0"
 		),
 	],
 	targets: [

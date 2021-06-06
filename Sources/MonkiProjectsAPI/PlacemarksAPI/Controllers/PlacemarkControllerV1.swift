@@ -80,7 +80,7 @@ internal struct PlacemarkControllerV1: RouteCollection {
 	}
 	
 	func listPlacemarkProperties(req: Request) throws -> EventLoopFuture<[Placemark.Property.Localized]> {
-		let kind = try req.query.get(Placemark.Property.Kind.self, at: "kind")
+		let kind = try req.query.get(Placemark.Property.Kind.ID.self, at: "kind")
 		
 		return req.placemarkPropertyRepository.getAll(kind: kind)
 			.flatMapEachThrowing { try $0.localized(in: .en) }

@@ -68,9 +68,9 @@
         "package": "monki-projects-model",
         "repositoryURL": "https://github.com/MonkiProjects/monki-projects-model-swift.git",
         "state": {
-          "branch": "main",
-          "revision": "90df3a3cbaa3597bf7b1d3f532ad4c3b8c200534",
-          "version": null
+          "branch": null,
+          "revision": "e900b58d719939fefcd09172b432d6f0c2fe2b43",
+          "version": "0.3.4"
         }
       },
       {
