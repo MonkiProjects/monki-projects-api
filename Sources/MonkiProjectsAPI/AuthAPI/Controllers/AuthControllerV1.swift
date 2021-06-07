@@ -13,11 +13,17 @@ import MonkiProjectsModel
 internal struct AuthControllerV1: RouteCollection {
 	
 	func boot(routes: RoutesBuilder) throws {
-		let passwordProtected = routes.grouped(UserModel.authenticator())
+		let passwordProtected = routes.grouped([
+			AuthErrorMiddleware(type: "Basic", realm: "Basic authentication required."),
+			UserModel.authenticator(),
+		])
 		// POST /auth/v1/login
 		passwordProtected.post("login", use: login)
 		
-		let tokenProtected = routes.grouped(UserModel.Token.authenticator())
+		let tokenProtected = routes.grouped([
+			AuthErrorMiddleware(type: "Bearer", realm: "Bearer authentication required."),
+			UserModel.Token.authenticator(),
+		])
 		// GET /auth/v1/me
 		tokenProtected.get("me", use: getMe)
 	}

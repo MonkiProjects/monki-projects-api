@@ -23,7 +23,10 @@ internal struct PlacemarkSubmissionControllerV1: RouteCollection {
 	
 	/// Routes start at `/placemarks/v1/{placemarkId}`
 	func boot(routes: RoutesBuilder) throws {
-		let tokenProtected = routes.grouped(UserModel.Token.authenticator())
+		let tokenProtected = routes.grouped([
+			AuthErrorMiddleware(type: "Bearer", realm: "Bearer authentication required."),
+			UserModel.Token.authenticator(),
+		])
 		
 		// POST /placemarks/v1/{placemarkId}/submit
 		tokenProtected.post("submit", use: submitPlacemark)
@@ -38,7 +41,10 @@ internal struct PlacemarkSubmissionControllerV1: RouteCollection {
 		// GET /placemarks/v1/{placemarkId}/submission/reviews
 		reviews.get(use: listPlacemarkSubmissionReviews)
 		
-		let tokenProtectedReviews = reviews.grouped(UserModel.Token.authenticator())
+		let tokenProtectedReviews = reviews.grouped([
+			AuthErrorMiddleware(type: "Bearer", realm: "Bearer authentication required."),
+			UserModel.Token.authenticator(),
+		])
 		// POST /placemarks/v1/{placemarkId}/submission/reviews
 		tokenProtectedReviews.post(use: addPlacemarkSubmissionReview)
 	}

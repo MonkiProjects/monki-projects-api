@@ -569,6 +569,7 @@ internal class UserControllerV1Tests: AppTestCase {
 			},
 			afterResponse: { res in
 				try res.assertError(status: .unauthorized, reason: "Invalid authorization token.")
+				XCTAssertTrue(res.headers.contains(name: .wwwAuthenticate))
 			}
 		)
 	}
@@ -602,6 +603,7 @@ internal class UserControllerV1Tests: AppTestCase {
 			},
 			afterResponse: { res in
 				try res.assertError(status: .unauthorized, reason: "Invalid authorization token.")
+				XCTAssertTrue(res.headers.contains(name: .wwwAuthenticate))
 			}
 		)
 	}

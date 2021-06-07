@@ -544,6 +544,7 @@ internal final class PlacemarkControllerV1Tests: AppTestCase {
 		
 		try app.test(.GET, "placemarks/v1?state=private") { res in
 			try res.assertError(status: .unauthorized, reason: "Unauthorized")
+			XCTAssertTrue(res.headers.contains(name: .wwwAuthenticate))
 		}
 	}
 	
@@ -586,6 +587,7 @@ internal final class PlacemarkControllerV1Tests: AppTestCase {
 			},
 			afterResponse: { res in
 				try res.assertError(status: .unauthorized, reason: "Invalid authorization token.")
+				XCTAssertTrue(res.headers.contains(name: .wwwAuthenticate))
 			}
 		)
 	}

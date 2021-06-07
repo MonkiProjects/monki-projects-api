@@ -22,11 +22,14 @@ internal struct UserControllerV1: RouteCollection {
 			// GET /users/v1/{userId}
 			user.get(use: getUser)
 			
-			let tokenProtected = user.grouped(UserModel.Token.authenticator())
+			let tokenProtectedUser = user.grouped([
+				AuthErrorMiddleware(type: "Bearer", realm: "Bearer authentication required."),
+				UserModel.Token.authenticator(),
+			])
 			// PATCH /users/v1/{userId}
-			tokenProtected.patch(use: updateUser)
+			tokenProtectedUser.patch(use: updateUser)
 			// DELETE /users/v1/{userId}
-			tokenProtected.delete(use: deleteUser)
+			tokenProtectedUser.delete(use: deleteUser)
 		}
 	}
 	

@@ -13,7 +13,10 @@ import MonkiMapModel
 internal struct PlacemarkControllerV1: RouteCollection {
 	
 	func boot(routes: RoutesBuilder) throws {
-		let tokenProtected = routes.grouped(UserModel.Token.authenticator())
+		let tokenProtected = routes.grouped([
+			AuthErrorMiddleware(type: "Bearer", realm: "Bearer authentication required."),
+			UserModel.Token.authenticator(),
+		])
 		// POST /placemarks/v1
 		tokenProtected.post(use: createPlacemark)
 		
@@ -26,9 +29,12 @@ internal struct PlacemarkControllerV1: RouteCollection {
 			// GET /placemarks/v1/{placemarkId}
 			placemark.get(use: getPlacemark)
 			
-			let tokenProtected = placemark.grouped(UserModel.Token.authenticator())
+			let tokenProtectedPlacemark = placemark.grouped([
+				AuthErrorMiddleware(type: "Bearer", realm: "Bearer authentication required."),
+				UserModel.Token.authenticator(),
+			])
 			// DELETE /placemarks/v1/{placemarkId}
-			tokenProtected.delete(use: deletePlacemark)
+			tokenProtectedPlacemark.delete(use: deletePlacemark)
 			
 			try placemark.register(collection: PlacemarkSubmissionControllerV1())
 		}

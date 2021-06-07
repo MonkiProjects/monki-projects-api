@@ -98,6 +98,7 @@ internal final class AuthControllerV1Tests: AppTestCase {
 					status: .unauthorized,
 					reason: "Invalid credentials for '\(user.username)'."
 				)
+				XCTAssertTrue(res.headers.contains(name: .wwwAuthenticate))
 			}
 		)
 	}
@@ -116,6 +117,7 @@ internal final class AuthControllerV1Tests: AppTestCase {
 					status: .unauthorized,
 					reason: "Invalid credentials for 'invalid_username'."
 				)
+				XCTAssertTrue(res.headers.contains(name: .wwwAuthenticate))
 			}
 		)
 	}
@@ -132,6 +134,7 @@ internal final class AuthControllerV1Tests: AppTestCase {
 			},
 			afterResponse: { res in
 				try res.assertError(status: .unauthorized, reason: "Basic authorization required.")
+				XCTAssertTrue(res.headers.contains(name: .wwwAuthenticate))
 			}
 		)
 	}
