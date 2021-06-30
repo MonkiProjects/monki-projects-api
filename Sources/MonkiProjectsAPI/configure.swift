@@ -31,7 +31,7 @@ public func configure(_ app: Application) throws {
 	
 	// Migrate database
 	app.migrations.add(UserModel.Migrations.all)
-	app.migrations.add(PlacemarkModel.Migrations.all)
+	app.migrations.add(PlaceModel.Migrations.all)
 	if app.environment == .development && Environment.get("WIPE_DATABASE") == "true" {
 		try app.autoRevert().wait()
 	}
@@ -40,17 +40,17 @@ public func configure(_ app: Application) throws {
 	// Configure repositories
 	app.userRepository.use(UserRepository.init(database:))
 	app.userTokenRepository.use(UserTokenRepository.init(database:))
-	app.placemarkRepository.use(PlacemarkRepository.init(database:))
-	app.placemarkKindRepository.use(PlacemarkKindRepository.init(database:))
-	app.placemarkDetailsRepository.use(PlacemarkDetailsRepository.init(database:))
-	app.placemarkPropertyRepository.use(PlacemarkPropertyRepository.init(database:))
+	app.placeRepository.use(PlaceRepository.init(database:))
+	app.placeKindRepository.use(PlaceKindRepository.init(database:))
+	app.placeDetailsRepository.use(PlaceDetailsRepository.init(database:))
+	app.placePropertyRepository.use(PlacePropertyRepository.init(database:))
 	
 	// Configure services
 	app.userService.use(UserService.init(db:app:eventLoop:logger:))
 	app.userTokenService.use(UserTokenService.init(db:app:eventLoop:logger:))
 	app.authorizationService.use(AuthorizationService.init(db:app:eventLoop:logger:))
-	app.placemarkService.use(PlacemarkService.init(db:app:eventLoop:logger:))
-	app.placemarkDetailsService.use(PlacemarkDetailsService.init(db:app:eventLoop:logger:))
+	app.placeService.use(PlaceService.init(db:app:eventLoop:logger:))
+	app.placeDetailsService.use(PlaceDetailsService.init(db:app:eventLoop:logger:))
 	
 	// Configure jobs
 	try app.queues.use(.redis(url: Environment.get("REDIS_URL") ?? "redis://127.0.0.1:6379"))
@@ -58,7 +58,7 @@ public func configure(_ app: Application) throws {
 	
 	if Environment.get("START_IN_PROCESS_JOBS") == "true" {
 		try app.queues.startInProcessJobs(on: .default)
-		try app.queues.startInProcessJobs(on: .placemarks)
+		try app.queues.startInProcessJobs(on: .places)
 	} else {
 		app.logger.info("Not starting in process jobs, enable them with `START_IN_PROCESS_JOBS`")
 	}

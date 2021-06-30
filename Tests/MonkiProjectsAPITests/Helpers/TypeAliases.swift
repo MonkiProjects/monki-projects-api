@@ -8,4 +8,4 @@
 
 import MonkiMapModel
 
-internal typealias Placemark = MonkiMapModel.Placemark
+internal typealias Place = MonkiMapModel.Place

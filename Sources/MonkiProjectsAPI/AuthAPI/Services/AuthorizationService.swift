@@ -33,13 +33,13 @@ internal struct AuthorizationService: Service, AuthorizationServiceProtocol {
 	func user(
 		_ requesterId: UserModel.IDValue,
 		can right: AuthorizationRight,
-		placemark placemarkId: PlacemarkModel.IDValue
+		place placeId: PlaceModel.IDValue
 	) -> EventLoopFuture<Bool> {
-		self.make(self.app.placemarkRepository)
-			.get(placemarkId)
-			.map { placemark in
+		self.make(self.app.placeRepository)
+			.get(placeId)
+			.map { place in
 				// Anyone has full rights over their data
-				if placemark.$creator.id == requesterId {
+				if place.$creator.id == requesterId {
 					return true
 				}
 				// FIXME: Add real authorization

@@ -65,12 +65,12 @@
         }
       },
       {
-        "package": "monki-projects-model",
+        "package": "monki-projects-model-swift",
         "repositoryURL": "https://github.com/MonkiProjects/monki-projects-model-swift.git",
         "state": {
           "branch": null,
-          "revision": "e900b58d719939fefcd09172b432d6f0c2fe2b43",
-          "version": "0.3.4"
+          "revision": "b6557a9e8d4bf6ed6dadc239759d567985a75370",
+          "version": "0.4.0"
         }
       },
       {

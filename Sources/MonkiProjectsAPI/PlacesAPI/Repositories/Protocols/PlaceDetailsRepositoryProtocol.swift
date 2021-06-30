@@ -1,0 +1,19 @@
+//
+//  PlaceDetailsRepositoryProtocol.swift
+//  PlacesAPI
+//
+//  Created by Rémi Bardon on 17/04/2021.
+//  Copyright © 2021 Monki Projects. All rights reserved.
+//
+
+import Vapor
+
+public protocol PlaceDetailsRepositoryProtocol {
+	
+	func get(for placeId: UUID) -> EventLoopFuture<PlaceModel.Details>
+	
+	func unsafeGetAll(for placeId: UUID) -> EventLoopFuture<[PlaceModel.Details]>
+	
+	func delete(for placeId: UUID, force: Bool) -> EventLoopFuture<Void>
+	
+}

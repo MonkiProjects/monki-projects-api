@@ -23,7 +23,7 @@ public protocol AuthorizationServiceProtocol {
 	func user(
 		_ requesterId: UserModel.IDValue,
 		can right: AuthorizationRight,
-		placemark placemarkId: PlacemarkModel.IDValue
+		place placeId: PlaceModel.IDValue
 	) -> EventLoopFuture<Bool>
 	
 }

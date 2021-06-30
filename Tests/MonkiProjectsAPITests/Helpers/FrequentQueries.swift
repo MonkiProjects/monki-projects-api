@@ -13,26 +13,26 @@ import Fluent
 internal func kindId(
 	for humanId: String,
 	on database: Database
-) -> EventLoopFuture<PlacemarkModel.Kind.IDValue> {
-	PlacemarkModel.Kind.query(on: database)
+) -> EventLoopFuture<PlaceModel.Kind.IDValue> {
+	PlaceModel.Kind.query(on: database)
 		.filter(\.$humanId == humanId)
 		.first()
 		.unwrap(or: Abort(.notFound, reason: "Type not found"))
 		.flatMapThrowing { try $0.requireID() }
 }
 
-internal func createPlacemark(
-	_ model: PlacemarkModel,
-	details: PlacemarkModel.Details = .dummy(placemarkId: UUID()),
-	location: PlacemarkModel.Location = .dummy(detailsId: UUID()),
+internal func createPlace(
+	_ model: PlaceModel,
+	details: PlaceModel.Details = .dummy(placeId: UUID()),
+	location: PlaceModel.Location = .dummy(detailsId: UUID()),
 	on database: Database
 ) -> EventLoopFuture<Void> {
 	model.create(on: database)
-		.flatMapThrowing { details.$placemark.id = try model.requireID() }
+		.flatMapThrowing { details.$place.id = try model.requireID() }
 		.flatMap { details.create(on: database) }
 		.flatMapThrowing { location.$details.id = try details.requireID() }
 		.flatMap { location.create(on: database) }
 	
-//	deletePlacemarkAfterTestFinishes(submittedPlacemark, on: app.db)
-//	deletePlacemarkDetailsAfterTestFinishes(submittedPlacemark, on: app.db)
+//	deletePlaceAfterTestFinishes(submittedPlace, on: app.db)
+//	deletePlaceDetailsAfterTestFinishes(submittedPlace, on: app.db)
 }

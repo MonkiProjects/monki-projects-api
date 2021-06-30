@@ -88,18 +88,18 @@ extension XCTestCase {
 		}
 	}
 	
-	/// Adds a `tearDown` block that deletes the given `PlacemarkModel` after the current test finishes.
+	/// Adds a `tearDown` block that deletes the given `PlaceModel` after the current test finishes.
 	///
 	/// - Parameters:
-	///   - placemark: The `PlacemarkModel` to delete
+	///   - place: The `PlaceModel` to delete
 	///
 	/// # Notes: #
 	/// 1. Forces deletion
 	///
 	/// # Example #
 	/// ```
-	/// // Create placemark
-	/// let placemark = try PlacemarkModel(
+	/// // Create place
+	/// let place = try PlaceModel(
 	/// 	name: "test_title",
 	/// 	latitude: Double.random(in: -90...90),
 	/// 	longitude: Double.random(in: -180...180),
@@ -107,39 +107,39 @@ extension XCTestCase {
 	/// 	creatorId: user.requireID(),
 	/// 	caption: "Test caption"
 	/// )
-	/// try placemark.create(on: app.db).wait()
-	/// deletePlacemarkAfterTestFinishes(placemark, on: app.db)
+	/// try place.create(on: app.db).wait()
+	/// deletePlaceAfterTestFinishes(place, on: app.db)
 	/// ```
-	func deletePlacemarkAfterTestFinishes(_ placemark: PlacemarkModel?, on database: Database) {
+	func deletePlaceAfterTestFinishes(_ place: PlaceModel?, on database: Database) {
 		addTeardownBlock {
 			do {
-				try placemark?.delete(force: true, on: database).wait()
+				try place?.delete(force: true, on: database).wait()
 			} catch {
 				XCTFail(error.localizedDescription)
 			}
 		}
 	}
 	
-	/// Adds a `tearDown` block that deletes the `PlacemarkModel` with the given `name`
+	/// Adds a `tearDown` block that deletes the `PlaceModel` with the given `name`
 	/// after the current test finishes.
 	///
-	/// Does nothing if no `PlacemarkModel` has the given `username`.
+	/// Does nothing if no `PlaceModel` has the given `username`.
 	///
 	/// - Parameters:
-	///   - name: The placemarks's `name`
+	///   - name: The places's `name`
 	///
 	/// # Notes: #
 	/// 1. Forces deletion
 	///
 	/// # Example #
 	/// ```
-	/// // Delete possibly created placemark
-	/// deletePossiblyCreatedPlacemarkAfterTestFinishes(name: placemark.name, on: app.db)
+	/// // Delete possibly created place
+	/// deletePossiblyCreatedPlaceAfterTestFinishes(name: place.name, on: app.db)
 	/// ```
-	func deletePossiblyCreatedPlacemarkAfterTestFinishes(name: String, on database: Database) {
+	func deletePossiblyCreatedPlaceAfterTestFinishes(name: String, on database: Database) {
 		addTeardownBlock {
 			do {
-				try PlacemarkModel.query(on: database)
+				try PlaceModel.query(on: database)
 					.filter(\.$name == name)
 					.first()
 					.optionalMap { $0.delete(force: true, on: database) }

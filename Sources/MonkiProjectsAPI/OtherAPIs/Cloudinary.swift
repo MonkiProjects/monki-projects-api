@@ -41,7 +41,7 @@ internal enum Cloudinary {
 	// swiftlint:enable indentation_width
 	
 	enum Preset: String {
-		case placemarkImage = "placemark_image"
+		case placeImage = "place_image"
 		case avatar
 	}
 	

@@ -29,7 +29,7 @@ extension UserModel {
 	
 }
 
-extension PlacemarkModel {
+extension PlaceModel {
 	
 	static func dummy(
 		id: UUID = UUID(),
@@ -48,18 +48,18 @@ extension PlacemarkModel {
 	
 }
 
-extension PlacemarkModel.Details {
+extension PlaceModel.Details {
 	
 	static func dummy(
 		id: IDValue = UUID(),
-		placemarkId: Placemark.IDValue,
+		placeId: Place.IDValue,
 		caption: String = UUID().uuidString,
 		images: [String] = [],
 		satelliteImageId: String? = nil
 	) -> Self {
 		self.init(
 			id: id,
-			placemarkId: placemarkId,
+			placeId: placeId,
 			caption: caption,
 			images: images,
 			satelliteImageId: satelliteImageId
@@ -68,7 +68,7 @@ extension PlacemarkModel.Details {
 	
 }
 
-extension PlacemarkModel.Location {
+extension PlaceModel.Location {
 	
 	static func dummy(
 		id: IDValue = UUID(),

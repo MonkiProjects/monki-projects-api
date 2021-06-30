@@ -12,8 +12,8 @@ import Queues
 public enum Jobs {
 	
 	public static func addAll(to app: Application) {
-		app.queues.add(PlacemarkSatelliteViewJob())
-		app.queues.add(PlacemarkLocationJob())
+		app.queues.add(PlaceSatelliteViewJob())
+		app.queues.add(PlaceLocationJob())
 	}
 	
 }
