@@ -52,7 +52,7 @@ extension PlaceModel.Submission {
 		public init() {}
 		
 		public init(
-			id: IDValue? = nil,
+			id: PlaceModel.Submission.Review.IDValue? = nil,
 			submissionId: Submission.IDValue,
 			reviewerId: UserModel.IDValue,
 			opinion: Opinion,

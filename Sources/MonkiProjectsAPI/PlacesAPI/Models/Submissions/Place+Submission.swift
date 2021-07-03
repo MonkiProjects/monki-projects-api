@@ -57,7 +57,7 @@ extension PlaceModel {
 		public init() {}
 		
 		public init(
-			id: IDValue? = nil,
+			id: PlaceModel.Submission.IDValue? = nil,
 			placeId: Place.IDValue,
 			state: State = .waitingForReviews
 		) {

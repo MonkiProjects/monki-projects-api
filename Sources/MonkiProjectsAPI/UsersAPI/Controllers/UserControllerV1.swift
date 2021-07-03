@@ -69,7 +69,7 @@ internal struct UserControllerV1: RouteCollection {
 	}
 	
 	func getUser(req: Request) throws -> EventLoopFuture<User.Public.Full> {
-		let userId = try req.parameters.require("userId", as: UUID.self)
+		let userId = try req.parameters.require("userId", as: User.ID.self)
 		
 		return req.userRepository.get(userId)
 			.flatMapThrowing { try $0.asPublicFull() }
@@ -77,7 +77,7 @@ internal struct UserControllerV1: RouteCollection {
 	
 	func updateUser(req: Request) throws -> EventLoopFuture<User.Public.Full> {
 		let requesterId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
-		let userId = try req.parameters.require("userId", as: UUID.self)
+		let userId = try req.parameters.require("userId", as: User.ID.self)
 		let update = try req.content.decode(User.Update.self)
 		
 		return req.userService.updateUser(userId, with: update, requesterId: requesterId)
@@ -86,7 +86,7 @@ internal struct UserControllerV1: RouteCollection {
 	
 	func deleteUser(req: Request) throws -> EventLoopFuture<HTTPStatus> {
 		let requesterId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
-		let userId = try req.parameters.require("userId", as: UUID.self)
+		let userId = try req.parameters.require("userId", as: User.ID.self)
 		
 		return req.userService.deleteUser(userId, requesterId: requesterId)
 			.transform(to: .noContent)

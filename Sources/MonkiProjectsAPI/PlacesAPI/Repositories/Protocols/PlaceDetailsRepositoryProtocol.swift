@@ -7,13 +7,14 @@
 //
 
 import Vapor
+import MonkiMapModel
 
 public protocol PlaceDetailsRepositoryProtocol {
 	
-	func get(for placeId: UUID) -> EventLoopFuture<PlaceModel.Details>
+	func get(for placeId: Place.ID) -> EventLoopFuture<PlaceModel.Details>
 	
-	func unsafeGetAll(for placeId: UUID) -> EventLoopFuture<[PlaceModel.Details]>
+	func unsafeGetAll(for placeId: Place.ID) -> EventLoopFuture<[PlaceModel.Details]>
 	
-	func delete(for placeId: UUID, force: Bool) -> EventLoopFuture<Void>
+	func delete(for placeId: Place.ID, force: Bool) -> EventLoopFuture<Void>
 	
 }

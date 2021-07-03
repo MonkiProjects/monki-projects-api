@@ -309,7 +309,7 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 		let user = try XCTUnwrap(Self.user)
 		
 		// Create submitted place
-		let placeId = UUID()
+		let placeId = Place.ID()
 		let place = try PlaceModel.dummy(
 			id: placeId,
 			kindId: kindId(for: "training_spot", on: app.db).wait(),
@@ -342,7 +342,7 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 		let userToken = try XCTUnwrap(Self.userToken)
 		
 		// Create submitted place
-		let placeId = UUID()
+		let placeId = Place.ID()
 		let place = try PlaceModel.dummy(
 			id: placeId,
 			kindId: kindId(for: "training_spot", on: app.db).wait(),
@@ -561,7 +561,7 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
-			.GET, "places/v1/\(UUID())") { res in
+			.GET, "places/v1/\(Place.ID())") { res in
 			try res.assertError(status: .notFound, reason: "Place not found")
 		}
 	}
@@ -612,7 +612,7 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 		deleteUserAfterTestFinishes(otherUser, on: app.db)
 		
 		// Create place
-		let placeId = UUID()
+		let placeId = Place.ID()
 		let place = try PlaceModel.dummy(
 			id: placeId,
 			kindId: kindId(for: "training_spot", on: app.db).wait(),

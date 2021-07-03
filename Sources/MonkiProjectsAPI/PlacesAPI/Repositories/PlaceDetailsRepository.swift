@@ -8,6 +8,7 @@
 
 import Vapor
 import Fluent
+import MonkiMapModel
 
 internal struct PlaceDetailsRepository: PlaceDetailsRepositoryProtocol {
 	
@@ -17,7 +18,7 @@ internal struct PlaceDetailsRepository: PlaceDetailsRepositoryProtocol {
 		self.database = database
 	}
 	
-	func get(for placeId: UUID) -> EventLoopFuture<PlaceModel.Details> {
+	func get(for placeId: Place.ID) -> EventLoopFuture<PlaceModel.Details> {
 		PlaceModel.Details.query(on: database)
 			.with(\.$place)
 			.filter(\.$place.$id == placeId)
@@ -25,14 +26,14 @@ internal struct PlaceDetailsRepository: PlaceDetailsRepositoryProtocol {
 			.unwrap(or: Abort(.internalServerError, reason: "Could not find place details"))
 	}
 	
-	func unsafeGetAll(for placeId: UUID) -> EventLoopFuture<[PlaceModel.Details]> {
+	func unsafeGetAll(for placeId: Place.ID) -> EventLoopFuture<[PlaceModel.Details]> {
 		PlaceModel.Details.query(on: database)
 			.with(\.$place)
 			.filter(\.$place.$id == placeId)
 			.all()
 	}
 	
-	func delete(for placeId: UUID, force: Bool) -> EventLoopFuture<Void> {
+	func delete(for placeId: Place.ID, force: Bool) -> EventLoopFuture<Void> {
 		self.unsafeGetAll(for: placeId)
 			.flatMap { $0.delete(force: force, on: database) }
 	}

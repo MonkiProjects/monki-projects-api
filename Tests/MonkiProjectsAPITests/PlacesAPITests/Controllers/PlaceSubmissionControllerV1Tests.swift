@@ -19,7 +19,7 @@ internal final class PlaceSubmissionControllerV1Tests: AppTestCase {
 	typealias Review = Submission.Review
 	
 	private static var users = [(UserModel, UserModel.Token)]()
-	private static let placeId = UUID()
+	private static let placeId = Place.ID()
 	private var place: PlaceModel?
 	
 	override class func setUp() {

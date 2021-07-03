@@ -71,7 +71,7 @@ internal struct PlaceControllerV1: RouteCollection {
 	}
 	
 	func getPlace(req: Request) throws -> EventLoopFuture<Place.Public> {
-		let placeId = try req.parameters.require("placeId", as: UUID.self)
+		let placeId = try req.parameters.require("placeId", as: Place.ID.self)
 		
 		return req.placeRepository.get(placeId)
 			.flatMap { $0.asPublic(on: req) }
@@ -79,7 +79,7 @@ internal struct PlaceControllerV1: RouteCollection {
 	
 	func deletePlace(req: Request) throws -> EventLoopFuture<HTTPStatus> {
 		let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
-		let placeId = try req.parameters.require("placeId", as: UUID.self)
+		let placeId = try req.parameters.require("placeId", as: Place.ID.self)
 		
 		return req.placeService.deletePlace(placeId, requesterId: userId)
 			.transform(to: .noContent)

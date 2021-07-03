@@ -53,7 +53,7 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 	
 	func submitPlace(req: Request) throws -> EventLoopFuture<Response> {
 		let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
-		let placeId = try req.parameters.require("placeId", as: PlaceModel.IDValue.self)
+		let placeId = try req.parameters.require("placeId", as: Place.ID.self)
 		
 		let guardIsCreator = guardCreator(
 			userId: userId, placeId: placeId,
@@ -89,14 +89,14 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 	}
 	
 	func getPlaceSubmissionReport(req: Request) throws -> EventLoopFuture<Submission.Public> {
-		let placeId = try req.parameters.require("placeId", as: PlaceModel.IDValue.self)
+		let placeId = try req.parameters.require("placeId", as: Place.ID.self)
 		
 		return getLastSubmission(for: placeId, in: req.db)
 			.flatMap { $0.asPublic(on: req) }
 	}
 	
 	func listPlaceSubmissionReviews(req: Request) throws -> EventLoopFuture<Page<Review.Public>> {
-		let placeId = try req.parameters.require("placeId", as: PlaceModel.IDValue.self)
+		let placeId = try req.parameters.require("placeId", as: Place.ID.self)
 		
 		return getLastSubmission(for: placeId, in: req.db)
 			.flatMapThrowing { try $0.requireID() }
@@ -110,7 +110,7 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 	
 	func addPlaceSubmissionReview(req: Request) throws -> EventLoopFuture<Review.Public> {
 		let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
-		let placeId = try req.parameters.require("placeId", as: PlaceModel.IDValue.self)
+		let placeId = try req.parameters.require("placeId", as: Place.ID.self)
 		
 		// Validate and decode data
 		try Review.Create.validate(content: req)
@@ -141,9 +141,9 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 			return submission.$reviews.create(review, on: req.db)
 				.transform(to: review)
 		}
-		let addIssues = { (review: ReviewModel) -> EventLoopFuture<Void> in
-			let issuesObjects = create.issues
-				.map { IssueModel(reviewId: userId, reason: $0.reason, comment: $0.comment) }
+		let addIssues = { (review: ReviewModel) throws -> EventLoopFuture<Void> in
+			let issuesObjects = try create.issues
+				.map { try IssueModel(reviewId: review.requireID(), reason: $0.reason, comment: $0.comment) }
 			return review.$issues.create(issuesObjects, on: req.db)
 		}
 		
@@ -159,6 +159,7 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 			.passthrough(publishPlaceIfNeeded)
 			.flatMapThrowing(addReview)
 			.flatMap { $0 }
+			// FIXME: Errors thrown by `addIssues` are dismissed here
 			.passthrough(addIssues)
 		
 		return future
@@ -168,7 +169,7 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 	// MARK: - Helper functions
 	
 	private func getLastSubmission(
-		for placeId: PlaceModel.IDValue,
+		for placeId: Place.ID,
 		in database: Database
 	) -> EventLoopFuture<SubmissionModel> {
 		SubmissionModel.query(on: database)
@@ -182,7 +183,7 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 	
 	private func guardCreator(
 		userId: UserModel.IDValue,
-		placeId: PlaceModel.IDValue,
+		placeId: Place.ID,
 		otherwise message: String,
 		in database: Database
 	) -> EventLoopFuture<Void> {
@@ -195,7 +196,7 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 	/// Prevent user from reviewing his own submission
 	private func guardNotCreator(
 		userId: UserModel.IDValue,
-		placeId: PlaceModel.IDValue,
+		placeId: Place.ID,
 		otherwise message: String,
 		in database: Database
 	) -> EventLoopFuture<Void> {
@@ -208,7 +209,7 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 	/// Prevent user from reviewing twice the same submission
 	private func guardNoDoubleReview(
 		by userId: UserModel.IDValue,
-		for placeId: PlaceModel.IDValue,
+		for placeId: Place.ID,
 		in database: Database
 	) -> EventLoopFuture<Void> {
 		// Fetch all reviews

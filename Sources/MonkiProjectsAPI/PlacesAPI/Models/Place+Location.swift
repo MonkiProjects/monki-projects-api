@@ -32,7 +32,7 @@ extension PlaceModel {
 		public init() {}
 		
 		public init(
-			id: IDValue? = nil,
+			id: PlaceModel.Location.IDValue? = nil,
 			detailsId: Details.IDValue,
 			city: String,
 			country: String

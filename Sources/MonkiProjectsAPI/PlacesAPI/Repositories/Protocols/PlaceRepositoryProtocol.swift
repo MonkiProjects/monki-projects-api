@@ -8,6 +8,7 @@
 
 import Foundation
 import Fluent
+import MonkiProjectsModel
 import MonkiMapModel
 
 public protocol PlaceRepositoryProtocol {
@@ -15,20 +16,20 @@ public protocol PlaceRepositoryProtocol {
 	func getAll() -> EventLoopFuture<[PlaceModel]>
 	
 	func getAllPaged(
-		_ pageRequest: PageRequest
-	) -> EventLoopFuture<Page<PlaceModel>>
+		_ pageRequest: Fluent.PageRequest
+	) -> EventLoopFuture<Fluent.Page<PlaceModel>>
 	
 	func getAll(
 		state: Place.State?,
-		creator: UUID?
+		creator: User.ID?
 	) -> EventLoopFuture<[PlaceModel]>
 	
 	func getAllPaged(
 		state: Place.State?,
-		creator: UUID?,
-		_ pageRequest: PageRequest
-	) -> EventLoopFuture<Page<PlaceModel>>
+		creator: User.ID?,
+		_ pageRequest: Fluent.PageRequest
+	) -> EventLoopFuture<Fluent.Page<PlaceModel>>
 	
-	func get(_ placeId: UUID) -> EventLoopFuture<PlaceModel>
+	func get(_ placeId: Place.ID) -> EventLoopFuture<PlaceModel>
 	
 }

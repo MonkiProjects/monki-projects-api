@@ -16,8 +16,8 @@ public final class PlaceModel: Model {
 	
 	public static let schema = "places"
 	
-	@ID(key: .id)
-	public var id: UUID?
+	@ID(custom: .id, generatedBy: .random)
+	public var id: Place.ID?
 	
 	@Field(key: "name")
 	public var name: String

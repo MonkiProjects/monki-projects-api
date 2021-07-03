@@ -8,6 +8,7 @@
 
 import Vapor
 import Fluent
+import MonkiProjectsModel
 import MonkiMapModel
 
 internal struct PlaceRepository: PlaceRepositoryProtocol {
@@ -24,15 +25,15 @@ internal struct PlaceRepository: PlaceRepositoryProtocol {
 	}
 	
 	func getAllPaged(
-		_ pageRequest: PageRequest
-	) -> EventLoopFuture<Page<PlaceModel>> {
+		_ pageRequest: Fluent.PageRequest
+	) -> EventLoopFuture<Fluent.Page<PlaceModel>> {
 		PlaceModel.query(on: database)
 			.paginate(pageRequest)
 	}
 	
 	func getAll(
 		state: Place.State?,
-		creator: UUID?
+		creator: User.ID?
 	) -> EventLoopFuture<[PlaceModel]> {
 		var queryBuilder = PlaceModel.query(on: database)
 		
@@ -48,9 +49,9 @@ internal struct PlaceRepository: PlaceRepositoryProtocol {
 	
 	func getAllPaged(
 		state: Place.State?,
-		creator: UUID?,
-		_ pageRequest: PageRequest
-	) -> EventLoopFuture<Page<PlaceModel>> {
+		creator: User.ID?,
+		_ pageRequest: Fluent.PageRequest
+	) -> EventLoopFuture<Fluent.Page<PlaceModel>> {
 		var queryBuilder = PlaceModel.query(on: database)
 		
 		if let creator = creator {
@@ -63,7 +64,7 @@ internal struct PlaceRepository: PlaceRepositoryProtocol {
 		return queryBuilder.paginate(pageRequest)
 	}
 	
-	func get(_ placeId: UUID) -> EventLoopFuture<PlaceModel> {
+	func get(_ placeId: Place.ID) -> EventLoopFuture<PlaceModel> {
 		PlaceModel.find(placeId, on: database)
 			.unwrap(or: Abort(.notFound, reason: "Place not found"))
 	}

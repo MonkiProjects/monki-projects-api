@@ -49,7 +49,7 @@ extension PlaceModel {
 		public init() {}
 		
 		public init(
-			id: IDValue? = nil,
+			id: PlaceModel.Details.IDValue? = nil,
 			placeId: Place.IDValue,
 			caption: String,
 			images: [String] = [],

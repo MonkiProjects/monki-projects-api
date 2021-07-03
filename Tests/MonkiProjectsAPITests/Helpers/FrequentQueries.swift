@@ -23,8 +23,8 @@ internal func kindId(
 
 internal func createPlace(
 	_ model: PlaceModel,
-	details: PlaceModel.Details = .dummy(placeId: UUID()),
-	location: PlaceModel.Location = .dummy(detailsId: UUID()),
+	details: PlaceModel.Details = .dummy(placeId: .init()),
+	location: PlaceModel.Location = .dummy(detailsId: .init()),
 	on database: Database
 ) -> EventLoopFuture<Void> {
 	model.create(on: database)

@@ -8,11 +8,13 @@
 
 @testable import MonkiProjectsAPI
 import Foundation
+import MonkiProjectsModel
+import MonkiMapModel
 
 extension UserModel {
 	
 	static func dummy(
-		id: UUID = UUID(),
+		id: User.ID = .init(),
 		username: String = UUID().uuidString,
 		displayName: String = UUID().uuidString,
 		email: String = "\(UUID())@example.com",
@@ -32,7 +34,7 @@ extension UserModel {
 extension PlaceModel {
 	
 	static func dummy(
-		id: UUID = UUID(),
+		id: Place.ID = .init(),
 		name: String = UUID().uuidString,
 		latitude: Double = Double.random(in: -90...90),
 		longitude: Double = Double.random(in: -180...180),
@@ -51,7 +53,7 @@ extension PlaceModel {
 extension PlaceModel.Details {
 	
 	static func dummy(
-		id: IDValue = UUID(),
+		id: IDValue = .init(),
 		placeId: Place.IDValue,
 		caption: String = UUID().uuidString,
 		images: [String] = [],
@@ -71,7 +73,7 @@ extension PlaceModel.Details {
 extension PlaceModel.Location {
 	
 	static func dummy(
-		id: IDValue = UUID(),
+		id: IDValue = .init(),
 		detailsId: Details.IDValue,
 		city: String = UUID().uuidString,
 		country: String = UUID().uuidString

@@ -13,7 +13,7 @@ import MonkiProjectsModel
 
 internal final class AuthControllerV1Tests: AppTestCase {
 	
-	private static let userId = UUID()
+	private static let userId: User.ID = .init()
 	private static let password = "password"
 	private static var user: UserModel?
 	private static var userToken: UserModel.Token?

@@ -23,7 +23,7 @@ extension PlaceModel {
 		
 		public init() {}
 		
-		public init(id: IDValue? = nil, humanId: String) {
+		public init(id: PlaceModel.Category.IDValue? = nil, humanId: String) {
 			self.id = id
 			self.humanId = humanId
 		}

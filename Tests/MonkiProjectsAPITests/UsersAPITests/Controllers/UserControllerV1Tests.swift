@@ -221,7 +221,7 @@ internal class UserControllerV1Tests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		// Create user
-		let userId = UUID()
+		let userId = User.ID()
 		let user = UserModel.dummy(id: userId)
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
@@ -276,7 +276,7 @@ internal class UserControllerV1Tests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		// Create user
-		let userId = UUID()
+		let userId = User.ID()
 		let user = UserModel.dummy(id: userId)
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
@@ -360,7 +360,7 @@ internal class UserControllerV1Tests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		try app.test(
-			.GET, "users/v1/\(UUID())") { res in
+			.GET, "users/v1/\(User.ID())") { res in
 			try res.assertError(status: .notFound, reason: "User not found")
 		}
 	}
@@ -555,7 +555,7 @@ internal class UserControllerV1Tests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		// Create user
-		let userId = UUID()
+		let userId = User.ID()
 		let user = UserModel.dummy()
 		try user.create(on: app.db).wait()
 		deleteUserAfterTestFinishes(user, on: app.db)
@@ -587,7 +587,7 @@ internal class UserControllerV1Tests: AppTestCase {
 		let app = try XCTUnwrap(Self.app)
 		
 		// Create user
-		let userId = UUID()
+		let userId = User.ID()
 		let password = "password"
 		let user = UserModel.dummy(
 			passwordHash: password // Do not hash for speed purposes

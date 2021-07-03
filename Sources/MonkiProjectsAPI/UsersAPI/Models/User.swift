@@ -8,13 +8,14 @@
 
 import Fluent
 import Vapor
-	
+import MonkiProjectsModel
+
 public final class UserModel: Model {
 	
 	public static let schema = "users"
 	
-	@ID(key: .id)
-	public var id: UUID?
+	@ID(custom: .id, generatedBy: .random)
+	public var id: User.ID?
 	
 	@Field(key: "username")
 	public var username: String
