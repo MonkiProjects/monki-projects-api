@@ -18,7 +18,7 @@ extension PlaceModel.Submission.Migrations {
 			database.schema("place_submissions")
 				.id()
 				.field(
-					"place_id", .uuid, .required,
+					"place_id", .string, .required,
 					.references("places", .id, onDelete: .cascade)
 				)
 				.field("state", .string, .required)

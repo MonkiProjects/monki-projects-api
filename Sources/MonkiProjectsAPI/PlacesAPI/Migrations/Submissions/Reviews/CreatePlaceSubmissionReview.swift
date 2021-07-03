@@ -22,7 +22,7 @@ extension PlaceModel.Submission.Review.Migrations {
 					.references("place_submissions", .id, onDelete: .cascade)
 				)
 				.field(
-					"reviewer_id", .uuid, .required,
+					"reviewer_id", .string, .required,
 					.references("users", .id, onDelete: .cascade)
 				)
 				.field("opinion", .string, .required)

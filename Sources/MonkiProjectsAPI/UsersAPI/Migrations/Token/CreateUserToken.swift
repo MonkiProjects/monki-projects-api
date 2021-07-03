@@ -19,7 +19,7 @@ extension UserModel.Token {
 			database.schema("user_tokens")
 				.id()
 				.field("value", .string, .required)
-				.field("user_id", .uuid, .required, .references("users", .id, onDelete: .cascade))
+				.field("user_id", .string, .required, .references("users", .id, onDelete: .cascade))
 				.field("created_at", .datetime, .required)
 				.field("expires_at", .datetime)
 				.unique(on: "value", name: "no_duplicate_user_tokens")

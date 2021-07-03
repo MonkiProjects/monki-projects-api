@@ -17,7 +17,7 @@ extension PlaceModel.Details.Migrations {
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
 			database.schema("place_details")
 				.id()
-				.field("place_id", .uuid, .references("places", .id, onDelete: .cascade))
+				.field("place_id", .string, .references("places", .id, onDelete: .cascade))
 				.field("caption", .string, .required)
 				.field("satellite_image", .string, .required)
 				.field("images", .array(of: .string), .required)

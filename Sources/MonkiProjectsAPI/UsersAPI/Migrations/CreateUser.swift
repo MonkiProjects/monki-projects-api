@@ -16,7 +16,7 @@ extension UserModel.Migrations {
 		
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
 			database.schema("users")
-				.id()
+				.field(.id, .string, .identifier(auto: false))
 				.field("username", .string, .required)
 				.field("display_name", .string, .required)
 				.field("email", .string, .required)

@@ -16,13 +16,13 @@ extension PlaceModel.Migrations {
 		
 		func prepare(on database: Database) -> EventLoopFuture<Void> {
 			database.schema("places")
-				.id()
+				.field(.id, .string, .identifier(auto: false))
 				.field("name", .string, .required)
 				.field("latitude", .double, .required)
 				.field("longitude", .double, .required)
 				.field("kind_id", .uuid, .required, .references("place_kinds", .id))
 				.field("state", .string, .required)
-				.field("creator_id", .uuid, .required, .references("users", .id))
+				.field("creator_id", .string, .required, .references("users", .id))
 				.field("created_at", .datetime, .required)
 				.field("updated_at", .datetime, .required)
 				.field("deleted_at", .datetime)
