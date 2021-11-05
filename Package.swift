@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 import PackageDescription
 
 let package = Package(
@@ -38,7 +38,7 @@ let package = Package(
 				.unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
 			]
 		),
-		.target(name: "Run", dependencies: ["MonkiProjectsAPI"]),
+		.executableTarget(name: "Run", dependencies: ["MonkiProjectsAPI"]),
 		.testTarget(
 			name: "MonkiProjectsAPITests",
 			dependencies: [
