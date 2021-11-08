@@ -19,4 +19,19 @@ extension Optional {
 		}
 	}
 	
+	public func unwrap(or error: Error) throws -> Wrapped {
+		switch self {
+		case .some(let wrapped):
+			return wrapped
+		case .none:
+			throw error
+		}
+	}
+	
+	public func `guard`(_ condition: (Self) -> Bool, `else` error: Error) throws {
+		guard condition(self) else {
+			throw error
+		}
+	}
+	
 }

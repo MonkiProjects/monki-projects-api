@@ -12,6 +12,6 @@ import MonkiProjectsModel
 
 public protocol UserTokenRepositoryProtocol {
 	
-	func getAll(for userId: UserModel.IDValue) -> EventLoopFuture<[UserModel.Token]>
+	func getAll(for userId: UserModel.IDValue) async throws -> [UserModel.Token]
 	
 }

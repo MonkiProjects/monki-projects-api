@@ -5,7 +5,7 @@ let package = Package(
 	name: "monki-projects-api",
 	defaultLocalization: "en",
 	platforms: [
-		.macOS(.v10_15),
+		.macOS(.v12),
 	],
 	dependencies: [
 		// 💧 A server-side Swift web framework.

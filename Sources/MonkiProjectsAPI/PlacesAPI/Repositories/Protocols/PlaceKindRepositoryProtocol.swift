@@ -11,8 +11,8 @@ import MonkiMapModel
 
 public protocol PlaceKindRepositoryProtocol {
 	
-	func get(humanId: String) -> EventLoopFuture<PlaceModel.Kind>
+	func get(humanId: String) async throws -> PlaceModel.Kind
 	
-	func getAll() -> EventLoopFuture<[PlaceModel.Kind]>
+	func getAll() async throws -> [PlaceModel.Kind]
 	
 }

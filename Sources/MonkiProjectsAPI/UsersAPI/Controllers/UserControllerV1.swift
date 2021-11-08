@@ -33,27 +33,25 @@ internal struct UserControllerV1: RouteCollection {
 		}
 	}
 	
-	func listUsers(req: Request) throws -> EventLoopFuture<Fluent.Page<User.Public.Small>> {
+	func listUsers(req: Request) async throws -> Fluent.Page<User.Public.Small> {
 		let pageRequest = try req.query.decode(PageRequest.self)
 		let filters = try req.query.decode(User.QueryFilters.self)
 		
-		let usersFuture: EventLoopFuture<Fluent.Page<UserModel>>
+		let users: Fluent.Page<UserModel>
 		if filters.isEmpty {
-			usersFuture = req.userService.listUsers(pageRequest: pageRequest)
+			users = try await req.userService.listUsers(pageRequest: pageRequest)
 		} else {
-			usersFuture = req.userService.findUsers(with: filters, pageRequest: pageRequest)
+			users = try await req.userService.findUsers(with: filters, pageRequest: pageRequest)
 		}
 		
-		return usersFuture
-			.flatMapThrowing { page in
-				try page.map { try $0.asPublicSmall() }
-			}
+		return try users.asPublicSmall()
 	}
 	
-	func createUser(req: Request) throws -> EventLoopFuture<Response> {
+	func createUser(req: Request) async throws -> Response {
 		do {
 			try User.Create.validate(content: req)
 		} catch let error as ValidationsError {
+			// TODO: Remove this workaround
 			if error.failures.contains(where: { $0.key.stringValue == "username" }) {
 				let reason = error.reason
 					.replacingOccurrences(of: "(allowed: )", with: "(allowed: a-z, 0-9, '.', '_', '-')")
@@ -63,33 +61,36 @@ internal struct UserControllerV1: RouteCollection {
 		}
 		let create = try req.content.decode(User.Create.self)
 		
-		return req.userService.createUser(create)
-			.flatMapThrowing { try $0.asPrivate() }
-			.flatMap { $0.encodeResponse(status: .created, for: req) }
+		let user = try await req.userService.createUser(create)
+		
+		return try await user.asPrivate().encodeResponse(status: .created, for: req)
 	}
 	
-	func getUser(req: Request) throws -> EventLoopFuture<User.Public.Full> {
+	func getUser(req: Request) async throws -> User.Public.Full {
 		let userId = try req.parameters.require("userId", as: User.ID.self)
 		
-		return req.userRepository.get(userId)
-			.flatMapThrowing { try $0.asPublicFull() }
+		let user = try await req.userRepository.get(userId)
+		
+		return try user.asPublicFull()
 	}
 	
-	func updateUser(req: Request) throws -> EventLoopFuture<User.Public.Full> {
+	func updateUser(req: Request) async throws -> User.Public.Full {
 		let requesterId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
 		let userId = try req.parameters.require("userId", as: User.ID.self)
 		let update = try req.content.decode(User.Update.self)
 		
-		return req.userService.updateUser(userId, with: update, requesterId: requesterId)
-			.flatMapThrowing { try $0.asPublicFull() }
+		let user = try await req.userService.updateUser(userId, with: update, requesterId: requesterId)
+		
+		return try user.asPublicFull()
 	}
 	
-	func deleteUser(req: Request) throws -> EventLoopFuture<HTTPStatus> {
+	func deleteUser(req: Request) async throws -> HTTPStatus {
 		let requesterId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
 		let userId = try req.parameters.require("userId", as: User.ID.self)
 		
-		return req.userService.deleteUser(userId, requesterId: requesterId)
-			.transform(to: .noContent)
+		try await req.userService.deleteUser(userId, requesterId: requesterId)
+		
+		return HTTPStatus.noContent
 	}
 	
 }

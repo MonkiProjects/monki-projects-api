@@ -21,30 +21,30 @@ internal struct AuthorizationService: Service, AuthorizationServiceProtocol {
 		_ requesterId: UserModel.IDValue,
 		can right: AuthorizationRight,
 		user userId: UserModel.IDValue
-	) -> EventLoopFuture<Bool> {
+	) async -> Bool {
 		// Anyone has full rights over their data
 		if requesterId == userId {
-			return self.eventLoop.makeSucceededFuture(true)
+			return true
 		}
 		// FIXME: Add real authorization
-		return self.eventLoop.makeSucceededFuture(false)
+		return false
 	}
 	
 	func user(
 		_ requesterId: UserModel.IDValue,
 		can right: AuthorizationRight,
 		place placeId: PlaceModel.IDValue
-	) -> EventLoopFuture<Bool> {
-		self.make(self.app.placeRepository)
-			.get(placeId)
-			.map { place in
-				// Anyone has full rights over their data
-				if place.$creator.id == requesterId {
-					return true
-				}
-				// FIXME: Add real authorization
-				return false
-			}
+	) async throws -> Bool {
+		let place = try await self.make(self.app.placeRepository).get(placeId)
+		
+		// Anyone has full rights over their data
+		if place.$creator.id == requesterId {
+			return true
+		}
+		
+		// FIXME: Add real authorization
+		
+		return false
 	}
 	
 }

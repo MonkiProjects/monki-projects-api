@@ -43,14 +43,14 @@ internal struct PlaceControllerV1: RouteCollection {
 		routes.get("properties", use: listPlaceProperties)
 	}
 	
-	func listPlaces(req: Request) throws -> EventLoopFuture<Page<Place.Public>> {
+	func listPlaces(req: Request) async throws -> Page<Place.Public> {
 		let pageRequest = try req.query.decode(PageRequest.self)
 		struct Params: Content {
 			let state: Place.State?
 		}
 		let state = try req.query.decode(Params.self).state ?? .published
 		
-		return req.placeService
+		return try await req.placeService
 			.listPlaces(
 				state: state,
 				pageRequest: pageRequest,
@@ -59,37 +59,39 @@ internal struct PlaceControllerV1: RouteCollection {
 			.asPublic(on: req)
 	}
 	
-	func createPlace(req: Request) throws -> EventLoopFuture<Response> {
+	func createPlace(req: Request) async throws -> Response {
 		let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
 		// Validate and decode data
 		try Place.Create.validate(content: req)
 		let create = try req.content.decode(Place.Create.self)
 		
-		return req.placeService.createPlace(create, creatorId: userId)
-			.flatMap { $0.asPublic(on: req) }
-			.flatMap { $0.encodeResponse(status: .created, for: req) }
+		let place = try await req.placeService
+			.createPlace(create, creatorId: userId)
+			.asPublic(on: req)
+		
+		return try await place.encodeResponse(status: .created, for: req)
 	}
 	
-	func getPlace(req: Request) throws -> EventLoopFuture<Place.Public> {
+	func getPlace(req: Request) async throws -> Place.Public {
 		let placeId = try req.parameters.require("placeId", as: Place.ID.self)
 		
-		return req.placeRepository.get(placeId)
-			.flatMap { $0.asPublic(on: req) }
+		return try await req.placeRepository.get(placeId).asPublic(on: req)
 	}
 	
-	func deletePlace(req: Request) throws -> EventLoopFuture<HTTPStatus> {
+	func deletePlace(req: Request) async throws -> HTTPStatus {
 		let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
 		let placeId = try req.parameters.require("placeId", as: Place.ID.self)
 		
-		return req.placeService.deletePlace(placeId, requesterId: userId)
-			.transform(to: .noContent)
+		try await req.placeService.deletePlace(placeId, requesterId: userId)
+		
+		return HTTPStatus.noContent
 	}
 	
-	func listPlaceProperties(req: Request) throws -> EventLoopFuture<[Place.Property.Localized]> {
+	func listPlaceProperties(req: Request) async throws -> [Place.Property.Localized] {
 		let kind = try req.query.get(Place.Property.Kind.ID.self, at: "kind")
 		
-		return req.placePropertyRepository.getAll(kind: kind)
-			.flatMapEachThrowing { try $0.localized(in: .en) }
+		return try await req.placePropertyRepository.getAll(kind: kind)
+			.localized(in: .en)
 	}
 	
 }

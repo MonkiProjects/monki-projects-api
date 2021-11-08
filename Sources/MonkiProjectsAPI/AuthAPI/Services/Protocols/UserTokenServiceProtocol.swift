@@ -14,6 +14,6 @@ public protocol UserTokenServiceProtocol {
 	func deleteAllTokens(
 		for userId: UserModel.IDValue,
 		requesterId: UserModel.IDValue
-	) -> EventLoopFuture<Void>
+	) async throws
 	
 }

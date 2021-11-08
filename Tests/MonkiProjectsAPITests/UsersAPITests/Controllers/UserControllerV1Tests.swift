@@ -84,7 +84,7 @@ internal class UserControllerV1Tests: AppTestCase {
 	///     - `body` should be a paginated array containing matching users
 	///     - Matching users should be the ones where username starts with,
 	///       contains or ends with the given part, case insensitive.
-	func testFindingUsersByUsername() throws {
+	func testFindingUsersByUsername() async throws {
 		let app = try XCTUnwrap(Self.app)
 		
 		let existing: Set<String> = ["def", "defghi", "abcdef", "bcdefgh", "abc", "ghi", "de"]
@@ -93,12 +93,11 @@ internal class UserControllerV1Tests: AppTestCase {
 		]
 		
 		// Create users
-		let creationFutures = existing.map { username -> EventLoopFuture<Void> in
+		for username in existing {
 			let user = UserModel.dummy(username: username)
 			deleteUserAfterTestFinishes(user, on: app.db)
-			return user.create(on: app.db)
+			try await user.create(on: app.db)
 		}
-		try EventLoopFuture.andAllSucceed(creationFutures, on: app.db.eventLoop).wait()
 		
 		for (filter, matches) in cases {
 			try app.test(.GET, "users/v1?username=\(filter)") { res in
@@ -126,7 +125,7 @@ internal class UserControllerV1Tests: AppTestCase {
 	///     - `body` should be a paginated array containing matching users
 	///     - Matching users should be the ones where display name starts with,
 	///       contains or ends with the given part, case insensitive.
-	func testFindingUsersByDisplayName() throws {
+	func testFindingUsersByDisplayName() async throws {
 		let app = try XCTUnwrap(Self.app)
 		
 		let existing: Set<String> = ["def", "defghi", "abcdef", "bcdefgh", "abc", "ghi", "de"]
@@ -135,12 +134,11 @@ internal class UserControllerV1Tests: AppTestCase {
 		]
 		
 		// Create users
-		let creationFutures = existing.map { displayName -> EventLoopFuture<Void> in
+		for displayName in existing {
 			let user = UserModel.dummy(displayName: displayName)
 			deleteUserAfterTestFinishes(user, on: app.db)
-			return user.create(on: app.db)
+			try await user.create(on: app.db)
 		}
-		try EventLoopFuture.andAllSucceed(creationFutures, on: app.db.eventLoop).wait()
 		
 		for (filter, matches) in cases {
 			try app.test(.GET, "users/v1?display_name=\(filter)") { res in

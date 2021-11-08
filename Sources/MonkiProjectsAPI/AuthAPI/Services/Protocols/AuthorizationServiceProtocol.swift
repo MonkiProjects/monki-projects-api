@@ -18,12 +18,12 @@ public protocol AuthorizationServiceProtocol {
 		_ requesterId: UserModel.IDValue,
 		can right: AuthorizationRight,
 		user userId: UserModel.IDValue
-	) -> EventLoopFuture<Bool>
+	) async -> Bool
 	
 	func user(
 		_ requesterId: UserModel.IDValue,
 		can right: AuthorizationRight,
 		place placeId: PlaceModel.IDValue
-	) -> EventLoopFuture<Bool>
+	) async throws -> Bool
 	
 }

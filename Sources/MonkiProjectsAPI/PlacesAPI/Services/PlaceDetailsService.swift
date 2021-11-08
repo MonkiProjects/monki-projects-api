@@ -20,16 +20,13 @@ internal struct PlaceDetailsService: Service, PlaceDetailsServiceProtocol {
 	func addProperties(
 		_ properties: [Place.Property],
 		to details: PlaceModel.Details
-	) -> EventLoopFuture<Void> {
-		self.eventLoop.makeSucceededFuture(properties)
-			.flatMapEach(on: self.eventLoop) { property in
-				self.make(self.app.placePropertyRepository)
-					.get(kind: property.kind, humanId: property.id)
-					.flatMap { property in
-						details.$properties.attach(property, method: .ifNotExists, on: self.db)
-					}
-			}
-			.transform(to: ())
+	) async throws {
+		let placePropertyRepository = self.make(self.app.placePropertyRepository)
+		for property in properties {
+			let property: PlaceModel.Property = try await placePropertyRepository
+				.get(kind: property.kind, humanId: property.id)
+			try await details.$properties.attach(property, method: .ifNotExists, on: self.db)
+		}
 	}
 	
 }

@@ -18,21 +18,17 @@ extension PlaceModel.Submission {
 		opinion: Review.Opinion,
 		isModerator: Bool,
 		on database: Database
-	) -> EventLoopFuture<PlaceModel.Submission> {
-		do {
-			if isModerator {
-				return reviewAsModerator(opinion: opinion, on: database)
-			}
-			return try reviewAsRegularUser(opinion: opinion, on: database)
-		} catch {
-			return database.eventLoop.makeFailedFuture(error)
+	) async throws -> PlaceModel.Submission {
+		if isModerator {
+			return try await reviewAsModerator(opinion: opinion, on: database)
 		}
+		return try await reviewAsRegularUser(opinion: opinion, on: database)
 	}
 	
 	private func reviewAsModerator(
 		opinion: Review.Opinion,
 		on database: Database
-	) -> EventLoopFuture<PlaceModel.Submission> {
+	) async throws -> PlaceModel.Submission {
 		switch opinion {
 		case .positive:
 			self.positiveReviews += 1
@@ -41,17 +37,18 @@ extension PlaceModel.Submission {
 			self.negativeReviews += 1
 			self.state = .moderated
 		case .needsChanges:
-			return setNeedsChanges(on: database)
+			return try await setNeedsChanges(on: database)
 		}
 		
-		return self.update(on: database)
-			.transform(to: self)
+		try await self.update(on: database)
+		
+		return self
 	}
 	
 	private func reviewAsRegularUser(
 		opinion: Review.Opinion,
 		on database: Database
-	) throws -> EventLoopFuture<PlaceModel.Submission> {
+	) async throws -> PlaceModel.Submission {
 		switch self.state {
 		case .waitingForReviews:
 			switch opinion {
@@ -66,7 +63,7 @@ extension PlaceModel.Submission {
 					self.state = .rejected
 				}
 			case .needsChanges:
-				return setNeedsChanges(on: database)
+				return try await setNeedsChanges(on: database)
 			}
 		case .waitingForChanges:
 			let allChangesAddressed = !self.reviews
@@ -76,7 +73,7 @@ extension PlaceModel.Submission {
 				.map { !$0.contains(where: { $0.state == .submitted }) }
 				.contains(false)
 			if allChangesAddressed {
-				return setNeedsChanges(on: database)
+				return try await setNeedsChanges(on: database)
 			} else {
 				throw Abort(.forbidden, reason: "This place still needs changes to be reviewed")
 			}
@@ -90,18 +87,20 @@ extension PlaceModel.Submission {
 			throw Abort(.forbidden, reason: "This place has been moderated")
 		}
 		
-		return self.update(on: database)
-			.transform(to: self)
+		try await self.update(on: database)
+		
+		return self
 	}
 	
-	private func setNeedsChanges(on database: Database) -> EventLoopFuture<PlaceModel.Submission> {
+	private func setNeedsChanges(on database: Database) async throws -> PlaceModel.Submission {
 		self.state = .needsChanges
 		
 		let newSubmission = Self(placeId: self.$place.id, state: .waitingForChanges)
 		
-		return self.update(on: database)
-			.flatMap { newSubmission.create(on: database) }
-			.transform(to: newSubmission)
+		try await self.update(on: database)
+		try await newSubmission.create(on: database)
+		
+		return newSubmission
 	}
 	
 }

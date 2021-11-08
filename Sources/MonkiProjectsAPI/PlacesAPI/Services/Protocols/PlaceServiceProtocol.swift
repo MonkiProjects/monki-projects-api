@@ -15,20 +15,20 @@ public protocol PlaceServiceProtocol {
 		state: Place.State,
 		pageRequest: PageRequest,
 		requesterId: (() throws -> UserModel.IDValue)?
-	) -> EventLoopFuture<Page<PlaceModel>>
+	) async throws -> Page<PlaceModel>
 	
 	func createPlace(
 		_ create: Place.Create,
 		creatorId: UserModel.IDValue
-	) -> EventLoopFuture<PlaceModel>
+	) async throws -> PlaceModel
 	
 	func deletePlace(
 		_ placeId: PlaceModel.IDValue,
 		requesterId: UserModel.IDValue
-	) -> EventLoopFuture<Void>
+	) async throws
 	
-	func triggerSatelliteViewLoading(for place: PlaceModel) -> EventLoopFuture<Void>
+	func triggerSatelliteViewLoading(for place: PlaceModel) async throws
 	
-	func triggerLocationReverseGeocoding(for place: PlaceModel) -> EventLoopFuture<Void>
+	func triggerLocationReverseGeocoding(for place: PlaceModel) async throws
 	
 }

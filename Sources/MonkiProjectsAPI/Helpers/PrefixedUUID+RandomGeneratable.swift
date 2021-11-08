@@ -6,11 +6,12 @@
 //  Copyright © 2021 Monki Projects. All rights reserved.
 //
 
+import Foundation
 import Fluent
-import PrefixedUUID
+import Prefixed
 
-extension PrefixedUUID: RandomGeneratable {
+extension Prefixed: RandomGeneratable where Base == UUID {
 	
-	public static func generateRandom() -> PrefixedUUID<Prefix> { Self() }
+	public static func generateRandom() -> Prefixed<Prefix, UUID> { PrefixedUUID() }
 	
 }

@@ -51,64 +51,55 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 	
 	// MARK: - Route functions
 	
-	func submitPlace(req: Request) throws -> EventLoopFuture<Response> {
+	func submitPlace(req: Request) async throws -> Response {
 		let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
 		let placeId = try req.parameters.require("placeId", as: Place.ID.self)
 		
-		let guardIsCreator = guardCreator(
+		// Is creator guard
+		try await guardCreator(
 			userId: userId, placeId: placeId,
 			otherwise: "You cannot submit someone else's place!",
 			in: req.db
 		)
 		
-		let guardNoDuplicate = guardIsCreator
-			.flatMap {
-				SubmissionModel.query(on: req.db)
-					.filter(\.$place.$id == placeId)
-					.first()
-			}
+		// No duplicates guard
+		try await SubmissionModel.query(on: req.db)
+			.filter(\.$place.$id == placeId)
+			.first()
 			.guard(\.isNil, else: Abort(.forbidden, reason: "You cannot submit a place twice!"))
-			.transform(to: ())
 		
-		let submitPlaceFuture = guardNoDuplicate
-			.flatMap { PlaceModel.find(placeId, on: req.db) }
+		// Submit place
+		let place = try await PlaceModel.find(placeId, on: req.db)
 			.unwrap(or: Abort(.notFound, reason: "Place not found"))
-			.passthrough { $0.state = .submitted }
-			.flatMap { $0.update(on: req.db) }
+		place.state = .submitted
+		try await place.update(on: req.db)
 		
-		let createSubmissionFuture = submitPlaceFuture
-			.map { SubmissionModel(placeId: placeId) }
-			.flatMap {
-				$0.create(on: req.db)
-					.transform(to: getLastSubmission(for: placeId, in: req.db))
-			}
+		// Create submission
+		let submission = SubmissionModel(placeId: placeId)
+		try await submission.create(on: req.db)
 		
-		return createSubmissionFuture
-			.flatMap { $0.asPublic(on: req) }
-			.flatMap { $0.encodeResponse(status: .created, for: req) }
+		return try await submission.asPublic(on: req)
+			.encodeResponse(status: .created, for: req)
 	}
 	
-	func getPlaceSubmissionReport(req: Request) throws -> EventLoopFuture<Submission.Public> {
+	func getPlaceSubmissionReport(req: Request) async throws -> Submission.Public {
 		let placeId = try req.parameters.require("placeId", as: Place.ID.self)
 		
-		return getLastSubmission(for: placeId, in: req.db)
-			.flatMap { $0.asPublic(on: req) }
+		return try await getLastSubmission(for: placeId, in: req.db).asPublic(on: req)
 	}
 	
-	func listPlaceSubmissionReviews(req: Request) throws -> EventLoopFuture<Page<Review.Public>> {
+	func listPlaceSubmissionReviews(req: Request) async throws -> Page<Review.Public> {
 		let placeId = try req.parameters.require("placeId", as: Place.ID.self)
 		
-		return getLastSubmission(for: placeId, in: req.db)
-			.flatMapThrowing { try $0.requireID() }
-			.flatMap { submissionId in
-				ReviewModel.query(on: req.db)
-					.filter(\.$submission.$id == submissionId)
-					.paginate(for: req)
-					.asPublic(on: req)
-			}
+		let submission = try await getLastSubmission(for: placeId, in: req.db)
+		
+		return try await ReviewModel.query(on: req.db)
+			.filter(\.$submission.$id == submission.requireID())
+			.paginate(for: req)
+			.asPublic(on: req)
 	}
 	
-	func addPlaceSubmissionReview(req: Request) throws -> EventLoopFuture<Review.Public> {
+	func addPlaceSubmissionReview(req: Request) async throws -> Review.Public {
 		let userId = try req.auth.require(UserModel.self, with: .bearer, in: req).requireID()
 		let placeId = try req.parameters.require("placeId", as: Place.ID.self)
 		
@@ -116,54 +107,41 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 		try Review.Create.validate(content: req)
 		let create = try req.content.decode(Review.Create.self)
 		
-		let updateSubmissionState = { () -> EventLoopFuture<SubmissionModel> in
-			getLastSubmission(for: placeId, in: req.db)
-				// FIXME: Set isModerator to true if user is a moderator
-				.flatMap { $0.review(opinion: create.opinion, isModerator: false, on: req.db) }
-		}
-		let publishPlaceIfNeeded = { (submission: SubmissionModel) -> EventLoopFuture<Void?>? in
-			if submission.state == .accepted {
-				return PlaceModel.find(placeId, on: req.db)
-					.optionalFlatMap { place -> EventLoopFuture<Void> in
-						place.state = .published
-						return place.update(on: req.db)
-					}
-			}
-			return nil
-		}
-		let addReview = { (submission: SubmissionModel) throws -> EventLoopFuture<ReviewModel> in
-			let review = try ReviewModel(
-				submissionId: submission.requireID(),
-				reviewerId: userId,
-				opinion: create.opinion,
-				comment: create.comment ?? ""
-			)
-			return submission.$reviews.create(review, on: req.db)
-				.transform(to: review)
-		}
-		let addIssues = { (review: ReviewModel) throws -> EventLoopFuture<Void> in
-			let issuesObjects = try create.issues
-				.map { try IssueModel(reviewId: review.requireID(), reason: $0.reason, comment: $0.comment) }
-			return review.$issues.create(issuesObjects, on: req.db)
-		}
-		
-		let guards = guardNotCreator(
+		// Guards
+		try await guardNotCreator(
 			userId: userId, placeId: placeId,
 			otherwise: "You cannot review your own submission!",
 			in: req.db
 		)
-		.transform(to: guardNoDoubleReview(by: userId, for: placeId, in: req.db))
+		try await guardNoDoubleReview(by: userId, for: placeId, in: req.db)
 		
-		let future = guards
-			.flatMap(updateSubmissionState)
-			.passthrough(publishPlaceIfNeeded)
-			.flatMapThrowing(addReview)
-			.flatMap { $0 }
-			// FIXME: Errors thrown by `addIssues` are dismissed here
-			.passthrough(addIssues)
+		// Update submission state
+		var submission = try await getLastSubmission(for: placeId, in: req.db)
+		// FIXME: Set isModerator to true if user is a moderator
+		submission = try await submission.review(opinion: create.opinion, isModerator: false, on: req.db)
 		
-		return future
-			.flatMap { $0.asPublic(on: req) }
+		// Publish place if needed
+		if submission.state == .accepted {
+			let place = try await PlaceModel.find(placeId, on: req.db)
+			place?.state = .published
+			try await place?.update(on: req.db)
+		}
+		
+		// Add review
+		let review = try ReviewModel(
+			submissionId: submission.requireID(),
+			reviewerId: userId,
+			opinion: create.opinion,
+			comment: create.comment ?? ""
+		)
+		try await submission.$reviews.create(review, on: req.db)
+		
+		// Add issues
+		let issuesObjects = try create.issues
+			.map { try IssueModel(reviewId: review.requireID(), reason: $0.reason, comment: $0.comment) }
+		try await review.$issues.create(issuesObjects, on: req.db)
+		
+		return try await review.asPublic(on: req)
 	}
 	
 	// MARK: - Helper functions
@@ -171,8 +149,8 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 	private func getLastSubmission(
 		for placeId: Place.ID,
 		in database: Database
-	) -> EventLoopFuture<SubmissionModel> {
-		SubmissionModel.query(on: database)
+	) async throws -> SubmissionModel {
+		try await SubmissionModel.query(on: database)
 			.with(\.$place)
 			.filter(\.$place.$id == placeId)
 			// Get last submission
@@ -186,11 +164,13 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 		placeId: Place.ID,
 		otherwise message: String,
 		in database: Database
-	) -> EventLoopFuture<Void> {
-		PlaceModel.find(placeId, on: database)
+	) async throws {
+		let place = try await PlaceModel.find(placeId, on: database)
 			.unwrap(or: Abort(.notFound, reason: "Place not found"))
-			.guard({ $0.$creator.id == userId }, else: Abort(.forbidden, reason: message))
-			.transform(to: ())
+		
+		guard place.$creator.id == userId else {
+			throw Abort(.forbidden, reason: message)
+		}
 	}
 	
 	/// Prevent user from reviewing his own submission
@@ -199,11 +179,13 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 		placeId: Place.ID,
 		otherwise message: String,
 		in database: Database
-	) -> EventLoopFuture<Void> {
-		PlaceModel.find(placeId, on: database)
+	) async throws {
+		let place = try await PlaceModel.find(placeId, on: database)
 			.unwrap(or: Abort(.notFound, reason: "Place not found"))
-			.guard({ $0.$creator.id != userId }, else: Abort(.forbidden, reason: message))
-			.transform(to: ())
+		
+		guard place.$creator.id != userId else {
+			throw Abort(.forbidden, reason: message)
+		}
 	}
 	
 	/// Prevent user from reviewing twice the same submission
@@ -211,9 +193,9 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 		by userId: UserModel.IDValue,
 		for placeId: Place.ID,
 		in database: Database
-	) -> EventLoopFuture<Void> {
+	) async throws {
 		// Fetch all reviews
-		ReviewModel.query(on: database)
+		try await ReviewModel.query(on: database)
 			// From user `userId`
 			.filter(\.$reviewer.$id == userId)
 			// With a submission for place `placeId`
@@ -221,7 +203,6 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 			.filter(SubmissionModel.self, \.$place.$id == placeId)
 			.first()
 			.guard(\.isNil, else: Abort(.forbidden, reason: "You cannot review a submission twice!"))
-			.transform(to: ())
 	}
 	
 }

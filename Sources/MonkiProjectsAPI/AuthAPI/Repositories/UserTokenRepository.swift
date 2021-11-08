@@ -18,8 +18,8 @@ internal struct UserTokenRepository: UserTokenRepositoryProtocol {
 		self.database = database
 	}
 	
-	func getAll(for userId: UserModel.IDValue) -> EventLoopFuture<[UserModel.Token]> {
-		UserModel.Token.query(on: self.database)
+	func getAll(for userId: UserModel.IDValue) async throws -> [UserModel.Token] {
+		try await UserModel.Token.query(on: self.database)
 			.with(\.$user)
 			.filter(\.$user.$id == userId)
 			.all()

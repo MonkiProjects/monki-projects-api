@@ -11,10 +11,10 @@ import MonkiMapModel
 
 public protocol PlaceDetailsRepositoryProtocol {
 	
-	func get(for placeId: Place.ID) -> EventLoopFuture<PlaceModel.Details>
+	func get(for placeId: Place.ID) async throws -> PlaceModel.Details
 	
-	func unsafeGetAll(for placeId: Place.ID) -> EventLoopFuture<[PlaceModel.Details]>
+	func unsafeGetAll(for placeId: Place.ID) async throws -> [PlaceModel.Details]
 	
-	func delete(for placeId: Place.ID, force: Bool) -> EventLoopFuture<Void>
+	func delete(for placeId: Place.ID, force: Bool) async throws
 	
 }
