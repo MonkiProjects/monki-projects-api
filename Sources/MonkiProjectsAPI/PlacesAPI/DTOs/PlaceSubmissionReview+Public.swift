@@ -22,7 +22,7 @@ extension PlaceModel.Submission.Review {
 		typealias Issue = MonkiMapModel.Place.Submission.Review.Issue.Public
 		let issues = try await withThrowingTaskGroup(of: Issue.self, returning: [Issue].self) { group in
 			for issue in self.issues {
-				group.async {
+				group.addTask {
 					return try await issue.asPublic(on: req)
 				}
 			}

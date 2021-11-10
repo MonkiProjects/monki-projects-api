@@ -16,7 +16,7 @@ extension Array where Element == PlaceModel {
 		typealias Result = Place.Public
 		return await withTaskGroup(of: Result?.self, returning: [Result].self) { group in
 			for place in self {
-				group.async {
+				group.addTask {
 					return try? await place.asPublic(on: req)
 				}
 			}
@@ -33,7 +33,7 @@ extension Array where Element == PlaceModel.Property {
 		typealias Result = Place.Property.Localized
 		return await withTaskGroup(of: Result?.self, returning: [Result].self) { group in
 			for place in self {
-				group.async {
+				group.addTask {
 					return try? place.localized(in: .en)
 				}
 			}
@@ -58,7 +58,7 @@ extension Array where Element == PlaceModel.Submission.Review {
 		typealias Result = Place.Submission.Review.Public
 		return await withTaskGroup(of: Result?.self, returning: [Result].self) { group in
 			for place in self {
-				group.async {
+				group.addTask {
 					return try? await place.asPublic(on: req)
 				}
 			}

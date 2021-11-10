@@ -54,7 +54,7 @@ internal struct PlacePropertyRepository: PlacePropertyRepositoryProtocol {
 		) { group in
 			for (key, values) in dict {
 				for value in values {
-					group.async {
+					group.addTask {
 						return try await self.get(kind: key, humanId: value)
 					}
 				}

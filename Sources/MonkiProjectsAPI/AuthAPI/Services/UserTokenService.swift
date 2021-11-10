@@ -32,7 +32,7 @@ internal struct UserTokenService: Service, UserTokenServiceProtocol {
 		let tokens = try await self.make(self.app.userTokenRepository).getAll(for: userId)
 		await withThrowingTaskGroup(of: Void.self) { group in
 			for token in tokens {
-				group.async {
+				group.addTask {
 					try await token.delete(on: self.db)
 				}
 			}

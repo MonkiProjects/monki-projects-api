@@ -15,7 +15,7 @@ extension Page {
 		where U: Codable {
 		let items = try await withThrowingTaskGroup(of: U.self, returning: [U].self) { group in
 			for item in self.items {
-				group.async {
+				group.addTask {
 					return try await transform(item)
 				}
 			}
