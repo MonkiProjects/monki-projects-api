@@ -9,6 +9,7 @@
 @testable import MonkiProjectsAPI
 import XCTVapor
 import Fluent
+import MonkiMapModel
 
 // swiftlint:disable closure_body_length
 internal final class PlaceControllerV1Tests: AppTestCase {
@@ -68,13 +69,13 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 	/// Tests `GET /places/v1`.
 	///
 	/// - GIVEN:
-	///     - A submitted place
-	///     - A published place
+	///     - A private place
+	///     - A public place
 	/// - WHEN:
-	///     - Fetching all published places (paginated)
+	///     - Fetching all public places (paginated)
 	/// - THEN:
 	///     - `HTTP` status should be `200 OK`
-	///     - `body` should be a paginated array containing only the published place
+	///     - `body` should be a paginated array containing only the public place
 	func testIndexReturnsTheListOfPublishedPlaces() throws {
 		let app = try XCTUnwrap(Self.app)
 		let user = try XCTUnwrap(Self.user)
@@ -82,6 +83,7 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 		// Create submitted place
 		let submittedPlace = try PlaceModel.dummy(
 			kindId: kindId(for: "training_spot", on: app.db).wait(),
+			visibility: .private,
 			creatorId: user.requireID()
 		)
 		try createPlace(submittedPlace, on: app.db).wait()
@@ -90,14 +92,13 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 		// Create published place
 		let publishedPlace = try PlaceModel.dummy(
 			kindId: kindId(for: "training_spot", on: app.db).wait(),
-			state: .published,
+			visibility: .public,
 			creatorId: user.requireID()
 		)
 		try createPlace(publishedPlace, on: app.db).wait()
 		deletePlaceAfterTestFinishes(publishedPlace, on: app.db)
 		
-		try app.test(
-			.GET, "places/v1") { res in
+		try app.test(.GET, "places/v1") { res in
 			try res.assertStatus(.ok) {
 				let page = try res.content.decode(Page<Place.Public>.self)
 				let places = page.items
@@ -113,97 +114,7 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 		}
 	}
 	
-	/// Tests `GET /places/v1?state=submitted`.
-	///
-	/// - GIVEN:
-	///     - A submitted place
-	///     - A published place
-	/// - WHEN:
-	///     - Fetching all submitted places (paginated)
-	/// - THEN:
-	///     - `HTTP` status should be `200 OK`
-	///     - `body` should be a paginated array containing only the submitted place
-	func testListSubmittedReturnsTheListOfSubmittedPlaces() throws {
-		let app = try XCTUnwrap(Self.app)
-		let user = try XCTUnwrap(Self.user)
-		
-		// Create submitted place
-		let submittedPlace = try PlaceModel.dummy(
-			kindId: kindId(for: "training_spot", on: app.db).wait(),
-			state: .submitted,
-			creatorId: user.requireID()
-		)
-		try createPlace(submittedPlace, on: app.db).wait()
-		deletePlaceAfterTestFinishes(submittedPlace, on: app.db)
-		
-		// Create published place
-		let publishedPlace = try PlaceModel.dummy(
-			kindId: kindId(for: "training_spot", on: app.db).wait(),
-			state: .published,
-			creatorId: user.requireID()
-		)
-		try createPlace(publishedPlace, on: app.db).wait()
-		deletePlaceAfterTestFinishes(publishedPlace, on: app.db)
-		
-		try app.test(
-			.GET, "places/v1?state=submitted") { res in
-			try res.assertStatus(.ok) {
-				let page = try res.content.decode(Page<Place.Public>.self)
-				let places = page.items
-				
-				XCTAssertEqual(places.count, 1)
-				guard let placeResponse = places.first else {
-					XCTFail("Response does not contain a Place")
-					return
-				}
-				
-				try XCTAssertEqual(placeResponse.id, submittedPlace.requireID())
-			}
-		}
-	}
-	
-	/// Tests `GET /places/v1?state=submitted` when unauthorized.
-	///
-	/// - GIVEN:
-	///     - Nothing
-	/// - WHEN:
-	///     - Fetching all submitted places
-	/// - THEN:
-	///     - `HTTP` status should be `200 OK`
-	func testListSubmittedPlaces_Unauthorized() throws {
-		let app = try XCTUnwrap(Self.app)
-		
-		try app.test(.GET, "places/v1?state=submitted") { res in
-			try res.assertStatus(.ok) {}
-		}
-	}
-	
-	/// Tests `GET /places/v1?state=submitted` when authorized.
-	///
-	/// - GIVEN:
-	///     - A user
-	/// - WHEN:
-	///     - Fetching all submitted places
-	///     - Logged in as the user
-	/// - THEN:
-	///     - `HTTP` status should be `200 OK`
-	func testListSubmittedPlaces_Authorized() throws {
-		let app = try XCTUnwrap(Self.app)
-		let userToken = try XCTUnwrap(Self.userToken)
-		
-		try app.test(
-			.GET, "places/v1?state=submitted",
-			beforeRequest: { req in
-				let bearerAuth = BearerAuthorization(token: userToken.value)
-				req.headers.bearerAuthorization = bearerAuth
-			},
-			afterResponse: { res in
-				try res.assertStatus(.ok) {}
-			}
-		)
-	}
-	
-	/// Tests `GET /places/v1?state=private` when authorized.
+	/// Tests `GET /places/v1?visibility=private` when authorized.
 	///
 	/// - GIVEN:
 	///     - A user
@@ -217,7 +128,7 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 		let userToken = try XCTUnwrap(Self.userToken)
 		
 		try app.test(
-			.GET, "places/v1?state=private",
+			.GET, "places/v1?visibility=private",
 			beforeRequest: { req in
 				let bearerAuth = BearerAuthorization(token: userToken.value)
 				req.headers.bearerAuthorization = bearerAuth
@@ -239,8 +150,10 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 		// Create place
 		let create = Place.Create(
 			name: "Test name",
-			latitude: Double.random(in: -90...90),
-			longitude: Double.random(in: -180...180),
+			coordinate: Coordinate(
+				latitude: Double.random(in: -90...90),
+				longitude: Double.random(in: -180...180)
+			),
 			kind: .trainingSpot,
 			caption: "Test caption",
 			images: [],
@@ -273,10 +186,12 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 					let place = try res.content.decode(Place.Public.self)
 					
 					XCTAssertEqual(place.name, create.name)
-					XCTAssertTrue(place.latitude.distance(to: create.latitude) < 0.001)
-					XCTAssertTrue(place.longitude.distance(to: create.longitude) < 0.001)
-					XCTAssertEqual(place.creator, try user.requireID())
-					XCTAssertEqual(place.state, .private)
+					// swiftlint:disable:next line_length
+					XCTAssertTrue(place.coordinate?.latitude.decimalDegrees.distance(to: create.coordinate.latitude.decimalDegrees) ?? .infinity < 0.001)
+					// swiftlint:disable:next line_length
+					XCTAssertTrue(place.coordinate?.longitude.decimalDegrees.distance(to: create.coordinate.longitude.decimalDegrees) ?? .infinity < 0.001)
+					XCTAssertEqual(place.metadata.creator, try user.requireID())
+					XCTAssertEqual(place.metadata.visibility, .private)
 					XCTAssertEqual(place.kind, .trainingSpot)
 					XCTAssertEqual(place.category, .spot)
 					XCTAssertEqual(place.details.caption, create.caption)
@@ -284,8 +199,8 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 					XCTAssertEqual(place.details.properties.count, 5)
 					XCTAssertNotNil(place.details.satelliteImage)
 					XCTAssertNil(place.details.location)
-					XCTAssertNotNil(place.createdAt)
-					XCTAssertNotNil(place.updatedAt)
+					XCTAssertNotNil(place.metadata.createdAt)
+					XCTAssertNotNil(place.metadata.updatedAt)
 					
 					// Test creation on DB
 					let storedPlace = try PlaceModel.find(place.id, on: app.db).wait()
@@ -463,8 +378,10 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 		// Create place
 		let create = Place.Create(
 			name: "12",
-			latitude: Double.random(in: -90...90),
-			longitude: Double.random(in: -180...180),
+			coordinate: Coordinate(
+				latitude: Double.random(in: -90...90),
+				longitude: Double.random(in: -180...180)
+			),
 			kind: .trainingSpot,
 			caption: "Test caption"
 		)
@@ -504,8 +421,10 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 		// Create place
 		let create = Place.Create(
 			name: "Test name",
-			latitude: Double.random(in: -90...90),
-			longitude: Double.random(in: -180...180),
+			coordinate: Coordinate(
+				latitude: Double.random(in: -90...90),
+				longitude: Double.random(in: -180...180)
+			),
 			kind: .trainingSpot,
 			caption: "Test caption",
 			properties: [.feature("123")]
@@ -530,7 +449,7 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 		)
 	}
 	
-	/// Tests `GET /places/v1?state=private` when unauthorized.
+	/// Tests `GET /places/v1?visibility=private` when unauthorized.
 	///
 	/// - GIVEN:
 	///     - Nothing
@@ -542,7 +461,7 @@ internal final class PlaceControllerV1Tests: AppTestCase {
 	func testListPrivatePlaces_Unauthorized() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		try app.test(.GET, "places/v1?state=private") { res in
+		try app.test(.GET, "places/v1?visibility=private") { res in
 			try res.assertError(status: .unauthorized, reason: "Unauthorized")
 			XCTAssertTrue(res.headers.contains(name: .wwwAuthenticate))
 		}

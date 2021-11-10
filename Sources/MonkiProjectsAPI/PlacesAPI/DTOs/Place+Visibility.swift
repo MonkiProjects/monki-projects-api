@@ -1,5 +1,5 @@
 //
-//  Place+State.swift
+//  Place+Visibility.swift
 //  PlacesAPI
 //
 //  Created by Rémi Bardon on 09/01/2021.
@@ -9,4 +9,4 @@
 import Vapor
 import MonkiMapModel
 
-extension Place.State: Content {}
+extension Place.Visibility: Content {}

@@ -32,7 +32,8 @@ internal struct PlaceRepository: PlaceRepositoryProtocol {
 	}
 	
 	func getAll(
-		state: Place.State?,
+		visibility: Place.Visibility?,
+		includeDraft: Bool,
 		creator: User.ID?
 	) async throws -> [PlaceModel] {
 		var queryBuilder = PlaceModel.query(on: database)
@@ -40,15 +41,19 @@ internal struct PlaceRepository: PlaceRepositoryProtocol {
 		if let creator = creator {
 			queryBuilder = queryBuilder.filter(\.$creator.$id == creator)
 		}
-		if let state = state {
-			queryBuilder = queryBuilder.filter(\.$state == state)
+		if !includeDraft {
+			queryBuilder = queryBuilder.filter(\.$isDraft == false)
+		}
+		if let visibility = visibility {
+			queryBuilder = queryBuilder.filter(\.$visibility == visibility)
 		}
 		
 		return try await queryBuilder.all()
 	}
 	
 	func getAllPaged(
-		state: Place.State?,
+		visibility: Place.Visibility?,
+		includeDraft: Bool,
 		creator: User.ID?,
 		_ pageRequest: Fluent.PageRequest
 	) async throws -> Fluent.Page<PlaceModel> {
@@ -57,8 +62,11 @@ internal struct PlaceRepository: PlaceRepositoryProtocol {
 		if let creator = creator {
 			queryBuilder = queryBuilder.filter(\.$creator.$id == creator)
 		}
-		if let state = state {
-			queryBuilder = queryBuilder.filter(\.$state == state)
+		if !includeDraft {
+			queryBuilder = queryBuilder.filter(\.$isDraft == false)
+		}
+		if let visibility = visibility {
+			queryBuilder = queryBuilder.filter(\.$visibility == visibility)
 		}
 		
 		return try await queryBuilder.paginate(pageRequest)

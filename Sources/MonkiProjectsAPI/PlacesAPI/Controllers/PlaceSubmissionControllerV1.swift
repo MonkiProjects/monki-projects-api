@@ -71,7 +71,8 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 		// Submit place
 		let place = try await PlaceModel.find(placeId, on: req.db)
 			.unwrap(or: Abort(.notFound, reason: "Place not found"))
-		place.state = .submitted
+		fatalError("This is not working anymore. TODO: Add a submission state metadata value.")
+//		place.state = .submitted
 		try await place.update(on: req.db)
 		
 		// Create submission
@@ -123,7 +124,8 @@ internal struct PlaceSubmissionControllerV1: RouteCollection {
 		// Publish place if needed
 		if submission.state == .accepted {
 			let place = try await PlaceModel.find(placeId, on: req.db)
-			place?.state = .published
+			fatalError("This is not working anymore. TODO: Add a submission state metadata value.")
+//			place?.state = .published
 			try await place?.update(on: req.db)
 		}
 		

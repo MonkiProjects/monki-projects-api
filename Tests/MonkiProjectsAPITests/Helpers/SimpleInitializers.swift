@@ -39,12 +39,13 @@ extension PlaceModel {
 		latitude: Double = Double.random(in: -90...90),
 		longitude: Double = Double.random(in: -180...180),
 		kindId: Kind.IDValue,
-		state: State = .private,
+		visibility: Visibility = .public,
+		isDraft: Bool = false,
 		creatorId: UserModel.IDValue
 	) -> Self {
 		self.init(
 			id: id, name: name, latitude: latitude, longitude: longitude, kindId: kindId,
-			state: state, creatorId: creatorId
+			visibility: visibility, isDraft: isDraft, creatorId: creatorId
 		)
 	}
 	

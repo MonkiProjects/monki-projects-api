@@ -8,6 +8,7 @@
 
 import Vapor
 import Fluent
+import MonkiProjectsModel
 import MonkiMapModel
 
 extension PlaceModel {
@@ -23,18 +24,22 @@ extension PlaceModel {
 		
 		let kind = Place.Kind.ID(rawValue: self.kind.humanId)
 		
+		let metadata = try Place.Metadata(
+			visibility: self.visibility,
+			isDraft: self.isDraft,
+			creator: self.creator.id,
+			createdAt: self.createdAt.require(),
+			updatedAt: self.updatedAt.require()
+		)
+		
 		return try Place.Public(
 			id: self.requireID(),
 			name: self.name,
-			latitude: self.latitude,
-			longitude: self.longitude,
+			coordinate: Coordinate(latitude: self.latitude, longitude: self.longitude),
 			kind: kind,
 			category: Place.Category.ID(for: kind),
-			state: self.state,
-			creator: self.creator.requireID(),
 			details: details,
-			createdAt: self.createdAt.require(),
-			updatedAt: self.updatedAt.require()
+			metadata: metadata
 		)
 	}
 	

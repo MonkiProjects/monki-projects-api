@@ -12,7 +12,7 @@ import MonkiMapModel
 
 public final class PlaceModel: Model {
 	
-	public typealias State = Place.State
+	public typealias Visibility = Place.Visibility
 	
 	public static let schema = "places"
 	
@@ -31,8 +31,11 @@ public final class PlaceModel: Model {
 	@Parent(key: "kind_id")
 	public var kind: Kind
 	
-	@Field(key: "state")
-	public var state: State
+	@Field(key: "visibility")
+	public var visibility: Visibility
+	
+	@Field(key: "is_draft")
+	public var isDraft: Bool
 	
 	@Parent(key: "creator_id")
 	public var creator: UserModel
@@ -54,7 +57,8 @@ public final class PlaceModel: Model {
 		latitude: Double,
 		longitude: Double,
 		kindId: Kind.IDValue,
-		state: State = .private,
+		visibility: Visibility = .private,
+		isDraft: Bool = true,
 		creatorId: UserModel.IDValue
 	) {
 		self.id = id
@@ -62,7 +66,8 @@ public final class PlaceModel: Model {
 		self.latitude = latitude
 		self.longitude = longitude
 		self.$kind.id = kindId
-		self.state = state
+		self.visibility = visibility
+		self.isDraft = isDraft
 		self.$creator.id = creatorId
 	}
 	

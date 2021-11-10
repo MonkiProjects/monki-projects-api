@@ -8,6 +8,7 @@
 
 import Vapor
 import Fluent
+import MonkiProjectsModel
 import MonkiMapModel
 
 extension PlaceModel.Details {
@@ -24,12 +25,18 @@ extension PlaceModel.Details {
 		
 		// TODO: Trigger a call to reverse geocode location
 		
-		return try MonkiMapModel.Place.Details.Public(
+		return MonkiMapModel.Place.Details.Public(
 			caption: self.caption,
-			satelliteImage: cloudinary.image(withId: self.satelliteImageId).requireURL(),
-			images: self.images.map(URL.init(string:)).compactMap { $0 },
+			satelliteImage: cloudinary.image(withId: self.satelliteImageId).url.map(ImageSource.url),
+			images: self.images.compactMap { urlString -> ImageSource? in
+				if let url = URL(string: urlString) {
+					return ImageSource.url(url)
+				} else {
+					return nil
+				}
+			},
 			location: location?.asPublic(),
-			properties: self.properties.map { try $0.localized(in: .en) }
+			properties: self.properties.map { MonkiMapModel.Place.Property(kind: $0.kind, id: $0.humanId) }
 		)
 	}
 	

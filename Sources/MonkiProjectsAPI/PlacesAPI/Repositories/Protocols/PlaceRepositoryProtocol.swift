@@ -20,12 +20,14 @@ public protocol PlaceRepositoryProtocol {
 	) async throws -> Fluent.Page<PlaceModel>
 	
 	func getAll(
-		state: Place.State?,
+		visibility: Place.Visibility?,
+		includeDraft: Bool,
 		creator: User.ID?
 	) async throws -> [PlaceModel]
 	
 	func getAllPaged(
-		state: Place.State?,
+		visibility: Place.Visibility?,
+		includeDraft: Bool,
 		creator: User.ID?,
 		_ pageRequest: Fluent.PageRequest
 	) async throws -> Fluent.Page<PlaceModel>

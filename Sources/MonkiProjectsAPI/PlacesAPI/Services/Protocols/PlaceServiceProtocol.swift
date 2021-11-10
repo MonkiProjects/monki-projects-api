@@ -12,7 +12,8 @@ import MonkiMapModel
 public protocol PlaceServiceProtocol {
 	
 	func listPlaces(
-		state: Place.State,
+		visibility: Place.Visibility,
+		includeDraft: Bool,
 		pageRequest: PageRequest,
 		requesterId: (() throws -> UserModel.IDValue)?
 	) async throws -> Page<PlaceModel>

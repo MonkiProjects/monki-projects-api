@@ -18,25 +18,36 @@ internal struct PlaceService: Service, PlaceServiceProtocol {
 	let logger: Logger
 	
 	func listPlaces(
-		state: Place.State,
+		visibility: Place.Visibility,
+		includeDraft: Bool,
 		pageRequest: PageRequest,
 		requesterId: (() throws -> UserModel.IDValue)? = nil
 	) async throws -> Page<PlaceModel> {
-		switch state {
+		switch visibility {
 		case .unknown:
-			throw Abort(.badRequest, reason: "Fetching places in 'unknown' state is impossible.")
-		case .draft, .local, .private:
+			throw Abort(.badRequest, reason: "Fetching places with 'unknown' visibility is impossible.")
+		case .private:
 			guard let userId = try requesterId?() else {
 				throw Abort(
 					.forbidden,
-					reason: "You must be authenticated to list your draft, local or private places."
+					reason: "You must be authenticated to list your private places."
 				)
 			}
 			return try await self.make(self.app.placeRepository)
-				.getAllPaged(state: state, creator: userId, pageRequest)
-		case .submitted, .published, .rejected:
+				.getAllPaged(
+					visibility: visibility,
+					includeDraft: true,
+					creator: userId,
+					pageRequest
+				)
+		case .public:
 			return try await self.make(self.app.placeRepository)
-				.getAllPaged(state: state, creator: nil, pageRequest)
+				.getAllPaged(
+					visibility: visibility,
+					includeDraft: false,
+					creator: nil,
+					pageRequest
+				)
 		}
 	}
 	
@@ -54,10 +65,9 @@ internal struct PlaceService: Service, PlaceServiceProtocol {
 		// Create & store place
 		let place = try PlaceModel(
 			name: create.name,
-			latitude: create.latitude,
-			longitude: create.longitude,
+			latitude: create.coordinate.latitude.decimalDegrees,
+			longitude: create.coordinate.longitude.decimalDegrees,
 			kindId: kind.requireID(),
-			state: .private,
 			creatorId: creatorId
 		)
 		try await place.create(on: self.db)

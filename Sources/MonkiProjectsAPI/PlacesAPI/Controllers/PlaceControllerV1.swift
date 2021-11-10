@@ -22,7 +22,7 @@ internal struct PlaceControllerV1: RouteCollection {
 		
 		// GET /places/v1
 		tokenProtected
-			.grouped(RequireAuthForPrivatePlaceStates())
+			.grouped(RequireAuthForPrivatePlaceVisibilities())
 			.get(use: listPlaces)
 		
 		try routes.group(":placeId") { place in
@@ -46,13 +46,17 @@ internal struct PlaceControllerV1: RouteCollection {
 	func listPlaces(req: Request) async throws -> Page<Place.Public> {
 		let pageRequest = try req.query.decode(PageRequest.self)
 		struct Params: Content {
-			let state: Place.State?
+			let visibility: Place.Visibility?
+			let includeDraft: Bool?
 		}
-		let state = try req.query.decode(Params.self).state ?? .published
+		let params = try req.query.decode(Params.self)
+		let visibility = params.visibility ?? .public
+		let includeDraft = params.includeDraft ?? false
 		
 		return try await req.placeService
 			.listPlaces(
-				state: state,
+				visibility: visibility,
+				includeDraft: includeDraft,
 				pageRequest: pageRequest,
 				requesterId: { try req.auth.require(UserModel.self, with: .bearer, in: req).requireID() }
 			)
