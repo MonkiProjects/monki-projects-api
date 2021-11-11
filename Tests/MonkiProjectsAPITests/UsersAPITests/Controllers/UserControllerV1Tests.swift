@@ -96,9 +96,7 @@ internal class UserControllerV1Tests: AppTestCase {
 		for username in existing {
 			let user = UserModel.dummy(username: username)
 			deleteUserAfterTestFinishes(user, on: app.db)
-			Task {
-				try await user.create(on: app.db)
-			}
+			try user.create(on: app.db).wait()
 		}
 		
 		for (filter, matches) in cases {
@@ -139,9 +137,7 @@ internal class UserControllerV1Tests: AppTestCase {
 		for displayName in existing {
 			let user = UserModel.dummy(displayName: displayName)
 			deleteUserAfterTestFinishes(user, on: app.db)
-			Task {
-				try await user.create(on: app.db)
-			}
+			try user.create(on: app.db).wait()
 		}
 		
 		for (filter, matches) in cases {
