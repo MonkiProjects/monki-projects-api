@@ -84,7 +84,7 @@ internal class UserControllerV1Tests: AppTestCase {
 	///     - `body` should be a paginated array containing matching users
 	///     - Matching users should be the ones where username starts with,
 	///       contains or ends with the given part, case insensitive.
-	func testFindingUsersByUsername() async throws {
+	func testFindingUsersByUsername() throws {
 		let app = try XCTUnwrap(Self.app)
 		
 		let existing: Set<String> = ["def", "defghi", "abcdef", "bcdefgh", "abc", "ghi", "de"]
@@ -96,7 +96,9 @@ internal class UserControllerV1Tests: AppTestCase {
 		for username in existing {
 			let user = UserModel.dummy(username: username)
 			deleteUserAfterTestFinishes(user, on: app.db)
-			try await user.create(on: app.db)
+			Task {
+				try await user.create(on: app.db)
+			}
 		}
 		
 		for (filter, matches) in cases {
@@ -125,7 +127,7 @@ internal class UserControllerV1Tests: AppTestCase {
 	///     - `body` should be a paginated array containing matching users
 	///     - Matching users should be the ones where display name starts with,
 	///       contains or ends with the given part, case insensitive.
-	func testFindingUsersByDisplayName() async throws {
+	func testFindingUsersByDisplayName() throws {
 		let app = try XCTUnwrap(Self.app)
 		
 		let existing: Set<String> = ["def", "defghi", "abcdef", "bcdefgh", "abc", "ghi", "de"]
@@ -137,7 +139,9 @@ internal class UserControllerV1Tests: AppTestCase {
 		for displayName in existing {
 			let user = UserModel.dummy(displayName: displayName)
 			deleteUserAfterTestFinishes(user, on: app.db)
-			try await user.create(on: app.db)
+			Task {
+				try await user.create(on: app.db)
+			}
 		}
 		
 		for (filter, matches) in cases {
