@@ -21,8 +21,8 @@ internal struct PlacePropertyRepository: PlacePropertyRepositoryProtocol {
 	func unsafeGet(
 		kind: Place.Property.Kind.ID,
 		humanId: Place.Property.ID
-	) -> EventLoopFuture<PlaceModel.Property?> {
-		PlaceModel.Details.Property.query(on: database)
+	) async throws -> PlaceModel.Property? {
+		try await PlaceModel.Details.Property.query(on: database)
 			.filter(\.$kind == kind)
 			.filter(\.$humanId == humanId)
 			.first()
@@ -31,32 +31,37 @@ internal struct PlacePropertyRepository: PlacePropertyRepositoryProtocol {
 	func get(
 		kind: Place.Property.Kind.ID,
 		humanId: Place.Property.ID
-	) -> EventLoopFuture<PlaceModel.Property> {
-		self.unsafeGet(kind: kind, humanId: humanId)
+	) async throws -> PlaceModel.Property {
+		try await self.unsafeGet(kind: kind, humanId: humanId)
 			.unwrap(or: Abort(
 				.badRequest,
 				reason: "Invalid property: { \"kind\": \"\(kind)\", \"id\": \"\(humanId)\" }"
 			))
 	}
 	
-	func getAll(kind: Place.Property.Kind.ID) -> EventLoopFuture<[PlaceModel.Property]> {
-		PlaceModel.Property.query(on: database)
+	func getAll(kind: Place.Property.Kind.ID) async throws -> [PlaceModel.Property] {
+		try await PlaceModel.Property.query(on: database)
 			.filter(\.$kind == kind)
 			.all()
 	}
 	
 	func getAll(
 		dict: [Place.Property.Kind.ID: [Place.Property.ID]]
-	) -> EventLoopFuture<[PlaceModel.Property]> {
-		var pairs = [(Place.Property.Kind.ID, Place.Property.ID)]()
-		for (key, values) in dict {
-			for value in values {
-				pairs.append((key, value))
+	) async throws -> [PlaceModel.Property] {
+		try await withThrowingTaskGroup(
+			of: PlaceModel.Property.self,
+			returning: [PlaceModel.Property].self
+		) { group in
+			for (key, values) in dict {
+				for value in values {
+					group.addTask {
+						return try await self.get(kind: key, humanId: value)
+					}
+				}
 			}
+			
+			return try await group.reduce(into: [PlaceModel.Property]()) { $0.append($1) }
 		}
-		
-		return database.eventLoop.makeSucceededFuture(pairs)
-			.flatMapEach(on: database.eventLoop, get(kind:humanId:))
 	}
 	
 }

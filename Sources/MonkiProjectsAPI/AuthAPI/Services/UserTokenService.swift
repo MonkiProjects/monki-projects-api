@@ -20,21 +20,23 @@ internal struct UserTokenService: Service, UserTokenServiceProtocol {
 	func deleteAllTokens(
 		for userId: UserModel.IDValue,
 		requesterId: UserModel.IDValue
-	) -> EventLoopFuture<Void> {
-		let validationsFuture = EventLoopFuture.andAllSucceed([
-			self.make(self.app.authorizationService)
-				.user(requesterId, can: .delete, user: userId)
-				.guard(else: Abort(.forbidden, reason: "You cannot delete someone else's tokens!")),
-		], on: self.eventLoop)
-		
-		func deleteTokensFuture() -> EventLoopFuture<Void> {
-			self.make(self.app.userTokenRepository)
-				.getAll(for: userId)
-				.flatMap { $0.delete(on: self.db) }
+	) async throws {
+		// Perform validations
+		let canDelete = await self.make(self.app.authorizationService)
+			.user(requesterId, can: .delete, user: userId)
+		guard canDelete else {
+			throw Abort(.forbidden, reason: "You cannot delete someone else's tokens!")
 		}
 		
-		return validationsFuture
-			.flatMap(deleteTokensFuture)
+		// Delete tokens
+		let tokens = try await self.make(self.app.userTokenRepository).getAll(for: userId)
+		await withThrowingTaskGroup(of: Void.self) { group in
+			for token in tokens {
+				group.addTask {
+					try await token.delete(on: self.db)
+				}
+			}
+		}
 	}
 	
 }

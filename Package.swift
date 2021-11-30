@@ -5,7 +5,7 @@ let package = Package(
 	name: "monki-projects-api",
 	defaultLocalization: "en",
 	platforms: [
-		.macOS(.v10_15),
+		.macOS(.v12),
 	],
 	dependencies: [
 		// 💧 A server-side Swift web framework.
@@ -17,7 +17,7 @@ let package = Package(
 		.package(
 			name: "monki-projects-model",
 			url: "https://github.com/MonkiProjects/monki-projects-model-swift.git",
-			.upToNextMinor(from: "0.5.0")
+			.upToNextMinor(from: "0.7.8")
 		),
 	],
 	targets: [

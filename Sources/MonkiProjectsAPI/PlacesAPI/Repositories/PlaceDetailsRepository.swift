@@ -18,24 +18,26 @@ internal struct PlaceDetailsRepository: PlaceDetailsRepositoryProtocol {
 		self.database = database
 	}
 	
-	func get(for placeId: Place.ID) -> EventLoopFuture<PlaceModel.Details> {
-		PlaceModel.Details.query(on: database)
+	func get(for placeId: Place.ID) async throws -> PlaceModel.Details {
+		try await PlaceModel.Details.query(on: database)
 			.with(\.$place)
 			.filter(\.$place.$id == placeId)
 			.first()
 			.unwrap(or: Abort(.internalServerError, reason: "Could not find place details"))
 	}
 	
-	func unsafeGetAll(for placeId: Place.ID) -> EventLoopFuture<[PlaceModel.Details]> {
-		PlaceModel.Details.query(on: database)
+	func unsafeGetAll(for placeId: Place.ID) async throws -> [PlaceModel.Details] {
+		try await PlaceModel.Details.query(on: database)
 			.with(\.$place)
 			.filter(\.$place.$id == placeId)
 			.all()
 	}
 	
-	func delete(for placeId: Place.ID, force: Bool) -> EventLoopFuture<Void> {
-		self.unsafeGetAll(for: placeId)
-			.flatMap { $0.delete(force: force, on: database) }
+	func delete(for placeId: Place.ID, force: Bool) async throws {
+		try await PlaceModel.Details.query(on: database)
+			.with(\.$place)
+			.filter(\.$place.$id == placeId)
+			.delete(force: force)
 	}
 	
 }

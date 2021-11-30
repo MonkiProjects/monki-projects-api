@@ -14,6 +14,6 @@ public protocol PlaceDetailsServiceProtocol {
 	func addProperties(
 		_ properties: [Place.Property],
 		to details: PlaceModel.Details
-	) -> EventLoopFuture<Void>
+	) async throws
 	
 }

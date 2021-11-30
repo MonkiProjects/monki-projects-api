@@ -19,53 +19,61 @@ internal struct PlaceRepository: PlaceRepositoryProtocol {
 		self.database = database
 	}
 	
-	func getAll() -> EventLoopFuture<[PlaceModel]> {
-		PlaceModel.query(on: database)
+	func getAll() async throws -> [PlaceModel] {
+		try await PlaceModel.query(on: database)
 			.all()
 	}
 	
 	func getAllPaged(
 		_ pageRequest: Fluent.PageRequest
-	) -> EventLoopFuture<Fluent.Page<PlaceModel>> {
-		PlaceModel.query(on: database)
+	) async throws -> Fluent.Page<PlaceModel> {
+		try await PlaceModel.query(on: database)
 			.paginate(pageRequest)
 	}
 	
 	func getAll(
-		state: Place.State?,
+		visibility: Place.Visibility?,
+		includeDraft: Bool,
 		creator: User.ID?
-	) -> EventLoopFuture<[PlaceModel]> {
+	) async throws -> [PlaceModel] {
 		var queryBuilder = PlaceModel.query(on: database)
 		
 		if let creator = creator {
 			queryBuilder = queryBuilder.filter(\.$creator.$id == creator)
 		}
-		if let state = state {
-			queryBuilder = queryBuilder.filter(\.$state == state)
+		if !includeDraft {
+			queryBuilder = queryBuilder.filter(\.$isDraft == false)
+		}
+		if let visibility = visibility {
+			queryBuilder = queryBuilder.filter(\.$visibility == visibility)
 		}
 		
-		return queryBuilder.all()
+		return try await queryBuilder.all()
 	}
 	
 	func getAllPaged(
-		state: Place.State?,
+		visibility: Place.Visibility?,
+		includeDraft: Bool,
 		creator: User.ID?,
 		_ pageRequest: Fluent.PageRequest
-	) -> EventLoopFuture<Fluent.Page<PlaceModel>> {
+	) async throws -> Fluent.Page<PlaceModel> {
 		var queryBuilder = PlaceModel.query(on: database)
 		
 		if let creator = creator {
 			queryBuilder = queryBuilder.filter(\.$creator.$id == creator)
 		}
-		if let state = state {
-			queryBuilder = queryBuilder.filter(\.$state == state)
+		if !includeDraft {
+			queryBuilder = queryBuilder.filter(\.$isDraft == false)
+		}
+		if let visibility = visibility {
+			queryBuilder = queryBuilder.filter(\.$visibility == visibility)
 		}
 		
-		return queryBuilder.paginate(pageRequest)
+		return try await queryBuilder.paginate(pageRequest)
 	}
 	
-	func get(_ placeId: Place.ID) -> EventLoopFuture<PlaceModel> {
-		PlaceModel.find(placeId, on: database)
+	func get(_ placeId: Place.ID) async throws -> PlaceModel {
+		try await PlaceModel.find(placeId, on: database)
 			.unwrap(or: Abort(.notFound, reason: "Place not found"))
 	}
 	

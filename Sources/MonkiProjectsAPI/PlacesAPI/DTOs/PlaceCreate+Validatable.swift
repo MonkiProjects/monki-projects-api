@@ -13,8 +13,10 @@ extension Place.Create: Content, Validatable {
 	
 	public static func validations(_ validations: inout Validations) {
 		validations.add("name", as: String.self, is: .count(3...48))
-		validations.add("latitude", as: Double.self, is: .range(-90...90))
-		validations.add("longitude", as: Double.self, is: .range(-180...180))
+		validations.add("coordinate") { validations in
+			validations.add("latitude", as: Double.self, is: .range(-90...90))
+			validations.add("longitude", as: Double.self, is: .range(-180...180))
+		}
 		validations.add("kind", as: String.self)
 		validations.add("caption", as: String.self)
 		validations.add("images", as: [URL].self)

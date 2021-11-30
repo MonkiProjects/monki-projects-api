@@ -18,15 +18,15 @@ internal struct PlaceKindRepository: PlaceKindRepositoryProtocol {
 		self.database = database
 	}
 	
-	func get(humanId: String) -> EventLoopFuture<PlaceModel.Kind> {
-		PlaceModel.Kind.query(on: database)
+	func get(humanId: String) async throws -> PlaceModel.Kind {
+		try await PlaceModel.Kind.query(on: database)
 			.filter(\.$humanId == humanId)
 			.first()
 			.unwrap(or: Abort(.internalServerError, reason: "Could not find the '\(humanId)' place kind"))
 	}
 	
-	func getAll() -> EventLoopFuture<[PlaceModel.Kind]> {
-		PlaceModel.Kind.query(on: database)
+	func getAll() async throws -> [PlaceModel.Kind] {
+		try await PlaceModel.Kind.query(on: database)
 			.all()
 	}
 	

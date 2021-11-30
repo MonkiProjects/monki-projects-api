@@ -12,24 +12,24 @@ import MonkiProjectsModel
 
 public protocol UserRepositoryProtocol {
 	
-	func getAll() -> EventLoopFuture<[UserModel]>
+	func getAll() async throws -> [UserModel]
 	
 	func getAllPaged(
 		_ pageRequest: Fluent.PageRequest
-	) -> EventLoopFuture<Fluent.Page<UserModel>>
+	) async throws -> Fluent.Page<UserModel>
 	
-	func get(_ userId: UserModel.IDValue) -> EventLoopFuture<UserModel>
+	func get(_ userId: UserModel.IDValue) async throws -> UserModel
 	
 	/// Get user with email, or `nil` if email doesn't exist.
-	func unsafeGet(email: String) -> EventLoopFuture<UserModel?>
+	func unsafeGet(email: String) async throws -> UserModel?
 	
 	/// Get user with email.
-	func get(email: String) -> EventLoopFuture<UserModel>
+	func get(email: String) async throws -> UserModel
 	
 	/// Get user with username, or `nil` if username doesn't exist.
-	func unsafeGet(username: String) -> EventLoopFuture<UserModel?>
+	func unsafeGet(username: String) async throws -> UserModel?
 	
 	/// Get user with username.
-	func get(username: String) -> EventLoopFuture<UserModel>
+	func get(username: String) async throws -> UserModel
 	
 }

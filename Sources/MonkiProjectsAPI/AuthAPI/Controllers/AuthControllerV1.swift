@@ -28,19 +28,18 @@ internal struct AuthControllerV1: RouteCollection {
 		tokenProtected.get("me", use: getMe)
 	}
 	
-	func login(req: Request) throws -> EventLoopFuture<User.Token.Private> {
+	func login(req: Request) async throws -> User.Token.Private {
 		let user = try req.auth.require(UserModel.self, with: .basic, in: req)
 		let token = try user.generateToken()
 		
-		return token.save(on: req.db)
-			.flatMapThrowing { try token.asPrivate() }
+		try await token.save(on: req.db)
+		return try token.asPrivate()
 	}
 	
-	func getMe(req: Request) throws -> EventLoopFuture<User.Private> {
+	func getMe(req: Request) async throws -> User.Private {
 		let user = try req.auth.require(UserModel.self, with: .bearer, in: req)
 		
-		return req.eventLoop
-			.tryFuture { try user.asPrivate() }
+		return try user.asPrivate()
 	}
 	
 }

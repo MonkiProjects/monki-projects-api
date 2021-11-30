@@ -14,17 +14,17 @@ public protocol PlacePropertyRepositoryProtocol {
 	func unsafeGet(
 		kind: Place.Property.Kind.ID,
 		humanId: Place.Property.ID
-	) -> EventLoopFuture<PlaceModel.Property?>
+	) async throws -> PlaceModel.Property?
 	
 	func get(
 		kind: Place.Property.Kind.ID,
 		humanId: Place.Property.ID
-	) -> EventLoopFuture<PlaceModel.Property>
+	) async throws -> PlaceModel.Property
 	
-	func getAll(kind: Place.Property.Kind.ID) -> EventLoopFuture<[PlaceModel.Property]>
+	func getAll(kind: Place.Property.Kind.ID) async throws -> [PlaceModel.Property]
 	
 	func getAll(
 		dict: [Place.Property.Kind.ID: [Place.Property.ID]]
-	) -> EventLoopFuture<[PlaceModel.Property]>
+	) async throws -> [PlaceModel.Property]
 	
 }

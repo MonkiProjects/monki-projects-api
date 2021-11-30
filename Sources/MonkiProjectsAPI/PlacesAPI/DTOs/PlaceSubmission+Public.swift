@@ -14,24 +14,22 @@ extension PlaceModel.Submission {
 	
 	public func asPublic(
 		on req: Request
-	) -> EventLoopFuture<MonkiMapModel.Place.Submission.Public> {
-		let loadRelationsFuture = self.$reviews.load(on: req.db)
+	) async throws -> MonkiMapModel.Place.Submission.Public {
+		// Load relations
+		try await self.$reviews.load(on: req.db)
 		
-		let reviewsFuture = loadRelationsFuture.transform(to: self.reviews)
-			.flatMapEach(on: req.eventLoop) { $0.asPublic(on: req) }
+		let reviews = await self.reviews.asPublic(on: req)
 		
-		return reviewsFuture.flatMapThrowing { reviews in
-			try .init(
-				id: self.requireID(),
-				place: self.$place.id,
-				state: self.state,
-				reviews: reviews,
-				positiveReviews: self.positiveReviews,
-				negativeReviews: self.negativeReviews,
-				createdAt: self.createdAt.require(),
-				updatedAt: self.updatedAt.require()
-			)
-		}
+		return try .init(
+			id: self.requireID(),
+			place: self.$place.id,
+			state: self.state,
+			reviews: reviews,
+			positiveReviews: self.positiveReviews,
+			negativeReviews: self.negativeReviews,
+			createdAt: self.createdAt.require(),
+			updatedAt: self.updatedAt.require()
+		)
 	}
 	
 }

@@ -11,30 +11,30 @@ import MonkiProjectsModel
 
 public protocol UserServiceProtocol {
 	
-	func listUsers(pageRequest: Fluent.PageRequest) -> EventLoopFuture<Fluent.Page<UserModel>>
+	func listUsers(pageRequest: Fluent.PageRequest) async throws -> Fluent.Page<UserModel>
 	
-	func createUser(_ create: User.Create) -> EventLoopFuture<UserModel>
+	func createUser(_ create: User.Create) async throws -> UserModel
 	
 	func updateUser(
 		_ userId: UserModel.IDValue,
 		with update: User.Update,
 		requesterId: UserModel.IDValue
-	) -> EventLoopFuture<UserModel>
+	) async throws -> UserModel
 	
 	func findUsers(
 		with filters: User.QueryFilters,
 		pageRequest: Fluent.PageRequest
-	) -> EventLoopFuture<Fluent.Page<UserModel>>
+	) async throws -> Fluent.Page<UserModel>
 	
 	func deleteUser(
 		_ userId: UserModel.IDValue,
 		requesterId: UserModel.IDValue
-	) -> EventLoopFuture<Void>
+	) async throws
 	
 	/// Check for existing email
-	func checkEmailAvailable(_ email: String) -> EventLoopFuture<Void>
+	func checkEmailAvailable(_ email: String) async throws
 	
 	/// Check for existing username
-	func checkUsernameAvailable(_ username: String) -> EventLoopFuture<Void>
+	func checkUsernameAvailable(_ username: String) async throws
 	
 }

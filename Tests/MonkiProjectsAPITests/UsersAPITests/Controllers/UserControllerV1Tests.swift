@@ -93,12 +93,11 @@ internal class UserControllerV1Tests: AppTestCase {
 		]
 		
 		// Create users
-		let creationFutures = existing.map { username -> EventLoopFuture<Void> in
+		for username in existing {
 			let user = UserModel.dummy(username: username)
 			deleteUserAfterTestFinishes(user, on: app.db)
-			return user.create(on: app.db)
+			try user.create(on: app.db).wait()
 		}
-		try EventLoopFuture.andAllSucceed(creationFutures, on: app.db.eventLoop).wait()
 		
 		for (filter, matches) in cases {
 			try app.test(.GET, "users/v1?username=\(filter)") { res in
@@ -135,12 +134,11 @@ internal class UserControllerV1Tests: AppTestCase {
 		]
 		
 		// Create users
-		let creationFutures = existing.map { displayName -> EventLoopFuture<Void> in
+		for displayName in existing {
 			let user = UserModel.dummy(displayName: displayName)
 			deleteUserAfterTestFinishes(user, on: app.db)
-			return user.create(on: app.db)
+			try user.create(on: app.db).wait()
 		}
-		try EventLoopFuture.andAllSucceed(creationFutures, on: app.db.eventLoop).wait()
 		
 		for (filter, matches) in cases {
 			try app.test(.GET, "users/v1?display_name=\(filter)") { res in

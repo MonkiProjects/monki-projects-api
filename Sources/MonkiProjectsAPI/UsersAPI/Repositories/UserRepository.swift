@@ -18,42 +18,42 @@ internal struct UserRepository: UserRepositoryProtocol {
 		self.database = database
 	}
 	
-	func getAll() -> EventLoopFuture<[UserModel]> {
-		UserModel.query(on: self.database)
+	func getAll() async throws -> [UserModel] {
+		try await UserModel.query(on: self.database)
 			.all()
 	}
 	
 	func getAllPaged(
 		_ pageRequest: Fluent.PageRequest
-	) -> EventLoopFuture<Fluent.Page<UserModel>> {
-		UserModel.query(on: self.database)
+	) async throws -> Fluent.Page<UserModel> {
+		try await UserModel.query(on: self.database)
 			.paginate(pageRequest)
 	}
 	
-	func get(_ userId: UserModel.IDValue) -> EventLoopFuture<UserModel> {
-		UserModel.find(userId, on: self.database)
+	func get(_ userId: UserModel.IDValue) async throws -> UserModel {
+		try await UserModel.find(userId, on: self.database)
 			.unwrap(or: Abort(.notFound, reason: "User not found"))
 	}
 	
-	func unsafeGet(email: String) -> EventLoopFuture<UserModel?> {
-		UserModel.query(on: self.database)
+	func unsafeGet(email: String) async throws -> UserModel? {
+		try await UserModel.query(on: self.database)
 			.filter(\.$email == email)
 			.first()
 	}
 	
-	func get(email: String) -> EventLoopFuture<UserModel> {
-		self.unsafeGet(email: email)
+	func get(email: String) async throws -> UserModel {
+		try await self.unsafeGet(email: email)
 			.unwrap(or: Abort(.notFound, reason: "No user with email '\(email)' found."))
 	}
 	
-	func unsafeGet(username: String) -> EventLoopFuture<UserModel?> {
-		UserModel.query(on: self.database)
+	func unsafeGet(username: String) async throws -> UserModel? {
+		try await UserModel.query(on: self.database)
 			.filter(\.$username == username)
 			.first()
 	}
 	
-	func get(username: String) -> EventLoopFuture<UserModel> {
-		self.unsafeGet(username: username)
+	func get(username: String) async throws -> UserModel {
+		try await self.unsafeGet(username: username)
 			.unwrap(or: Abort(.notFound, reason: "No user with username '\(username)' found."))
 	}
 	

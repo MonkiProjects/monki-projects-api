@@ -13,23 +13,25 @@ import MonkiMapModel
 
 public protocol PlaceRepositoryProtocol {
 	
-	func getAll() -> EventLoopFuture<[PlaceModel]>
+	func getAll() async throws -> [PlaceModel]
 	
 	func getAllPaged(
 		_ pageRequest: Fluent.PageRequest
-	) -> EventLoopFuture<Fluent.Page<PlaceModel>>
+	) async throws -> Fluent.Page<PlaceModel>
 	
 	func getAll(
-		state: Place.State?,
+		visibility: Place.Visibility?,
+		includeDraft: Bool,
 		creator: User.ID?
-	) -> EventLoopFuture<[PlaceModel]>
+	) async throws -> [PlaceModel]
 	
 	func getAllPaged(
-		state: Place.State?,
+		visibility: Place.Visibility?,
+		includeDraft: Bool,
 		creator: User.ID?,
 		_ pageRequest: Fluent.PageRequest
-	) -> EventLoopFuture<Fluent.Page<PlaceModel>>
+	) async throws -> Fluent.Page<PlaceModel>
 	
-	func get(_ placeId: Place.ID) -> EventLoopFuture<PlaceModel>
+	func get(_ placeId: Place.ID) async throws -> PlaceModel
 	
 }

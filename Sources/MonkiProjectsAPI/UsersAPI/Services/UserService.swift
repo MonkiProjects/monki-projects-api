@@ -18,145 +18,121 @@ internal struct UserService: Service, UserServiceProtocol {
 	let eventLoop: EventLoop
 	let logger: Logger
 	
-	func listUsers(pageRequest: Fluent.PageRequest) -> EventLoopFuture<Fluent.Page<UserModel>> {
-		self.make(self.app.userRepository).getAllPaged(pageRequest)
+	func listUsers(pageRequest: Fluent.PageRequest) async throws -> Fluent.Page<UserModel> {
+		try await self.make(self.app.userRepository).getAllPaged(pageRequest)
 	}
 	
-	func createUser(_ create: User.Create) -> EventLoopFuture<UserModel> {
-		let validationsFuture = EventLoopFuture.andAllSucceed([
-			self.eventLoop.tryFuture {
-				guard create.password == create.confirmPassword else {
-					throw Abort(.badRequest, reason: "Passwords do not match")
-				}
-			},
-			self.checkEmailAvailable(create.email),
-			self.checkUsernameAvailable(create.username),
-		], on: self.eventLoop)
-		
-		func newUserFuture() -> EventLoopFuture<UserModel> {
-			self.eventLoop.tryFuture {
-				try UserModel(
-					username: create.username,
-					displayName: create.displayName,
-					email: create.email,
-					passwordHash: Bcrypt.hash(create.password)
-				)
-			}
+	func createUser(_ create: User.Create) async throws -> UserModel {
+		guard create.password == create.confirmPassword else {
+			throw Abort(.badRequest, reason: "Passwords do not match")
 		}
+		try await self.checkEmailAvailable(create.email)
+		try await self.checkUsernameAvailable(create.username)
 		
-		return validationsFuture
-			// Create user object
-			.flatMap(newUserFuture)
-			// Save user in database
-			.passthroughAfter { $0.create(on: self.db) }
+		// Create user object
+		let user = try UserModel(
+			username: create.username,
+			displayName: create.displayName,
+			email: create.email,
+			passwordHash: Bcrypt.hash(create.password)
+		)
+		
+		// Save user in database
+		try await user.create(on: self.db)
+		
+		return user
 	}
 	
 	func updateUser(
 		_ userId: UserModel.IDValue,
 		with update: User.Update,
 		requesterId: UserModel.IDValue
-	) -> EventLoopFuture<UserModel> {
-		var validations: [EventLoopFuture<Void>] = [
-			self.make(self.app.authorizationService)
-				.user(requesterId, can: .update, user: userId)
-				.guard(else: Abort(.forbidden, reason: "You cannot update someone else's account!"))
-				.transform(to: ()),
-		]
+	) async throws -> UserModel {
+		// Perform validations
+		let canUpdate: Bool = await self.make(self.app.authorizationService)
+			.user(requesterId, can: .update, user: userId)
+		guard canUpdate else {
+			throw Abort(.forbidden, reason: "You cannot update someone else's account!")
+		}
 		if let username = update.username {
-			validations.append(self.checkUsernameAvailable(username))
+			try await self.checkUsernameAvailable(username)
 			// FIXME: Validate username
 		}
 		// FIXME: Validate displayName
-		let validationsFuture = EventLoopFuture.andAllSucceed(validations, on: self.eventLoop)
 		
-		func userFuture() -> EventLoopFuture<UserModel> {
-			self.make(self.app.userRepository).get(userId)
+		let user: UserModel = try await self.make(self.app.userRepository).get(userId)
+		
+		if let username = update.username {
+			user.username = username
+		}
+		if let displayName = update.displayName {
+			user.displayName = displayName
 		}
 		
-		func updateUser(_ user: UserModel) -> UserModel {
-			if let username = update.username {
-				user.username = username
-			}
-			if let displayName = update.displayName {
-				user.displayName = displayName
-			}
-			
-			return user
-		}
-		
-		return validationsFuture
-			.flatMap(userFuture)
-			.map(updateUser)
-			.passthroughAfter { $0.update(on: self.db) }
+		try await user.update(on: self.db)
+		return user
 	}
 	
 	func findUsers(
 		with filters: User.QueryFilters,
 		pageRequest: Fluent.PageRequest
-	) -> EventLoopFuture<Fluent.Page<UserModel>> {
+	) async throws -> Fluent.Page<UserModel> {
 		var query = UserModel.query(on: self.db)
 		
-		do {
-			if let username = filters.username?.lowercased() {
-				if self.db is SQLDatabase {
-					query = query.filter(.sql(raw: "LOWER(username) LIKE '%\(username)%'"))
-				} else {
-					throw Abort(.internalServerError, reason: "Database is not SQL")
-				}
+		if let username = filters.username?.lowercased() {
+			if self.db is SQLDatabase {
+				query = query.filter(.sql(raw: "LOWER(username) LIKE '%\(username)%'"))
+			} else {
+				throw Abort(.internalServerError, reason: "Database is not SQL")
 			}
-			if let displayName = filters.displayName?.lowercased() {
-				if self.db is SQLDatabase {
-					query = query.filter(.sql(raw: "LOWER(display_name) LIKE '%\(displayName)%'"))
-				} else {
-					throw Abort(.internalServerError, reason: "Database is not SQL")
-				}
+		}
+		if let displayName = filters.displayName?.lowercased() {
+			if self.db is SQLDatabase {
+				query = query.filter(.sql(raw: "LOWER(display_name) LIKE '%\(displayName)%'"))
+			} else {
+				throw Abort(.internalServerError, reason: "Database is not SQL")
 			}
-		} catch {
-			return self.eventLoop.makeFailedFuture(error)
 		}
 		
-		return query.paginate(pageRequest)
+		return try await query.paginate(pageRequest)
 	}
 	
 	func deleteUser(
 		_ userId: UserModel.IDValue,
 		requesterId: UserModel.IDValue
-	) -> EventLoopFuture<Void> {
-		let validationsFuture = EventLoopFuture.andAllSucceed([
-			self.make(self.app.authorizationService)
-				.user(requesterId, can: .delete, user: userId)
-				.guard(else: Abort(.forbidden, reason: "You cannot delete someone else's account!")),
-		], on: self.eventLoop)
-		
-		func userFuture() -> EventLoopFuture<UserModel> {
-			self.make(self.app.userRepository).get(userId)
+	) async throws {
+		// Perform validations
+		let canDelete: Bool = await self.make(self.app.authorizationService)
+			.user(requesterId, can: .delete, user: userId)
+		guard canDelete else {
+			throw Abort(.forbidden, reason: "You cannot delete someone else's account!")
 		}
 		
-		func deleteTokensFuture(for user: UserModel) -> EventLoopFuture<Void> {
-			self.make(self.app.userTokenService)
-				.deleteAllTokens(for: userId, requesterId: requesterId)
-		}
+		let user: UserModel = try await self.make(self.app.userRepository).get(userId)
 		
-		return validationsFuture
-			.flatMap(userFuture)
-			.passthroughAfter(deleteTokensFuture)
-			.flatMap { $0.delete(on: self.db) }
+		// Delete tokens
+		try await self.make(self.app.userTokenService)
+			.deleteAllTokens(for: userId, requesterId: requesterId)
+		
+		try await user.delete(on: self.db)
 	}
 	
-	func checkEmailAvailable(_ email: String) -> EventLoopFuture<Void> {
-		self.make(self.app.userRepository)
-			.unsafeGet(email: email)
-			// Abort if existing email
-			.guard(\.isNil, else: Abort(.forbidden, reason: "Email already taken"))
-			.transform(to: ())
+	func checkEmailAvailable(_ email: String) async throws {
+		let user: UserModel? = try await self.make(self.app.userRepository).unsafeGet(email: email)
+		
+		// Abort if existing email
+		guard user == nil else {
+			throw Abort(.forbidden, reason: "Email already taken")
+		}
 	}
 	
-	func checkUsernameAvailable(_ username: String) -> EventLoopFuture<Void> {
-		self.make(self.app.userRepository)
-			.unsafeGet(username: username)
-			// Abort if existing username
-			.guard(\.isNil, else: Abort(.forbidden, reason: "Username already taken"))
-			.transform(to: ())
+	func checkUsernameAvailable(_ username: String) async throws {
+		let user: UserModel? = try await self.make(self.app.userRepository).unsafeGet(username: username)
+		
+		// Abort if existing username
+		guard user == nil else {
+			throw Abort(.forbidden, reason: "Username already taken")
+		}
 	}
 	
 }
