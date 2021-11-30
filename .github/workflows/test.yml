@@ -14,4 +14,4 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Run tests in parallel and with Thread Sanitizer
-      run: swift test --enable-test-discovery --parallel --sanitize=thread
+      run: swift test --enable-test-discovery --parallel # --sanitize=thread
