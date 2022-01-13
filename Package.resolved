@@ -65,7 +65,7 @@
         }
       },
       {
-        "package": "monki-projects-model-swift",
+        "package": "monki-projects-model",
         "repositoryURL": "https://github.com/MonkiProjects/monki-projects-model-swift.git",
         "state": {
           "branch": null,
@@ -254,7 +254,7 @@
         }
       },
       {
-        "package": "swift-prefixed-type",
+        "package": "prefixed",
         "repositoryURL": "https://github.com/RemiBardon/swift-prefixed-type",
         "state": {
           "branch": null,
