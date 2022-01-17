@@ -51,6 +51,7 @@ public func configure(_ app: Application) throws {
 	app.authorizationService.use(AuthorizationService.init(db:app:eventLoop:logger:))
 	app.placeService.use(PlaceService.init(db:app:eventLoop:logger:))
 	app.placeDetailsService.use(PlaceDetailsService.init(db:app:eventLoop:logger:))
+	app.utilityService.use(UtilityService.init(db:app:eventLoop:logger:))
 	
 	// Configure jobs
 	try app.queues.use(.redis(url: Environment.get("REDIS_URL") ?? "redis://127.0.0.1:6379"))

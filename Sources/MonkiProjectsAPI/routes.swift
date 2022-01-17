@@ -18,5 +18,6 @@ internal func routes(_ app: Application) throws {
 	try app.routes.grouped("users").grouped("v1").register(collection: UserControllerV1())
 	try app.routes.grouped("auth").grouped("v1").register(collection: AuthControllerV1())
 	try app.routes.grouped("places").grouped("v1").register(collection: PlaceControllerV1())
+	try app.routes.grouped("utility").grouped("v1").register(collection: UtilityControllerV1())
 	
 }

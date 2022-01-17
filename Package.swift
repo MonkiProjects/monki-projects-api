@@ -19,6 +19,7 @@ let package = Package(
 			url: "https://github.com/MonkiProjects/monki-projects-model-swift.git",
 			.upToNextMinor(from: "0.7.8")
 		),
+		.package(url: "https://github.com/crossroadlabs/Regex", .upToNextMajor(from: "1.2.0")),
 	],
 	targets: [
 		.target(
@@ -30,6 +31,7 @@ let package = Package(
 				.product(name: "QueuesRedisDriver", package: "queues-redis-driver"),
 				.product(name: "MonkiProjectsModel", package: "monki-projects-model"),
 				.product(name: "MonkiMapModel", package: "monki-projects-model"),
+				.product(name: "Regex", package: "Regex"),
 			],
 			swiftSettings: [
 				// Enable better optimizations when building in Release configuration. Despite the use of
