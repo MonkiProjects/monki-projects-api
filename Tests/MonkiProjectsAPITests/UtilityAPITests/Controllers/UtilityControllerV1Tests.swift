@@ -29,22 +29,14 @@ internal class UtilityControllerV1Tests: AppTestCase {
 		]
 		// swiftlint:enable number_separator
 		for (urlString, expected) in examples {
-			try app.test(
-				.GET, "utility/v1/coordinates-from-google-maps-url",
-				beforeRequest: { req in
-					try req.query.encode([
-						"url": urlString,
-					])
-				},
-				afterResponse: { res in
-					try res.assertStatus(.ok) {
-						let content = try res.content.decode(Coordinate?.self)
-						let coordinate = try XCTUnwrap(content)
-						
-						XCTAssertEqual(coordinate, Coordinate(latitude: expected.0, longitude: expected.1), urlString)
-					}
+			try app.test(.GET, "utility/v1/coordinates-from-google-maps-url?url=\(urlString)") { res in
+				try res.assertStatus(.ok) {
+					let content = try res.content.decode(Coordinate?.self)
+					let coordinate = try XCTUnwrap(content)
+					
+					XCTAssertEqual(coordinate, Coordinate(latitude: expected.0, longitude: expected.1), urlString)
 				}
-			)
+			}
 		}
 	}
 	
@@ -60,19 +52,23 @@ internal class UtilityControllerV1Tests: AppTestCase {
 		XCTAssertNoThrow(try utilityService.coordinatesRegex())
 	}
 	
-	// MARK: - Invalid Domain
-	
-	func testNonEncodedUrlThrowsError() throws {
+	func testNonEncodedUrlGetCorrectlyDecoded() throws {
 		let app = try XCTUnwrap(Self.app)
 		
-		let urlString = "https://www.google.com/maps/place/Aire+de+jeux/data=!4m2!3m1!1s0x4805eb8482e2d99f:0xc9203dd8e3d45de2"
+		let urlString = "https://www.google.com/maps/place/Square+des+Lavandi%C3%A8res/data=!4m2!3m1!1s0x4805ec21eb7cebf5:0x661bb185a6404543"
 		try app.test(.GET, "utility/v1/coordinates-from-google-maps-url?url=\(urlString)") { res in
-			try res.assertError(
-				status: .badRequest,
-				reason: "The given URL is invalid. Make sure it's correctly URL-encoded."
-			)
+			try res.assertStatus(.ok) {
+				let content = try res.content.decode(Coordinate?.self)
+				XCTAssertNotNil(content)
+			}
+//			try res.assertError(
+//				status: .badRequest,
+//				reason: "The given URL is invalid. Make sure it's correctly URL-encoded."
+//			)
 		}
 	}
+	
+	// MARK: - Invalid Domain
 	
 	func testBadUrlReturnsNoContent() throws {
 		let app = try XCTUnwrap(Self.app)

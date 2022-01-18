@@ -19,10 +19,16 @@ internal struct UtilityControllerV1: RouteCollection {
 	
 	func getCoordinatesFromGoogleMapsUrl(req: Request) async throws -> Response {
 		let urlString = try req.query.get(String.self, at: "url")
+			// `req.query.get` removes percent encoding
+			// we need to add it back to construct a `URL`
+			.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+			.unwrap(or: Abort(.internalServerError, reason: "Could not decode query keeping percent encoding"))
+		req.logger.trace("Received URL string '\(urlString)'")
+		
 		guard let url = URL(string: urlString) else {
 			throw Abort(.badRequest, reason: "The given URL is invalid. Make sure it's correctly URL-encoded.")
 		}
-		req.logger.trace("Received URL <\(url)>")
+		req.logger.trace("URL decoded to <\(url)>")
 		
 		let coordinates = try await req.utilityService.getCoordinatesFromGoogleMapsUrl(url)
 		
