@@ -68,6 +68,23 @@ internal class UtilityControllerV1Tests: AppTestCase {
 		}
 	}
 	
+	func testEncodedUrlGetCorrectlyDecoded() throws {
+		let app = try XCTUnwrap(Self.app)
+		
+		let urlString = "https://www.google.com/maps/place/Square+des+Lavandi%C3%A8res/data=!4m2!3m1!1s0x4805ec21eb7cebf5:0x661bb185a6404543"
+		let url = try XCTUnwrap(urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed))
+		try app.test(.GET, "utility/v1/coordinates-from-google-maps-url?url=\(url)") { res in
+			try res.assertStatus(.ok) {
+				let content = try res.content.decode(Coordinate?.self)
+				XCTAssertNotNil(content)
+			}
+//			try res.assertError(
+//				status: .badRequest,
+//				reason: "The given URL is invalid. Make sure it's correctly URL-encoded."
+//			)
+		}
+	}
+	
 	// MARK: - Invalid Domain
 	
 	func testBadUrlReturnsNoContent() throws {

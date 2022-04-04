@@ -55,7 +55,10 @@ internal struct UtilityService: Service, UtilityServiceProtocol {
 		}
 		
 		if res.status == .notFound {
-			logger.trace("URL <\(url.absoluteString)> did not resolve to a web page.")
+			logger.debug("URL <\(url.absoluteString)> did not resolve to a web page.")
+			return nil
+		} else if !(200..<300).contains(res.status.code) {
+			logger.debug("URL <\(url.absoluteString)> returned status code \(res.status.code).")
 			return nil
 		}
 		
