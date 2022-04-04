@@ -57,6 +57,12 @@ internal struct UtilityService: Service, UtilityServiceProtocol {
 		if res.status == .notFound {
 			logger.debug("URL <\(url.absoluteString)> did not resolve to a web page.")
 			return nil
+		} else if res.status == .tooManyRequests {
+			logger.debug(
+				"Too many requests sent to <google.com/maps>. Asking to retry after \(res.headers[.retryAfter])s.",
+				metadata: ["url": .stringConvertible(url)]
+			)
+			return nil
 		} else if !(200..<300).contains(res.status.code) {
 			logger.debug("URL <\(url.absoluteString)> returned status code \(res.status.code).")
 			return nil
