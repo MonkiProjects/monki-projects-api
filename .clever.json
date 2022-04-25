@@ -6,6 +6,13 @@
       "deploy_url": "https://github.com/MonkiProjects/monki-projects-api.git",
       "name": "MP API (prod)",
       "alias": "api-prod"
+    },
+    {
+      "app_id": "app_db873b1f-1c98-486a-9fd6-c5fff757df24",
+      "org_id": "orga_835b8484-d141-478f-9749-5045872cfcf4",
+      "deploy_url": "https://github.com/MonkiProjects/monki-projects-api.git",
+      "name": "MP API (staging)",
+      "alias": "staging"
     }
   ]
 }

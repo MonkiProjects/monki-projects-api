@@ -62,12 +62,12 @@ internal struct UtilityService: Service, UtilityServiceProtocol {
 			// swiftlint:disable:next line_length
 			let message = "Too many requests sent to <google.com/maps>. \(retryAfter.map({ "Asking to retry after \($0)s." }) ?? "No \"Retry-After\" header set.")"
 			
-			logger.debug(message, metadata: ["url": .stringConvertible(url)])
+			logger.debug("\(message)", metadata: ["url": .stringConvertible(url)])
 			
-			throw Abort(.tooManyRequests, headers: HTTPHeaders([
-				// Retry after 60 seconds by default (no idea if it's enough)
-				.retryAfter: retryAfter ?? "60",
-			]), reason: message)
+			var headers = HTTPHeaders()
+			// Retry after 60 seconds by default (no idea if it's enough)
+			headers.add(name: .retryAfter, value: retryAfter ?? "60")
+			throw Abort(.tooManyRequests, headers: headers, reason: message)
 		} else if !(200..<300).contains(res.status.code) {
 			logger.debug("URL <\(url.absoluteString)> returned status code \(res.status.code).")
 			return nil
