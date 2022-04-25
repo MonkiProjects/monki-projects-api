@@ -58,15 +58,16 @@ internal struct UtilityService: Service, UtilityServiceProtocol {
 			logger.debug("URL <\(url.absoluteString)> did not resolve to a web page.")
 			return nil
 		} else if res.status == .tooManyRequests {
-			logger.debug(
-				"Too many requests sent to <google.com/maps>. Asking to retry after \(res.headers[.retryAfter])s.",
-				metadata: ["url": .stringConvertible(url)]
-			)
-			logger.debug(
-				"Timeout headers: \(res.headers)",
-				metadata: ["url": .stringConvertible(url)]
-			)
-			return nil
+			let retryAfter = res.headers[.retryAfter].first
+			// swiftlint:disable:next line_length
+			let message = "Too many requests sent to <google.com/maps>. \(retryAfter.map({ "Asking to retry after \($0)s." }) ?? "No \"Retry-After\" header set.")"
+			
+			logger.debug(message, metadata: ["url": .stringConvertible(url)])
+			
+			throw Abort(.tooManyRequests, headers: HTTPHeaders([
+				// Retry after 60 seconds by default (no idea if it's enough)
+				.retryAfter: retryAfter ?? "60",
+			]), reason: message)
 		} else if !(200..<300).contains(res.status.code) {
 			logger.debug("URL <\(url.absoluteString)> returned status code \(res.status.code).")
 			return nil
