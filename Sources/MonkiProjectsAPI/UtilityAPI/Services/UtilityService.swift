@@ -62,6 +62,10 @@ internal struct UtilityService: Service, UtilityServiceProtocol {
 				"Too many requests sent to <google.com/maps>. Asking to retry after \(res.headers[.retryAfter])s.",
 				metadata: ["url": .stringConvertible(url)]
 			)
+			logger.debug(
+				"Timeout headers: \(res.headers)",
+				metadata: ["url": .stringConvertible(url)]
+			)
 			return nil
 		} else if !(200..<300).contains(res.status.code) {
 			logger.debug("URL <\(url.absoluteString)> returned status code \(res.status.code).")
